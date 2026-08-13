@@ -17,8 +17,8 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
    失败的仓库会重新验证。被移除 topic、归档或删除的仓库会退出公开列表。
 6. 客户端安装前再次读取 Registry，并只允许安装 Registry 记录的精确 commit。
 
-`registry/state.json` 是增量扫描状态；`policy/denylist.json` 可人工封禁仓库。
-公开 Registry 的格式由 `registry/schema.json` 描述。
+`registry/state.json` 是增量扫描状态。公开 Registry 的格式由
+`registry/schema.json` 描述。
 
 ## 安装市场插件
 
@@ -74,18 +74,6 @@ pnpm registry:scan
 
 不要把 token 写入仓库。扫描器处理 GitHub Search 的 1,000 条结果上限，会按
 仓库创建日期自动分区；文件大小上限为 `package.json` 256 KiB、补丁 64 KiB。
-
-封禁一个已通过验证的仓库时，在 `policy/denylist.json` 中加入：
-
-```json
-{
-  "repositories": [
-    { "repo": "owner/repository", "reason": "policy violation" }
-  ]
-}
-```
-
-下一次扫描后该仓库会从公开列表移除。解除封禁后，下次扫描会重新验证。
 
 ## 验证规则
 
