@@ -5,11 +5,15 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   InvalidCandidateError,
+  INSTALL_CLASSIFIER_VERSION,
   MAX_MANIFEST_BYTES,
   MAX_PATCH_BYTES,
+  MAX_README_BYTES,
   RetryCandidateError,
   candidateFingerprint,
+  classifyInstall,
   encodeRawPath,
+  readmeGitHubRepositories,
   refreshPluginMetadata,
   validateBundlePatch,
   validateManifest,
@@ -34,6 +38,7 @@ const now = new Date().toISOString()
 const statePath = path.join(root, 'registry', 'state.json')
 const pluginsPath = path.join(root, 'registry', 'plugins.json')
 const rejectedPath = path.join(root, 'registry', 'rejected.json')
+const installReviewPath = path.join(root, 'registry', 'install-review.json')
 const denylistPath = path.join(root, 'policy', 'denylist.json')
 const installOverridesPath = path.join(root, 'policy', 'install-overrides.json')
 
@@ -57,7 +62,18 @@ console.log('discovered ' + String(candidates.length) + ' candidate repositories
 const next = {}
 let validated = 0
 let reused = 0
-for (const candidate of candidates) {
+let candidateIndex = 0
+const workers = Math.min(6, candidates.length)
+await Promise.all(Array.from({ length: workers }, async () => {
+  for (;;) {
+    const index = candidateIndex
+    candidateIndex += 1
+    if (index >= candidates.length) return
+    await processCandidate(candidates[index])
+  }
+}))
+
+async function processCandidate(candidate) {
   const key = candidate.full_name.toLocaleLowerCase()
   const installOverride = installOverrides.get(key)
   const fingerprint = candidateFingerprint(candidate, installOverride)
@@ -65,26 +81,28 @@ for (const candidate of candidates) {
   const blockedReason = denylist.get(key)
   if (blockedReason !== undefined) {
     next[key] = stateRow(candidate, fingerprint, 'blocked', blockedReason)
-    continue
+    return
   }
   if (old !== undefined
     && sameFingerprint(old.fingerprint, fingerprint)
     && old.status === 'verified'
     && plainObject(old.plugin)
-    && validInstallMetadata(old.plugin.install)) {
+    && validInstallMetadata(old.plugin.install)
+    && validInspection(old.inspection)) {
     next[key] = {
       ...stateRow(candidate, fingerprint, 'verified', null),
       checkedAt: old.checkedAt,
       commit: old.commit,
       plugin: refreshPluginMetadata(old.plugin, candidate),
+      inspection: old.inspection,
     }
     reused += 1
-    continue
+    return
   }
-  if (old !== undefined && sameFingerprint(old.fingerprint, fingerprint) && old.status === 'invalid') {
+  if (old !== undefined && sameRepositoryFingerprint(old.fingerprint, fingerprint) && old.status === 'invalid') {
     next[key] = { ...stateRow(candidate, fingerprint, 'invalid', old.reason), checkedAt: old.checkedAt }
     reused += 1
-    continue
+    return
   }
   try {
     const result = await validateCandidate(candidate, installOverride)
@@ -92,6 +110,7 @@ for (const candidate of candidates) {
       ...stateRow(candidate, fingerprint, 'verified', null),
       commit: result.commit,
       plugin: result.plugin,
+      inspection: result.inspection,
     }
   } catch (error) {
     if (error instanceof InvalidCandidateError) {
@@ -124,11 +143,19 @@ const rejected = Object.values(next)
     checkedAt: row.checkedAt,
   }))
   .sort((left, right) => left.repository.localeCompare(right.repository))
+const installReview = installReviewRows(next)
 
 await atomicJson(statePath, { schemaVersion: 2, generatedAt: now, repositories: sortObject(next) })
 await atomicJson(pluginsPath, { schemaVersion: 2, generatedAt: now, plugins })
 await atomicJson(rejectedPath, { schemaVersion: 1, generatedAt: now, repositories: rejected })
-console.log('published ' + String(plugins.length) + ' verified plugins; ' + String(rejected.length) + ' hidden; reused ' + String(reused))
+await atomicJson(installReviewPath, { schemaVersion: 1, generatedAt: now, repositories: installReview })
+console.log(
+  'published ' + String(plugins.length) + ' verified plugins; '
+  + String(rejected.length) + ' hidden; '
+  + String(installReview.filter(row => row.status === 'needs-review').length) + ' install classifications need review; '
+  + String(installReview.filter(row => row.status === 'auto-resolved').length) + ' prepare false positives auto-resolved; '
+  + 'reused ' + String(reused),
+)
 
 async function discoverAll() {
   const base = 'topic:dsh-plugin archived:false fork:false'
@@ -185,13 +212,48 @@ async function validateCandidate(candidate, installOverride) {
   const rawBase = 'https://raw.githubusercontent.com/' + candidate.full_name + '/' + commit + '/'
   const manifestText = await rawText(new URL(rawBase + 'package.json'), MAX_MANIFEST_BYTES, 'package.json')
   const identity = validateManifest(manifestText)
-  const patchText = await rawText(
-    new URL(rawBase + encodeRawPath(identity.bundlePatch)),
-    MAX_PATCH_BYTES,
-    identity.bundlePatch,
+  const treeResponse = await apiJson(new URL(
+    'https://api.github.com/repos/' + candidate.full_name + '/git/trees/' + commit + '?recursive=1',
+  ), true)
+  const treePaths = Array.isArray(treeResponse.tree)
+    ? treeResponse.tree
+      .filter(entry => plainObject(entry) && entry.type === 'blob' && typeof entry.path === 'string')
+      .map(entry => entry.path)
+    : []
+  if (treeResponse.truncated === true) {
+    const known = new Set(treePaths)
+    for (const group of identity.installHints.runtimeEntryGroups) {
+      for (const entryPath of group.paths) {
+        if (!known.has(entryPath) && await rawExists(new URL(rawBase + encodeRawPath(entryPath)))) {
+          treePaths.push(entryPath)
+          known.add(entryPath)
+        }
+      }
+    }
+  }
+  const readmePath = preferredReadme(treePaths)
+  const readmeText = readmePath === null
+    ? null
+    : await optionalRawText(new URL(rawBase + encodeRawPath(readmePath)), MAX_README_BYTES, readmePath)
+  const verifiedGitHubRepositories = await verifiedReadmeRepositories(candidate, readmeText)
+  const classification = classifyInstall(
+    identity,
+    candidate.full_name,
+    treePaths,
+    readmeText,
+    verifiedGitHubRepositories,
   )
-  validateBundlePatch(patchText, identity.packageName)
-  return { commit, plugin: verifiedPlugin(candidate, commit, identity, now, installOverride) }
+  const patchText = await rawText(
+    new URL(rawBase + encodeRawPath(classification.identity.bundlePatch)),
+    MAX_PATCH_BYTES,
+    classification.identity.bundlePatch,
+  )
+  validateBundlePatch(patchText, classification.identity.packageName)
+  return {
+    commit,
+    plugin: verifiedPlugin(candidate, commit, classification.identity, now, installOverride),
+    inspection: { ...classification.inspection, treeTruncated: treeResponse.truncated === true },
+  }
 }
 
 async function apiJson(url, candidateRequest = false) {
@@ -261,6 +323,59 @@ async function rawText(url, maximum, label) {
   }
 }
 
+async function optionalRawText(url, maximum, label) {
+  try {
+    return await rawText(url, maximum, label)
+  } catch (error) {
+    if (error instanceof InvalidCandidateError) return null
+    throw error
+  }
+}
+
+async function rawExists(url) {
+  let response
+  try {
+    response = await fetchWithRetry(url, { headers: { ...rawHeaders, range: 'bytes=0-0' } }, 2)
+  } catch (error) {
+    throw new RetryCandidateError('could not probe runtime entry: ' + messageOf(error))
+  }
+  if (response.status === 404) return false
+  if (response.status === 403 || response.status === 429 || response.status >= 500) {
+    throw new RetryCandidateError('runtime entry probe returned HTTP ' + String(response.status))
+  }
+  await response.body?.cancel()
+  return response.ok
+}
+
+async function verifiedReadmeRepositories(candidate, readmeText) {
+  const verified = [candidate.full_name]
+  if (readmeText === null) return verified
+  const current = candidate.full_name.toLocaleLowerCase()
+  const currentName = candidate.name.toLocaleLowerCase()
+  for (const repository of readmeGitHubRepositories(readmeText)) {
+    const normalized = repository.toLocaleLowerCase()
+    if (normalized === current || repository.split('/')[1]?.toLocaleLowerCase() !== currentName) continue
+    let response
+    try {
+      response = await fetchWithRetry(
+        new URL('https://api.github.com/repos/' + repository),
+        { headers: apiHeaders },
+        2,
+      )
+    } catch (error) {
+      throw new RetryCandidateError('could not verify README GitHub repository alias: ' + messageOf(error))
+    }
+    if (response.status === 404) continue
+    if (response.status === 403 || response.status === 429 || response.status >= 500) {
+      throw new RetryCandidateError('README GitHub repository alias returned HTTP ' + String(response.status))
+    }
+    if (!response.ok) continue
+    const resolved = await response.json()
+    if (plainObject(resolved) && resolved.id === candidate.id) verified.push(repository)
+  }
+  return verified
+}
+
 async function fetchWithRetry(url, options, attempts) {
   let lastError
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -308,6 +423,11 @@ function sameFingerprint(previousFingerprint, currentFingerprint) {
   return previousFingerprint === currentFingerprint
 }
 
+function sameRepositoryFingerprint(previousFingerprint, currentFingerprint) {
+  if (typeof previousFingerprint !== 'string') return false
+  return previousFingerprint.split('\n').slice(0, 3).join('\n') === currentFingerprint.split('\n').slice(0, 3).join('\n')
+}
+
 async function readJson(file) {
   return JSON.parse(await readFile(file, 'utf8'))
 }
@@ -340,6 +460,55 @@ function validInstallMetadata(value) {
     && typeof value.spec === 'string'
     && Array.isArray(value.profiles)
     && typeof value.instructionsUrl === 'string'
+}
+
+function validInspection(value) {
+  return plainObject(value)
+    && value.classifierVersion === INSTALL_CLASSIFIER_VERSION
+    && Array.isArray(value.profiles)
+    && Array.isArray(value.artifactGroups)
+    && Array.isArray(value.reviewReasons)
+    && Array.isArray(value.resolvedReasons)
+    && plainObject(value.readme)
+}
+
+function preferredReadme(paths) {
+  const roots = paths.filter(value => typeof value === 'string' && !value.includes('/') && /^readme(?:\.[\w-]+)*$/i.test(value))
+  roots.sort((left, right) => {
+    const rank = value => /^readme\.md$/i.test(value) ? 0 : /\.md$/i.test(value) ? 1 : 2
+    return rank(left) - rank(right) || left.localeCompare(right)
+  })
+  return roots[0] ?? null
+}
+
+function installReviewRows(state) {
+  const rows = []
+  for (const row of Object.values(state)) {
+    if (!plainObject(row) || row.status !== 'verified' || !plainObject(row.plugin) || !validInspection(row.inspection)) continue
+    const inspection = row.inspection
+    if (inspection.reviewReasons.length > 0) {
+      rows.push(reviewRow(row, 'needs-review', inspection.reviewReasons))
+    } else if (row.plugin.install.mode === 'automatic' && inspection.resolvedReasons.length > 0) {
+      rows.push(reviewRow(row, 'auto-resolved', inspection.resolvedReasons))
+    }
+  }
+  return rows.sort((left, right) => left.repository.localeCompare(right.repository))
+}
+
+function reviewRow(row, status, reasons) {
+  return {
+    repository: row.repository,
+    status,
+    mode: row.plugin.install.mode,
+    reasons,
+    profiles: row.inspection.profiles,
+    profileSource: row.inspection.profileSource,
+    lifecycleScripts: row.inspection.lifecycleScripts,
+    runtimeArtifactsCommitted: row.inspection.runtimeArtifactsCommitted,
+    artifactGroups: row.inspection.artifactGroups,
+    readme: row.inspection.readme,
+    checkedAt: row.checkedAt,
+  }
 }
 
 function installOverrideMap(document) {

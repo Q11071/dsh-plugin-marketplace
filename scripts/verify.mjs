@@ -106,4 +106,36 @@ for (const plugin of registry.plugins) {
 }
 console.log('bundled Registry contract valid: ' + registry.plugins.length + ' verified plugins')
 
+// Install-classification audit. Ambiguous repositories stay guided until their
+// evidence changes; auto-resolved rows document conservative false positives
+// that the current classifier was able to prove safe to install from GitHub.
+const installReview = JSON.parse(readFileSync(path.join(root, 'registry', 'install-review.json'), 'utf8'))
+if (
+  installReview.schemaVersion !== 1 ||
+  Number.isNaN(Date.parse(installReview.generatedAt)) ||
+  !Array.isArray(installReview.repositories)
+) {
+  throw new Error('install review root contract invalid')
+}
+const reviewNames = new Set()
+for (const row of installReview.repositories) {
+  const key = typeof row?.repository === 'string' ? row.repository.toLowerCase() : ''
+  if (!registryNames.has(key)) throw new Error('install review references an unpublished repository: ' + row?.repository)
+  if (reviewNames.has(key)) throw new Error('install review repeats repository ' + row.repository)
+  reviewNames.add(key)
+  if (!['needs-review', 'auto-resolved'].includes(row.status)) throw new Error('install review status invalid')
+  if (!Array.isArray(row.reasons) || row.reasons.length === 0) throw new Error('install review reasons missing')
+  if (row.status === 'needs-review' && row.mode !== 'guided') throw new Error('needs-review repository must remain guided')
+  if (row.status === 'auto-resolved' && row.mode !== 'automatic') throw new Error('auto-resolved repository must be automatic')
+  if (
+    !Array.isArray(row.artifactGroups) ||
+    typeof row.readme?.found !== 'boolean' ||
+    !Array.isArray(row.readme.verifiedGitHubRepositories) ||
+    !Array.isArray(row.readme.unverifiedGitHubRepositories)
+  ) {
+    throw new Error('install review evidence missing: ' + row.repository)
+  }
+}
+console.log('install review contract valid: ' + installReview.repositories.length + ' audited classifications')
+
 console.log('VERIFY OK')

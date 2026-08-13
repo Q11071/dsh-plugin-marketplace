@@ -34,7 +34,7 @@ jobs:
       - name: Commit Registry changes
         shell: bash
         run: |
-          git add registry/plugins.json registry/rejected.json registry/state.json
+          git add registry/plugins.json registry/rejected.json registry/state.json registry/install-review.json
           if git diff --cached --quiet; then
             echo "Registry is already current."
             exit 0

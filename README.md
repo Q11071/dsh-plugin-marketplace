@@ -12,7 +12,8 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
    指向的 YAML 文件及 loader entry；不会安装依赖，也不会执行第三方代码或
    YAML 中的 `!!js` 内容。
 4. 验证成功的仓库进入 `registry/plugins.json`；失败原因写入
-   `registry/rejected.json`，不会出现在市场中。
+   `registry/rejected.json`，不会出现在市场中。安装证据有冲突或不足时，插件仍
+   可展示，但只提供引导安装，并写入 `registry/install-review.json` 等待复核。
 5. 未变化且已经验证/拒绝的仓库复用上次结果；有新提交、首次发现或上次网络
    失败的仓库会重新验证。被移除 topic、归档或删除的仓库会退出公开列表。
 6. Registry 同时记录安装来源、兼容 Profile、构建授权、重启和人工步骤；客户端
@@ -20,8 +21,9 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
 7. 自动安装仍会在执行前读取 Registry 和仓库内容，并只允许执行 Registry 验证的
    精确来源。目标 Profile 不明、需要构建授权或额外步骤的插件只显示安装说明。
 
-`registry/state.json` 是增量扫描状态。公开 Registry 的格式由
-`registry/schema.json` 描述。
+`registry/state.json` 是增量扫描状态。`registry/install-review.json` 记录安装
+分类所依据的 README 命令、Profile、生命周期脚本和已提交运行产物，便于定位
+不同仓库造成的潜在假阳性。公开 Registry 的格式由 `registry/schema.json` 描述。
 
 ## 安装市场插件
 
@@ -63,7 +65,7 @@ dsh web --profile web
 
 `.github/workflows/daily-registry-scan.yml` 默认每天 UTC 02:17 执行，也支持
 在 Actions 页面手动运行。工作流使用仓库自动提供的 `GITHUB_TOKEN`，验证后只
-提交三个 Registry JSON 文件。按 GitHub 当前计费规则，公开仓库使用标准
+提交四个 Registry JSON 文件。按 GitHub 当前计费规则，公开仓库使用标准
 GitHub-hosted runner 免费；私有仓库会消耗账户套餐包含的分钟数，超额后计费。
 参见 [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)。
 
@@ -91,9 +93,20 @@ pnpm registry:scan
 - patch 至少插入一个 `name` 等于该 npm 包名的 loader entry；
 - 所有被发布字段和精确 commit 均通过 Registry schema 校验。
 
-Registry v2 的每个插件还包含 `install` 字段。扫描器默认把带 Web client、没有
-`preinstall` / `install` / `postinstall` / `prepare` 生命周期脚本的插件识别为
-当前 `web` Profile 可自动安装；其余插件采用引导安装。插件作者可以在
+Registry v2 的每个插件还包含 `install` 字段。安装分类不是只看某一个文件或
+关键词，而是交叉检查：
+
+- `package.json` 中的 host/client 入口及可选 `dsh.marketplace` 声明；
+- Git tree 中是否真的提交了入口对应的运行产物；
+- README 是否明确给出 `dsh plugin --profile ... add github:...`；
+- README 使用旧 owner/别名时，其 GitHub repository ID 是否与候选仓库一致；
+- `preinstall` / `install` / `postinstall` / `prepare` 生命周期脚本；
+- README Profile 与 manifest 声明是否冲突。
+
+`preinstall`、`install`、`postinstall` 或缺少运行产物时始终要求构建授权。
+`prepare` 本身不再直接判为引导安装：只有运行产物已提交、且作者 README 明确
+记录 GitHub 安装命令时才可自动安装。证据缺失或互相矛盾的仓库保持引导安装，
+并进入 `registry/install-review.json`，不会靠猜测放开一键安装。插件作者也可以在
 `package.json` 中声明更明确的信息：
 
 ```json

@@ -4,6 +4,8 @@ import { parseDocument } from 'yaml'
 
 export const MAX_MANIFEST_BYTES = 256 * 1024
 export const MAX_PATCH_BYTES = 64 * 1024
+export const MAX_README_BYTES = 256 * 1024
+export const INSTALL_CLASSIFIER_VERSION = 5
 
 /** Candidate is structurally not a DSH bundle. */
 export class InvalidCandidateError extends Error {
@@ -66,6 +68,7 @@ export function validateManifest(text) {
   const lifecycleScripts = plainObject(value.scripts)
     ? ['preinstall', 'install', 'postinstall', 'prepare'].filter(name => typeof value.scripts[name] === 'string')
     : []
+  const runtimeEntryGroups = packageRuntimeEntryGroups(value, client !== undefined)
   const marketplace = dsh.marketplace
   let declaredProfiles
   let declaredManualSteps
@@ -94,19 +97,104 @@ export function validateManifest(text) {
     declaredRequiresRestart = marketplace.requiresRestart
     declaredRequiresBuildApproval = marketplace.requiresBuildApproval
   }
-  const profiles = declaredProfiles ?? (client === undefined ? [] : ['web'])
-  const requiresBuildApproval = lifecycleScripts.length > 0 || declaredRequiresBuildApproval === true
-  const manualSteps = declaredManualSteps ?? (profiles.length === 0 || requiresBuildApproval)
   return {
     packageName: name,
     version,
     bundlePatch: dsh.bundle.patch,
     hasClient: client !== undefined,
     installHints: {
-      profiles,
-      requiresBuildApproval,
+      declaredProfiles,
+      declaredRequiresBuildApproval,
       requiresRestart: declaredRequiresRestart ?? true,
-      manualSteps,
+      declaredManualSteps,
+      lifecycleScripts,
+      runtimeEntryGroups,
+    },
+  }
+}
+
+/**
+ * Classify installability from independent static evidence. A prepare script
+ * is not sufficient to require a build when the runtime files are committed
+ * and the author explicitly documents GitHub installation for this plugin.
+ */
+export function classifyInstall(identity, repository, treePaths, readmeText, verifiedGitHubRepositories = [repository]) {
+  const hints = identity.installHints
+  const files = new Set(treePaths.map(normalizeRepoPath))
+  const artifactGroups = hints.runtimeEntryGroups.map(group => {
+    const found = group.paths.find(candidate => files.has(normalizeRepoPath(candidate))) ?? null
+    return { label: group.label, paths: group.paths, found }
+  })
+  const runtimeArtifactsCommitted = artifactGroups.length > 0 && artifactGroups.every(group => group.found !== null)
+  const readme = readmeInstallEvidence(readmeText ?? '', identity.packageName, verifiedGitHubRepositories)
+  const fallbackProfiles = identity.hasClient ? ['web'] : []
+  const profiles = hints.declaredProfiles ?? (readme.profiles.length > 0 ? readme.profiles : fallbackProfiles)
+  const profileSource = hints.declaredProfiles !== undefined
+    ? 'manifest'
+    : readme.profiles.length > 0
+      ? 'readme'
+      : identity.hasClient
+        ? 'client'
+        : 'unknown'
+  const hardLifecycleScripts = hints.lifecycleScripts.filter(name => name !== 'prepare')
+  const hasPrepare = hints.lifecycleScripts.includes('prepare')
+  const prepareNeedsApproval = hasPrepare
+    && runtimeArtifactsCommitted
+    && !readme.directGitHub
+    && hints.declaredRequiresBuildApproval !== false
+  const requiresBuildApproval = hardLifecycleScripts.length > 0
+    || !runtimeArtifactsCommitted
+    || hints.declaredRequiresBuildApproval === true
+    || prepareNeedsApproval
+  const manualSteps = requiresBuildApproval
+    || (hints.declaredManualSteps ?? profiles.length === 0)
+  const reviewReasons = []
+  const resolvedReasons = []
+  if (hasPrepare && runtimeArtifactsCommitted && readme.directGitHub && !requiresBuildApproval) {
+    resolvedReasons.push('prepare-present-but-author-documented-github-install-and-runtime-artifacts-are-committed')
+  }
+  if (readme.directGitHub && !runtimeArtifactsCommitted) {
+    reviewReasons.push('readme-documents-github-install-but-runtime-entry-artifacts-are-missing')
+  }
+  if (hasPrepare && runtimeArtifactsCommitted && !readme.directGitHub && hints.declaredRequiresBuildApproval === undefined) {
+    reviewReasons.push('prepare-and-prebuilt-runtime-found-but-readme-does-not-confirm-github-install')
+  }
+  if (readme.profiles.length > 0 && hints.declaredProfiles !== undefined
+    && !sameStringSet(readme.profiles, hints.declaredProfiles)) {
+    reviewReasons.push('readme-profiles-conflict-with-dsh-marketplace-profiles')
+  }
+  if (readme.unverifiedGitHubRepositories.length > 0) {
+    reviewReasons.push('readme-github-repository-owner-does-not-resolve-to-this-candidate')
+  }
+  const requiresManualReview = reviewReasons.length > 0
+  return {
+    identity: {
+      ...identity,
+      installHints: {
+        profiles,
+        requiresBuildApproval,
+        requiresRestart: hints.requiresRestart,
+        manualSteps: manualSteps || requiresManualReview,
+      },
+    },
+    inspection: {
+      classifierVersion: INSTALL_CLASSIFIER_VERSION,
+      profileSource,
+      profiles,
+      lifecycleScripts: hints.lifecycleScripts,
+      artifactGroups,
+      runtimeArtifactsCommitted,
+      readme: {
+        found: readmeText !== null,
+        directRemote: readme.directRemote,
+        directGitHub: readme.directGitHub,
+        profiles: readme.profiles,
+        specs: readme.specs,
+        verifiedGitHubRepositories: [...verifiedGitHubRepositories].sort(),
+        unverifiedGitHubRepositories: readme.unverifiedGitHubRepositories,
+      },
+      reviewReasons,
+      resolvedReasons,
     },
   }
 }
@@ -238,11 +326,133 @@ export function candidateFingerprint(candidate, installOverride = undefined) {
   // Repository metadata such as stars or topics can change `updated_at`
   // without changing plugin files. Code validation only needs a new push or
   // a different default branch to invalidate the previous result.
-  return [candidate.default_branch, candidate.pushed_at, JSON.stringify(installOverride ?? null)].join('\n')
+  return [
+    candidate.default_branch,
+    candidate.pushed_at,
+    JSON.stringify(installOverride ?? null),
+    'install-classifier-v' + String(INSTALL_CLASSIFIER_VERSION),
+  ].join('\n')
 }
 
 export function encodeRawPath(path) {
   return path.split('/').filter(segment => segment !== '.').map(encodeURIComponent).join('/')
+}
+
+function packageRuntimeEntryGroups(manifest, hasClient) {
+  const groups = []
+  const exportsValue = manifest.exports
+  let rootExport
+  if (typeof exportsValue === 'string' || Array.isArray(exportsValue)) {
+    rootExport = exportsValue
+  } else if (plainObject(exportsValue)) {
+    rootExport = exportsValue['.'] ?? (Object.keys(exportsValue).some(key => key.startsWith('.')) ? undefined : exportsValue)
+  }
+  const rootPaths = runtimePaths(rootExport)
+  if (rootPaths.length === 0 && typeof manifest.main === 'string') rootPaths.push(...runtimePaths(manifest.main))
+  if (rootPaths.length === 0) rootPaths.push('index.js', 'index.mjs', 'index.cjs')
+  groups.push({ label: 'host', paths: unique(rootPaths) })
+  if (hasClient) {
+    const clientExport = plainObject(exportsValue) ? exportsValue['./client'] : undefined
+    groups.push({ label: 'client', paths: unique(runtimePaths(clientExport)) })
+  }
+  return groups
+}
+
+function runtimePaths(value) {
+  if (typeof value === 'string') {
+    if (!safePatchPath(value) || value.includes('*')) return []
+    const normalized = normalizeRepoPath(value)
+    return normalized === '' ? [] : [normalized]
+  }
+  if (Array.isArray(value)) return value.flatMap(runtimePaths)
+  if (!plainObject(value)) return []
+  return Object.entries(value)
+    .filter(([condition]) => condition !== 'types')
+    .flatMap(([, target]) => runtimePaths(target))
+}
+
+export function readmeGitHubRepositories(text) {
+  const repositories = []
+  for (const command of readmeInstallCommands(text)) {
+    const repository = githubRepositoryFromSpec(command.spec)
+    if (repository !== null && !repositories.some(value => value.toLocaleLowerCase() === repository.toLocaleLowerCase())) {
+      repositories.push(repository)
+    }
+  }
+  return repositories
+}
+
+function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
+  const profiles = new Set()
+  const specs = []
+  const unverifiedGitHubRepositories = new Set()
+  let directRemote = false
+  let directGitHub = false
+  const allowedRepositories = new Set(verifiedGitHubRepositories.map(value => value.toLocaleLowerCase()))
+  const expectedRepositoryNames = new Set(
+    verifiedGitHubRepositories.map(value => value.split('/')[1]?.toLocaleLowerCase()).filter(Boolean),
+  )
+  for (const { profile, spec } of readmeInstallCommands(text)) {
+    const github = githubRepositoryFromSpec(spec)
+    if (github !== null
+      && expectedRepositoryNames.has(github.split('/')[1]?.toLocaleLowerCase())
+      && !allowedRepositories.has(github.toLocaleLowerCase())) {
+      unverifiedGitHubRepositories.add(github)
+    }
+    const kind = matchingInstallSpec(spec, packageName, allowedRepositories)
+    if (kind === null) continue
+    profiles.add(profile)
+    directRemote = directRemote || kind === 'github' || kind === 'npm' || kind === 'tarball'
+    directGitHub = directGitHub || kind === 'github'
+    if (specs.length < 8 && !specs.includes(spec)) specs.push(spec)
+  }
+  return {
+    profiles: [...profiles].sort(),
+    specs,
+    directRemote,
+    directGitHub,
+    unverifiedGitHubRepositories: [...unverifiedGitHubRepositories].sort(),
+  }
+}
+
+function readmeInstallCommands(text) {
+  const commands = []
+  const expression = /\bdsh\s+plugin\s+--profile(?:\s+|=)(?:"([^"]+)"|'([^']+)'|([^\s`]+))\s+add\s+(?:"([^"]+)"|'([^']+)'|([^\s`]+))/giu
+  for (const match of text.matchAll(expression)) {
+    const profile = match[1] ?? match[2] ?? match[3] ?? ''
+    let spec = match[4] ?? match[5] ?? match[6] ?? ''
+    spec = spec.replace(/[),.;]+$/, '')
+    if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(profile)) continue
+    commands.push({ profile, spec })
+  }
+  return commands
+}
+
+function matchingInstallSpec(spec, packageName, allowedRepositories) {
+  const lower = spec.toLocaleLowerCase()
+  const github = githubRepositoryFromSpec(spec)
+  if (github !== null) return allowedRepositories.has(github.toLocaleLowerCase()) ? 'github' : null
+  if (lower === packageName.toLocaleLowerCase() || lower.startsWith(packageName.toLocaleLowerCase() + '@')) return 'npm'
+  if (/^https:\/\/.+\.tgz(?:[?#].*)?$/i.test(spec)) return 'tarball'
+  return null
+}
+
+function githubRepositoryFromSpec(spec) {
+  const github = /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)([^/#]+)\/([^/#&]+)(?:[&#].*)?$/i.exec(spec)
+  if (github === null) return null
+  return github[1] + '/' + github[2].replace(/\.git$/i, '')
+}
+
+function normalizeRepoPath(value) {
+  return String(value).replace(/^\.\//, '').replace(/\\/g, '/')
+}
+
+function unique(values) {
+  return [...new Set(values)]
+}
+
+function sameStringSet(left, right) {
+  return left.length === right.length && [...left].sort().every((value, index) => value === [...right].sort()[index])
 }
 
 function plainObject(value) {
