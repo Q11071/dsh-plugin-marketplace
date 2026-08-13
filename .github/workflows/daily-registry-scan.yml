@@ -1,0 +1,45 @@
+name: Refresh verified plugin Registry
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dsh-plugin-registry-refresh
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm registry:test
+      - name: Discover and validate candidates
+        run: pnpm registry:scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit Registry changes
+        shell: bash
+        run: |
+          git add registry/plugins.json registry/rejected.json registry/state.json
+          if git diff --cached --quiet; then
+            echo "Registry is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(registry): refresh verified plugins"
+          git push

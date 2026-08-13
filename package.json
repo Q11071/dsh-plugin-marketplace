@@ -1,0 +1,82 @@
+{
+  "name": "dsh-plugin-marketplace",
+  "description": "GitHub dsh-plugin marketplace for DSH — search, install, update and uninstall plugins inside Web Settings",
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.1.2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YELEBAI/dsh-plugin-marketplace.git"
+  },
+  "homepage": "https://github.com/YELEBAI/dsh-plugin-marketplace#readme",
+  "bugs": {
+    "url": "https://github.com/YELEBAI/dsh-plugin-marketplace/issues"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.d.ts",
+      "default": "./lib/typert.js"
+    },
+    "./remote": {
+      "types": "./lib/remote.d.ts",
+      "default": "./lib/remote.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/**",
+    "registry/plugins.json",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "verify": "node scripts/verify.mjs",
+    "registry:scan": "node scripts/registry-scan.mjs",
+    "registry:test": "node scripts/registry-test.mjs"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-app-boot": "^0.1.0-rc.5",
+    "@deepseek-ai/dsh-typert-protocol": "^0.1.0-rc.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.7.0",
+    "yaml": "^2.8.1"
+  }
+}

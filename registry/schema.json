@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dsh:plugin-registry:v1",
+  "title": "DSH verified plugin registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "plugins"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "owner", "repo", "fullName", "description", "stars", "forks",
+          "openIssues", "language", "license", "updatedAt", "defaultBranch",
+          "verifiedCommit", "htmlUrl", "topics", "packageName", "version",
+          "bundlePatch", "hasClient", "verifiedAt"
+        ],
+        "properties": {
+          "owner": { "type": "string", "minLength": 1 },
+          "repo": { "type": "string", "minLength": 1 },
+          "fullName": { "type": "string", "pattern": "^[\\w.-]+/[\\w.-]+$" },
+          "description": { "type": ["string", "null"] },
+          "stars": { "type": "integer", "minimum": 0 },
+          "forks": { "type": "integer", "minimum": 0 },
+          "openIssues": { "type": "integer", "minimum": 0 },
+          "language": { "type": ["string", "null"] },
+          "license": { "type": ["string", "null"] },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "defaultBranch": { "type": "string", "minLength": 1 },
+          "verifiedCommit": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+          "htmlUrl": { "type": "string", "format": "uri" },
+          "topics": { "type": "array", "items": { "type": "string" } },
+          "packageName": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 },
+          "bundlePatch": { "type": "string", "minLength": 1 },
+          "hasClient": { "type": "boolean" },
+          "verifiedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+# dsh-plugin-marketplace bundle patch: one dual-face row.
+# The host half (package main export) provides the 'marketplace' Remote
+# service (GitHub search, pnpm-backed install jobs, profile reconciliation);
+# the client half (the ./client export, discovered via the dsh.client
+# manifest) registers the 'Plugin marketplace' tab in Web Settings.
+- insert:
+    - id: plugin-marketplace
+      name: dsh-plugin-marketplace
