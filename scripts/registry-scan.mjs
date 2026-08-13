@@ -197,7 +197,7 @@ async function validateCandidate(candidate, installOverride) {
 async function apiJson(url, candidateRequest = false) {
   let response
   try {
-    response = await fetch(url, { headers: apiHeaders, signal: AbortSignal.timeout(20_000) })
+    response = await fetchWithRetry(url, { headers: apiHeaders }, 3)
   } catch (error) {
     if (candidateRequest) throw new RetryCandidateError('GitHub API request failed: ' + messageOf(error))
     throw error
@@ -222,7 +222,7 @@ async function apiJson(url, candidateRequest = false) {
 async function rawText(url, maximum, label) {
   let response
   try {
-    response = await fetch(url, { headers: rawHeaders, signal: AbortSignal.timeout(20_000) })
+    response = await fetchWithRetry(url, { headers: rawHeaders }, 2)
   } catch (error) {
     throw new RetryCandidateError('could not read ' + label + ': ' + messageOf(error))
   }
@@ -259,6 +259,21 @@ async function rawText(url, maximum, label) {
   } catch {
     throw new InvalidCandidateError(label + ' is not valid UTF-8')
   }
+}
+
+async function fetchWithRetry(url, options, attempts) {
+  let lastError
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, { ...options, signal: AbortSignal.timeout(20_000) })
+      if (response.status < 500 || attempt === attempts) return response
+      await response.body?.cancel()
+    } catch (error) {
+      lastError = error
+    }
+    if (attempt < attempts) await new Promise(resolve => setTimeout(resolve, 250 * (2 ** (attempt - 1))))
+  }
+  throw lastError
 }
 
 function stateRow(candidate, fingerprint, status, reason) {
