@@ -10,7 +10,18 @@ import type {
 
 const PAGE_SIZE = 30
 
-const registryPluginSchema = z.object({
+const installSchema = z.object({
+  mode: z.union([z.literal('automatic'), z.literal('guided')]),
+  source: z.union([z.literal('github'), z.literal('npm'), z.literal('tarball'), z.literal('manual')]),
+  spec: z.string(),
+  profiles: z.array(z.string().regex(/^[a-z0-9][a-z0-9._-]{0,63}$/)),
+  requiresBuildApproval: z.boolean(),
+  requiresRestart: z.boolean(),
+  manualSteps: z.boolean(),
+  instructionsUrl: z.url(),
+}).strict()
+
+const registryPluginBaseSchema = z.object({
   owner: z.string().min(1),
   repo: z.string().min(1),
   fullName: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
@@ -30,12 +41,18 @@ const registryPluginSchema = z.object({
   bundlePatch: z.string().min(1),
   hasClient: z.boolean(),
   verifiedAt: z.iso.datetime(),
-}).strict()
+})
 
-const registrySchema = z.object({
+const registryV1Schema = z.object({
   schemaVersion: z.literal(1),
   generatedAt: z.iso.datetime(),
-  plugins: z.array(registryPluginSchema),
+  plugins: z.array(registryPluginBaseSchema.strict()),
+}).strict()
+
+const registryV2Schema = z.object({
+  schemaVersion: z.literal(2),
+  generatedAt: z.iso.datetime(),
+  plugins: z.array(registryPluginBaseSchema.extend({ install: installSchema }).strict()),
 }).strict()
 
 /** Loader schema for Registry access policy. */
@@ -114,6 +131,11 @@ export class RegistryClient {
     return (await this.load()).plugins.find(plugin => plugin.fullName.toLocaleLowerCase() === normalized)
   }
 
+  /** Find the Registry owner of one installed npm package name. */
+  async findByPackage(packageName: string): Promise<MarketplaceRegistryPlugin | undefined> {
+    return (await this.load()).plugins.find(plugin => plugin.packageName === packageName)
+  }
+
   private async load(): Promise<MarketplaceRegistry> {
     if (this.cache !== undefined && Date.now() < this.cache.expiresAt) return this.cache.registry
     try {
@@ -154,15 +176,52 @@ export class RegistryClient {
     } else {
       throw new Error(`Unsupported Registry URL protocol ${JSON.stringify(url.protocol)}`)
     }
-    const registry = registrySchema.parse(raw) as MarketplaceRegistry
+    const registry = normalizeRegistry(raw)
     const names = new Set<string>()
     for (const plugin of registry.plugins) {
       const key = plugin.fullName.toLocaleLowerCase()
       if (names.has(key)) throw new Error(`Registry repeats repository ${JSON.stringify(plugin.fullName)}`)
       names.add(key)
+      if (plugin.install.mode === 'automatic') {
+        const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
+        if (plugin.install.source !== 'github' || plugin.install.spec.toLocaleLowerCase() !== expected.toLocaleLowerCase()) {
+          throw new Error(`Registry automatic install is not pinned to ${JSON.stringify(expected)}`)
+        }
+      }
     }
     this.cache = { registry, etag, expiresAt: Date.now() + this.cacheMs, source }
     return registry
+  }
+}
+
+/** Continue accepting v1 registries while remote mirrors migrate to install metadata. */
+function normalizeRegistry(raw: unknown): MarketplaceRegistry {
+  const version = typeof raw === 'object' && raw !== null && 'schemaVersion' in raw
+    ? (raw as { schemaVersion?: unknown }).schemaVersion
+    : undefined
+  if (version === 2) return registryV2Schema.parse(raw) as MarketplaceRegistry
+  const legacy = registryV1Schema.parse(raw)
+  return {
+    schemaVersion: 2,
+    generatedAt: legacy.generatedAt,
+    plugins: legacy.plugins.map(plugin => ({
+      ...plugin,
+      install: legacyInstall(plugin),
+    })),
+  }
+}
+
+function legacyInstall(plugin: z.output<typeof registryPluginBaseSchema>): MarketplaceRegistryPlugin['install'] {
+  const profiles = plugin.hasClient ? ['web'] : []
+  return {
+    mode: profiles.length > 0 ? 'automatic' : 'guided',
+    source: 'github',
+    spec: 'github:' + plugin.fullName + '#' + plugin.verifiedCommit,
+    profiles,
+    requiresBuildApproval: false,
+    requiresRestart: true,
+    manualSteps: profiles.length === 0,
+    instructionsUrl: plugin.htmlUrl + '#readme',
   }
 }
 

@@ -80,7 +80,7 @@ console.log('package manifest contract valid')
 
 // Bundled central Registry contract.
 const registry = JSON.parse(readFileSync(path.join(root, 'registry', 'plugins.json'), 'utf8'))
-if (registry.schemaVersion !== 1 || Number.isNaN(Date.parse(registry.generatedAt)) || !Array.isArray(registry.plugins)) {
+if (registry.schemaVersion !== 2 || Number.isNaN(Date.parse(registry.generatedAt)) || !Array.isArray(registry.plugins)) {
   throw new Error('bundled Registry root contract invalid')
 }
 const registryNames = new Set()
@@ -94,6 +94,15 @@ for (const plugin of registry.plugins) {
   if (typeof plugin.packageName !== 'string' || plugin.packageName === '') throw new Error('Registry packageName missing')
   if (typeof plugin.bundlePatch !== 'string' || plugin.bundlePatch === '') throw new Error('Registry bundlePatch missing')
   if (Number.isNaN(Date.parse(plugin.verifiedAt))) throw new Error('Registry verifiedAt invalid')
+  if (plugin.install === null || typeof plugin.install !== 'object') throw new Error('Registry install metadata missing')
+  if (!['automatic', 'guided'].includes(plugin.install.mode)) throw new Error('Registry install mode invalid')
+  if (!Array.isArray(plugin.install.profiles)) throw new Error('Registry install profiles invalid')
+  if (plugin.install.mode === 'automatic') {
+    const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
+    if (plugin.install.source !== 'github' || plugin.install.spec.toLowerCase() !== expected.toLowerCase()) {
+      throw new Error('automatic Registry install is not pinned to the verified GitHub commit: ' + plugin.fullName)
+    }
+  }
 }
 console.log('bundled Registry contract valid: ' + registry.plugins.length + ' verified plugins')
 

@@ -17,6 +17,7 @@ import type {
   MarketplaceJobStatusRequest,
   MarketplaceResult,
   MarketplacePluginDetails,
+  MarketplaceRegistryPlugin,
   MarketplaceSearchPage,
   MarketplaceSearchRequest,
   MarketplaceUninstallRequest,
@@ -119,7 +120,12 @@ export class MarketplaceService extends TypertRemoteService {
 
   @Remote('update')
   async update(request: MarketplaceInstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
-    return this.startJob('update', request.repo, request.ref ?? '', () => undefined)
+    return this.startJob('update', request.repo, request.ref ?? '', (packageName) => {
+      if (this.jobs.activeFor(packageName)) {
+        return fail('job-running', 'Another job is already running for ' + packageName + '.')
+      }
+      return undefined
+    })
   }
 
   @Remote('uninstall')
@@ -156,7 +162,26 @@ export class MarketplaceService extends TypertRemoteService {
   async installed(): Promise<MarketplaceResult<MarketplaceInstalled>> {
     try {
       const profile = profileLocation(this.ctx)
-      return ok({ entries: installedEntries(readProfileManifest(NAME, profile.dir), profile.dir) })
+      const entries = installedEntries(readProfileManifest(NAME, profile.dir), profile.dir)
+      await Promise.all(entries.map(async (entry) => {
+        const registered = await this.registry.findByPackage(entry.packageName)
+        if (registered === undefined) return
+        entry.registryRepo = registered.fullName
+        entry.availableVersion = registered.version
+        entry.verifiedCommit = registered.verifiedCommit
+        entry.install = registered.install
+        const versionOrder = compareSemver(registered.version, entry.version)
+        entry.updateAvailable = versionOrder > 0
+          || (versionOrder === 0
+            && registered.install.source === 'github'
+            && isGitHubSpec(entry.currentSpec)
+            && !entry.currentSpec.toLocaleLowerCase().includes(registered.verifiedCommit.toLocaleLowerCase()))
+        entry.canUpdate = registered.install.mode === 'automatic'
+          && registered.install.source === 'github'
+          && registered.install.profiles.includes(profile.name)
+          && registered.install.spec !== ''
+      }))
+      return ok({ profile: profile.name, entries })
     } catch (error) {
       return toFailure(error)
     }
@@ -196,13 +221,25 @@ export class MarketplaceService extends TypertRemoteService {
       if (gated !== undefined) return gated
       const profile = profileLocation(this.ctx)
       ensureProfile(profile.dir, profile.name)
+      if (registered.install.mode !== 'automatic'
+        || !registered.install.profiles.includes(profile.name)
+        || registered.install.spec === '') {
+        return fail('guided-install', 'This plugin needs its author\'s guided installation steps.', {
+          profile: profile.name,
+          supportedProfiles: registered.install.profiles,
+          instructionsUrl: registered.install.instructionsUrl,
+        })
+      }
       const before = readProfileManifest(NAME, profile.dir)
       if (kind === 'install' && before.dependencies?.[packageName] !== undefined) {
         return fail('already-installed', packageName + ' is already installed — use Update instead.')
       }
+      if (kind === 'update' && before.dependencies?.[packageName] === undefined) {
+        return fail('not-installed', packageName + ' is not installed in profile ' + profile.name + '.')
+      }
       const job = this.jobs.create(kind, packageName)
-      const spec = 'github:' + details.repo + '#' + details.resolvedRef
-      void this.drive(job, profile, ['add', spec], before)
+      const spec = executableSpec(registered)
+      void this.drive(job, profile, ['add', spec], before, registered.install.requiresRestart)
       return ok({ jobId: job.jobId })
     } catch (error) {
       return toFailure(error)
@@ -210,7 +247,13 @@ export class MarketplaceService extends TypertRemoteService {
   }
 
   /** Detached job body: pnpm → reconcile → settle; failures land in the job. */
-  private async drive(job: JobRecord, profile: ProfileLocation, args: string[], before: ReturnType<typeof readProfileManifest>): Promise<void> {
+  private async drive(
+    job: JobRecord,
+    profile: ProfileLocation,
+    args: string[],
+    before: ReturnType<typeof readProfileManifest>,
+    requiresRestart = true,
+  ): Promise<void> {
     try {
       this.jobs.phase(job, 'running')
       const code = await runPnpmJob(job, args, profile.dir, this.jobs)
@@ -225,7 +268,7 @@ export class MarketplaceService extends TypertRemoteService {
       const after = reconcileBundles(before, profile.dir)
       void after
       const version = installedVersion(job.packageName, profile.dir) ?? 'unknown'
-      this.jobs.settle(job, { packageName: job.packageName, version, requiresRestart: true })
+      this.jobs.settle(job, { packageName: job.packageName, version, requiresRestart })
     } catch (error) {
       this.jobs.fail(job, {
         code: 'install-failed',
@@ -233,6 +276,60 @@ export class MarketplaceService extends TypertRemoteService {
       })
     }
   }
+}
+
+function executableSpec(plugin: MarketplaceRegistryPlugin): string {
+  if (plugin.install.source === 'github') {
+    const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
+    if (plugin.install.spec.toLocaleLowerCase() !== expected.toLocaleLowerCase()) {
+      throw new RegistryError('Registry GitHub install spec does not match the verified repository commit.', {
+        repository: plugin.fullName,
+      })
+    }
+    return expected
+  }
+  throw new RegistryError('Only Registry entries pinned to an exact GitHub commit can be installed automatically.')
+}
+
+function isGitHubSpec(value: string): boolean {
+  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
+}
+
+/** Compare semver values without introducing a runtime dependency into the host bundle. */
+function compareSemver(left: string, right: string): number {
+  const parse = (value: string): { core: [number, number, number]; prerelease: string[] } | null => {
+    const match = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(value)
+    if (match === null) return null
+    return {
+      core: [Number(match[1]), Number(match[2]), Number(match[3])],
+      prerelease: match[4]?.split('.') ?? [],
+    }
+  }
+  const a = parse(left)
+  const b = parse(right)
+  if (a === null || b === null) return left === right ? 0 : -1
+  for (let index = 0; index < 3; index += 1) {
+    const av = a.core[index]!
+    const bv = b.core[index]!
+    if (av !== bv) return av > bv ? 1 : -1
+  }
+  if (a.prerelease.length === 0 || b.prerelease.length === 0) {
+    if (a.prerelease.length === b.prerelease.length) return 0
+    return a.prerelease.length === 0 ? 1 : -1
+  }
+  const maximum = Math.max(a.prerelease.length, b.prerelease.length)
+  for (let index = 0; index < maximum; index += 1) {
+    const av = a.prerelease[index]
+    const bv = b.prerelease[index]
+    if (av === undefined || bv === undefined) return av === undefined ? -1 : 1
+    if (av === bv) continue
+    const an = /^\d+$/.test(av)
+    const bn = /^\d+$/.test(bv)
+    if (an && bn) return Number(av) > Number(bv) ? 1 : -1
+    if (an !== bn) return an ? -1 : 1
+    return av.localeCompare(bv) > 0 ? 1 : -1
+  }
+  return 0
 }
 
 

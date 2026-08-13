@@ -35,9 +35,11 @@ const statePath = path.join(root, 'registry', 'state.json')
 const pluginsPath = path.join(root, 'registry', 'plugins.json')
 const rejectedPath = path.join(root, 'registry', 'rejected.json')
 const denylistPath = path.join(root, 'policy', 'denylist.json')
+const installOverridesPath = path.join(root, 'policy', 'install-overrides.json')
 
 const previousState = await readJson(statePath)
 const denylistDocument = await readJson(denylistPath)
+const installOverridesDocument = await readJson(installOverridesPath)
 const previous = plainObject(previousState.repositories) ? previousState.repositories : {}
 const denylist = new Map((Array.isArray(denylistDocument.repositories) ? denylistDocument.repositories : []).map((entry) => {
   if (typeof entry === 'string') return [entry.toLocaleLowerCase(), 'manually blocked']
@@ -46,6 +48,7 @@ const denylist = new Map((Array.isArray(denylistDocument.repositories) ? denylis
   }
   throw new Error('policy/denylist.json contains an invalid repository entry')
 }))
+const installOverrides = installOverrideMap(installOverridesDocument)
 
 console.log('discovering repositories with topic:dsh-plugin')
 const candidates = await discoverAll()
@@ -56,14 +59,19 @@ let validated = 0
 let reused = 0
 for (const candidate of candidates) {
   const key = candidate.full_name.toLocaleLowerCase()
-  const fingerprint = candidateFingerprint(candidate)
+  const installOverride = installOverrides.get(key)
+  const fingerprint = candidateFingerprint(candidate, installOverride)
   const old = plainObject(previous[key]) ? previous[key] : undefined
   const blockedReason = denylist.get(key)
   if (blockedReason !== undefined) {
     next[key] = stateRow(candidate, fingerprint, 'blocked', blockedReason)
     continue
   }
-  if (old !== undefined && sameFingerprint(old.fingerprint, fingerprint) && old.status === 'verified' && plainObject(old.plugin)) {
+  if (old !== undefined
+    && sameFingerprint(old.fingerprint, fingerprint)
+    && old.status === 'verified'
+    && plainObject(old.plugin)
+    && validInstallMetadata(old.plugin.install)) {
     next[key] = {
       ...stateRow(candidate, fingerprint, 'verified', null),
       checkedAt: old.checkedAt,
@@ -79,7 +87,7 @@ for (const candidate of candidates) {
     continue
   }
   try {
-    const result = await validateCandidate(candidate)
+    const result = await validateCandidate(candidate, installOverride)
     next[key] = {
       ...stateRow(candidate, fingerprint, 'verified', null),
       commit: result.commit,
@@ -117,8 +125,8 @@ const rejected = Object.values(next)
   }))
   .sort((left, right) => left.repository.localeCompare(right.repository))
 
-await atomicJson(statePath, { schemaVersion: 1, generatedAt: now, repositories: sortObject(next) })
-await atomicJson(pluginsPath, { schemaVersion: 1, generatedAt: now, plugins })
+await atomicJson(statePath, { schemaVersion: 2, generatedAt: now, repositories: sortObject(next) })
+await atomicJson(pluginsPath, { schemaVersion: 2, generatedAt: now, plugins })
 await atomicJson(rejectedPath, { schemaVersion: 1, generatedAt: now, repositories: rejected })
 console.log('published ' + String(plugins.length) + ' verified plugins; ' + String(rejected.length) + ' hidden; reused ' + String(reused))
 
@@ -166,7 +174,7 @@ async function searchPage(query, page) {
   return { totalCount: integer(response.total_count), items }
 }
 
-async function validateCandidate(candidate) {
+async function validateCandidate(candidate, installOverride) {
   const commitResponse = await apiJson(new URL(
     'https://api.github.com/repos/' + candidate.full_name + '/commits/' + encodeURIComponent(candidate.default_branch),
   ), true)
@@ -183,7 +191,7 @@ async function validateCandidate(candidate) {
     identity.bundlePatch,
   )
   validateBundlePatch(patchText, identity.packageName)
-  return { commit, plugin: verifiedPlugin(candidate, commit, identity, now) }
+  return { commit, plugin: verifiedPlugin(candidate, commit, identity, now, installOverride) }
 }
 
 async function apiJson(url, candidateRequest = false) {
@@ -274,10 +282,15 @@ function dedupe(rows) {
     .sort((left, right) => left.full_name.localeCompare(right.full_name))
 }
 
-/** Accept the previous three-line fingerprint once while migrating it. */
+/** Accept the legacy two-line fingerprint once when no install override exists. */
 function sameFingerprint(previousFingerprint, currentFingerprint) {
   if (typeof previousFingerprint !== 'string') return false
-  return previousFingerprint.split('\n').slice(0, 2).join('\n') === currentFingerprint
+  const previousParts = previousFingerprint.split('\n')
+  const currentParts = currentFingerprint.split('\n')
+  if (previousParts.length === 2 && currentParts[2] === 'null') {
+    return previousFingerprint === currentParts.slice(0, 2).join('\n')
+  }
+  return previousFingerprint === currentFingerprint
 }
 
 async function readJson(file) {
@@ -304,6 +317,41 @@ function integer(value) {
 
 function plainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function validInstallMetadata(value) {
+  return plainObject(value)
+    && (value.mode === 'automatic' || value.mode === 'guided')
+    && typeof value.spec === 'string'
+    && Array.isArray(value.profiles)
+    && typeof value.instructionsUrl === 'string'
+}
+
+function installOverrideMap(document) {
+  if (!plainObject(document) || document.schemaVersion !== 1 || !plainObject(document.repositories)) {
+    throw new Error('policy/install-overrides.json has an invalid root object')
+  }
+  const result = new Map()
+  for (const [repo, value] of Object.entries(document.repositories)) {
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !plainObject(value)) {
+      throw new Error('invalid install override for ' + repo)
+    }
+    const allowed = new Set(['source', 'spec', 'profiles', 'requiresBuildApproval', 'requiresRestart', 'manualSteps', 'instructionsUrl'])
+    if (Object.keys(value).some(key => !allowed.has(key))) throw new Error('unknown install override field for ' + repo)
+    if (value.source !== undefined && !['github', 'npm', 'tarball', 'manual'].includes(value.source)) throw new Error('invalid install source for ' + repo)
+    if (value.spec !== undefined && typeof value.spec !== 'string') throw new Error('invalid install spec for ' + repo)
+    if (value.profiles !== undefined && (!Array.isArray(value.profiles) || value.profiles.some(profile => typeof profile !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,63}$/.test(profile)))) {
+      throw new Error('invalid install profiles for ' + repo)
+    }
+    for (const field of ['requiresBuildApproval', 'requiresRestart', 'manualSteps']) {
+      if (value[field] !== undefined && typeof value[field] !== 'boolean') throw new Error('invalid ' + field + ' for ' + repo)
+    }
+    if (value.instructionsUrl !== undefined) {
+      if (typeof value.instructionsUrl !== 'string' || new URL(value.instructionsUrl).protocol !== 'https:') throw new Error('invalid instructionsUrl for ' + repo)
+    }
+    result.set(repo.toLocaleLowerCase(), value)
+  }
+  return result
 }
 
 function messageOf(error) {

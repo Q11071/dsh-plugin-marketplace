@@ -15,7 +15,10 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
    `registry/rejected.json`，不会出现在市场中。
 5. 未变化且已经验证/拒绝的仓库复用上次结果；有新提交、首次发现或上次网络
    失败的仓库会重新验证。被移除 topic、归档或删除的仓库会退出公开列表。
-6. 客户端安装前再次读取 Registry，并只允许安装 Registry 记录的精确 commit。
+6. Registry 同时记录安装来源、兼容 Profile、构建授权、重启和人工步骤；客户端
+   只对当前 Profile 中满足自动安装条件的插件开放一键安装。
+7. 自动安装仍会在执行前读取 Registry 和仓库内容，并只允许执行 Registry 验证的
+   精确来源。目标 Profile 不明、需要构建授权或额外步骤的插件只显示安装说明。
 
 `registry/state.json` 是增量扫描状态。公开 Registry 的格式由
 `registry/schema.json` 描述。
@@ -23,7 +26,7 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
 ## 安装市场插件
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.1.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.2.0
 ```
 
 本地开发安装：
@@ -32,7 +35,9 @@ dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.1.0
 dsh plugin --profile web add D:/path/to/dsh_Market
 ```
 
-重启 DSH 后打开“设置 → 插件 → 插件市场”。npm 包内自带构建后的 `lib/`
+重启 DSH 后打开“设置 → 插件 → 插件市场”。市场内包含“插件市场”和“已安装插件”
+两个子页面；后者读取当前运行 Profile，可检查 Registry 更新、执行更新和卸载。
+npm 包内自带构建后的 `lib/`
 和当次发布的 Registry 快照，因此远程 Registry 暂时不可用时仍可读取快照。
 
 ## 指定中心 Registry
@@ -85,6 +90,28 @@ pnpm registry:scan
 - bundle patch 是有效 YAML 操作数组；
 - patch 至少插入一个 `name` 等于该 npm 包名的 loader entry；
 - 所有被发布字段和精确 commit 均通过 Registry schema 校验。
+
+Registry v2 的每个插件还包含 `install` 字段。扫描器默认把带 Web client、没有
+`preinstall` / `install` / `postinstall` / `prepare` 生命周期脚本的插件识别为
+当前 `web` Profile 可自动安装；其余插件采用引导安装。插件作者可以在
+`package.json` 中声明更明确的信息：
+
+```json
+{
+  "dsh": {
+    "marketplace": {
+      "profiles": ["web"],
+      "requiresBuildApproval": false,
+      "requiresRestart": true,
+      "manualSteps": false
+    }
+  }
+}
+```
+
+中心 Registry 可通过 `policy/install-overrides.json` 为已核对官方 README 的仓库
+补充 npm、专用 Profile 或人工安装信息。npm、tarball 和 manual 来源默认只提供
+引导说明；当前自动执行限定为与验证 commit 完全一致的 GitHub spec。
 
 这能挡住错误 topic、普通仓库和结构不完整的伪插件，但不能证明插件代码本身
 无恶意。安装仍意味着插件在下一次启动后拥有本机进程权限，因此 UI 保留风险确认。

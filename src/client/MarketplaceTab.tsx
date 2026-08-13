@@ -11,10 +11,11 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
+  MarketplaceInstalled,
   MarketplaceInstalledEntry,
   MarketplaceJobStatus,
   MarketplacePluginDetails,
-  MarketplaceRepoSummary,
+  MarketplaceRegistryPlugin,
   MarketplaceSearchPage,
 } from '../types.ts'
 import type { PluginMarketplaceLocaleKey } from './locales.ts'
@@ -27,7 +28,7 @@ export interface MarketplaceTabInjected {
   update: (repo: string, ref: string) => Promise<string>
   uninstall: (packageName: string) => Promise<string>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
-  installed: () => Promise<MarketplaceInstalledEntry[]>
+  installed: () => Promise<MarketplaceInstalled>
 }
 
 /** Full component props assembled by the Settings slot renderer. */
@@ -48,12 +49,16 @@ type ConfirmRequest = {
   packageName: string
 }
 
+type Subpage = 'catalog' | 'installed'
+
 const POLL_MS = 700
 const DEBOUNCE_MS = 400
 const RESULT_PAGE_SIZE = 30
 
 const s = {
   section: { width: '100%', maxWidth: 920, display: 'flex', flexDirection: 'column', gap: 16, color: 'var(--dsw-alias-label-primary)' } as React.CSSProperties,
+  subnav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 2 } as React.CSSProperties,
+  subnavGroup: { display: 'flex', alignItems: 'center', gap: 8 } as React.CSSProperties,
   toolbar: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) auto', alignItems: 'center', gap: 12 } as React.CSSProperties,
   search: { minWidth: 0 } as React.CSSProperties,
   sortGroup: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, whiteSpace: 'nowrap' } as React.CSSProperties,
@@ -88,6 +93,10 @@ const s = {
   link: { color: 'var(--dsw-alias-state-business-primary)', fontSize: 12, textDecoration: 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } as React.CSSProperties,
   chevron: { flex: 'none' } as React.CSSProperties,
   tag: { color: 'var(--dsw-alias-state-success-primary)', fontSize: 11, lineHeight: '16px', flex: 'none' } as React.CSSProperties,
+  installedList: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
+  installedCard: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: 16, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '14px 16px' } as React.CSSProperties,
+  installedInfo: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 } as React.CSSProperties,
+  installedActions: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' } as React.CSSProperties,
 }
 
 /** Interpolate the {placeholders} used by a few locale keys. */
@@ -122,12 +131,16 @@ function jobPhaseLabel(phase: string, t: MarketplaceTabProps['t']): string {
 export function MarketplaceTab({ search, details, install, update, uninstall, jobStatus, installed, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
+  const [subpage, setSubpage] = useState<Subpage>('catalog')
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [sort, setSort] = useState<'stars' | 'updated'>('stars')
   const [page, setPage] = useState(1)
   const [seq, setSeq] = useState(0)
   const [installedMap, setInstalledMap] = useState<Map<string, MarketplaceInstalledEntry>>(new Map())
+  const [installedProfile, setInstalledProfile] = useState('')
+  const [installedLoading, setInstalledLoading] = useState(true)
+  const [installedError, setInstalledError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Map<string, MarketplaceJobStatus>>(new Map())
   const [expanded, setExpanded] = useState<string | null>(null)
   const [detailsMap, setDetailsMap] = useState<Map<string, MarketplacePluginDetails>>(new Map())
@@ -147,6 +160,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
 
   // Run the search.
   useEffect(() => {
+    if (subpage !== 'catalog') return undefined
     let current = true
     setView({ status: 'loading' })
     void search(debouncedQuery, page, sort).then(
@@ -156,14 +170,21 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
       },
     )
     return () => { current = false }
-  }, [debouncedQuery, sort, page, seq, search])
+  }, [debouncedQuery, sort, page, seq, search, subpage])
 
   const refreshInstalled = useCallback(() => {
+    setInstalledLoading(true)
     void installed().then(
-      (entries) => {
-        setInstalledMap(new Map(entries.map((entry) => [entry.packageName, entry])))
+      (result) => {
+        setInstalledMap(new Map(result.entries.map((entry) => [entry.packageName, entry])))
+        setInstalledProfile(result.profile)
+        setInstalledError(null)
+        setInstalledLoading(false)
       },
-      () => { /* the installed listing is auxiliary; search errors already surface */ },
+      (error: unknown) => {
+        setInstalledError(error instanceof Error ? error.message : String(error))
+        setInstalledLoading(false)
+      },
     )
   }, [installed])
 
@@ -187,13 +208,13 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
     })
   }, [details, detailsMap])
 
-  const trackJob = useCallback((jobId: string) => {
+  const trackJob = useCallback((jobId: string, kind: ConfirmRequest['mode'], packageName: string) => {
     setJobs((current) => {
       const next = new Map(current)
       next.set(jobId, {
         jobId,
-        kind: 'install',
-        packageName: '',
+        kind,
+        packageName,
         phase: 'spawning',
         log: '',
         exitCode: null,
@@ -244,12 +265,12 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
       : request.mode === 'update'
         ? update(request.repo, request.ref)
         : install(request.repo, request.ref)
-    void start.then(trackJob).catch((error: unknown) => {
+    void start.then((jobId) => { trackJob(jobId, request.mode, request.packageName) }).catch((error: unknown) => {
       setBanner(error instanceof Error ? error.message : String(error))
     })
   }
 
-  const onInstall = (item: MarketplaceRepoSummary): void => {
+  const onInstall = (item: MarketplaceRegistryPlugin): void => {
     void loadDetails(
       item.fullName === '' ? item.owner + '/' + item.repo : item.fullName,
       item.verifiedCommit,
@@ -276,64 +297,91 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
   return (
     <div style={s.section} aria-busy={view.status === 'loading'}>
       {banner !== null ? <div style={s.banner} role={banner.startsWith(t('restartBanner')) ? 'status' : 'alert'}>{banner}</div> : null}
-      <div style={s.toolbar}>
-        <div style={s.search}>
-          <Input
-            type='search'
-            icon={<IconSearchOutline16 aria-hidden='true' />}
-            value={query}
-            placeholder={t('searchPlaceholder')}
-            aria-label={t('searchPlaceholder')}
-            onChange={(event) => { setQuery(event.currentTarget.value) }}
-          />
+      <div style={s.subnav}>
+        <div style={s.subnavGroup}>
+          <Pill active={subpage === 'catalog'} onClick={() => { setSubpage('catalog') }}>{t('catalog')}</Pill>
+          <Pill active={subpage === 'installed'} onClick={() => { setSubpage('installed'); refreshInstalled() }}>{t('installedPage')}</Pill>
         </div>
-        <div style={s.sortGroup}>
-          <Pill active={sort === 'stars'} onClick={() => { setSort('stars') }}>{t('sortStars')}</Pill>
-          <Pill active={sort === 'updated'} onClick={() => { setSort('updated') }}>{t('sortUpdated')}</Pill>
-        </div>
+        {installedProfile !== '' ? <span style={s.muted}>{fmt(t, 'currentProfile', { profile: installedProfile })}</span> : null}
       </div>
-      {rate !== null && rate.limit > 0 ? (
-        <div style={s.rateRow}>
-          <span style={s.muted}>
-            {fmt(t, 'rateLimit', { remaining: rate.remaining, reset: rate.reset > 0 ? Math.max(0, rate.reset - Math.floor(Date.now() / 1000)) + 's' : '—' })}
-          </span>
-        </div>
-      ) : null}
-      {view.status === 'loading' ? <p style={s.muted}>{t('loading')}</p> : null}
-      {view.status === 'error' ? (
-        <div style={s.failure}>
-          <p role='alert' style={s.muted}>{t('error')} {view.message}</p>
-          <Button variant='outline' size='sm' onClick={retry}>{t('retry')}</Button>
-        </div>
-      ) : null}
-      {ready !== null && ready.items.length === 0 ? <p style={s.muted}>{debouncedQuery === '' ? t('empty') : t('emptySearch')}</p> : null}
-      {ready !== null && ready.items.length > 0 ? (
-        <ul style={s.cards}>
-          {ready.items.map((item) => (
-            <CardRow
-              key={item.fullName}
-              item={item}
-              t={t}
-              expanded={expanded === item.fullName}
-              detail={detailsMap.get(item.fullName)}
-              detailError={detailErrors.get(item.fullName)}
-              onToggle={() => {
-                if (expanded === item.fullName) { setExpanded(null); return }
-                setExpanded(item.fullName)
-                void loadDetails(item.fullName, item.verifiedCommit).catch(() => { /* the error renders in the card */ })
-              }}
-              onInstall={() => { onInstall(item) }}
-            />
-          ))}
-        </ul>
-      ) : null}
-      {ready !== null ? (
-        <div style={s.pager}>
-          <Button variant='outline' size='sm' disabled={page <= 1} onClick={() => { setPage((value) => Math.max(1, value - 1)) }}>{t('pagePrev')}</Button>
-          <span style={s.muted}>{fmt(t, 'pageOf', { page })} · {fmt(t, 'total', { total: ready.totalCount })}</span>
-          <Button variant='outline' size='sm' disabled={page * RESULT_PAGE_SIZE >= ready.totalCount} onClick={() => { setPage((value) => value + 1) }}>{t('pageNext')}</Button>
-        </div>
-      ) : null}
+      {subpage === 'catalog' ? (
+        <>
+          <div style={s.toolbar}>
+            <div style={s.search}>
+              <Input
+                type='search'
+                icon={<IconSearchOutline16 aria-hidden='true' />}
+                value={query}
+                placeholder={t('searchPlaceholder')}
+                aria-label={t('searchPlaceholder')}
+                onChange={(event) => { setQuery(event.currentTarget.value) }}
+              />
+            </div>
+            <div style={s.sortGroup}>
+              <Pill active={sort === 'stars'} onClick={() => { setSort('stars') }}>{t('sortStars')}</Pill>
+              <Pill active={sort === 'updated'} onClick={() => { setSort('updated') }}>{t('sortUpdated')}</Pill>
+            </div>
+          </div>
+          {rate !== null && rate.limit > 0 ? (
+            <div style={s.rateRow}>
+              <span style={s.muted}>
+                {fmt(t, 'rateLimit', { remaining: rate.remaining, reset: rate.reset > 0 ? Math.max(0, rate.reset - Math.floor(Date.now() / 1000)) + 's' : '—' })}
+              </span>
+            </div>
+          ) : null}
+          {view.status === 'loading' ? <p style={s.muted}>{t('loading')}</p> : null}
+          {view.status === 'error' ? (
+            <div style={s.failure}>
+              <p role='alert' style={s.muted}>{t('error')} {view.message}</p>
+              <Button variant='outline' size='sm' onClick={retry}>{t('retry')}</Button>
+            </div>
+          ) : null}
+          {ready !== null && ready.items.length === 0 ? <p style={s.muted}>{debouncedQuery === '' ? t('empty') : t('emptySearch')}</p> : null}
+          {ready !== null && ready.items.length > 0 ? (
+            <ul style={s.cards}>
+              {ready.items.map((item) => (
+                <CardRow
+                  key={item.fullName}
+                  item={item}
+                  t={t}
+                  currentProfile={installedProfile}
+                  isInstalled={installedMap.has(item.packageName)}
+                  expanded={expanded === item.fullName}
+                  detail={detailsMap.get(item.fullName)}
+                  detailError={detailErrors.get(item.fullName)}
+                  onToggle={() => {
+                    if (expanded === item.fullName) { setExpanded(null); return }
+                    setExpanded(item.fullName)
+                    void loadDetails(item.fullName, item.verifiedCommit).catch(() => { /* the error renders in the card */ })
+                  }}
+                  onInstall={() => { onInstall(item) }}
+                />
+              ))}
+            </ul>
+          ) : null}
+          {ready !== null ? (
+            <div style={s.pager}>
+              <Button variant='outline' size='sm' disabled={page <= 1} onClick={() => { setPage((value) => Math.max(1, value - 1)) }}>{t('pagePrev')}</Button>
+              <span style={s.muted}>{fmt(t, 'pageOf', { page })} · {fmt(t, 'total', { total: ready.totalCount })}</span>
+              <Button variant='outline' size='sm' disabled={page * RESULT_PAGE_SIZE >= ready.totalCount} onClick={() => { setPage((value) => value + 1) }}>{t('pageNext')}</Button>
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <InstalledList
+          entries={[...installedMap.values()].filter(entry => entry.isBundle)}
+          loading={installedLoading}
+          error={installedError}
+          t={t}
+          onRetry={refreshInstalled}
+          onUpdate={(entry) => {
+            if (entry.registryRepo !== null && entry.verifiedCommit !== null) {
+              openConfirm('update', entry.registryRepo, entry.verifiedCommit, entry.packageName)
+            }
+          }}
+          onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
+        />
+      )}
       {jobs.size > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[...jobs.values()].map((job) => (
@@ -343,11 +391,11 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
       ) : null}
       <RiskConfirmation
         open={confirm !== null}
-        title={confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : t('confirmTitle')}
-        description={confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : t('confirmDescription')}
+        title={confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
+        description={confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
         acknowledgeLabel={confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
-        confirmLabel={confirm?.mode === 'uninstall' ? t('confirmUninstall') : t('confirm')}
+        confirmLabel={confirm?.mode === 'uninstall' ? t('confirmUninstall') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
         onCancel={() => { setConfirm(null); setAcknowledged(false) }}
@@ -358,8 +406,10 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
 }
 
 interface CardRowProps {
-  item: MarketplaceRepoSummary
+  item: MarketplaceRegistryPlugin
   t: MarketplaceTabProps['t']
+  currentProfile: string
+  isInstalled: boolean
   expanded: boolean
   detail: MarketplacePluginDetails | undefined
   detailError: string | undefined
@@ -367,13 +417,17 @@ interface CardRowProps {
   onInstall: () => void
 }
 
-function CardRow({ item, t, expanded, detail, detailError, onToggle, onInstall }: CardRowProps): ReactNode {
+function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detailError, onToggle, onInstall }: CardRowProps): ReactNode {
   const meta = [
     item.stars > 0 ? '★ ' + item.stars : null,
     item.license !== null ? item.license : null,
     item.language !== null ? item.language : null,
     item.updatedAt !== '' ? t('updated') + ' ' + new Date(item.updatedAt).toLocaleDateString() : null,
   ].filter((value): value is string => value !== null)
+  const canInstall = item.install.mode === 'automatic'
+    && item.install.source === 'github'
+    && currentProfile !== ''
+    && item.install.profiles.includes(currentProfile)
   return (
     <li style={s.card}>
       <div style={s.cardBody}>
@@ -387,7 +441,13 @@ function CardRow({ item, t, expanded, detail, detailError, onToggle, onInstall }
           {detail !== undefined && detail.manifest?.hasClient === true ? <span style={s.tag}>{t('hasClient')}</span> : null}
         </div>
         <div style={s.actions}>
-          <Button variant='primary' size='sm' onClick={onInstall}>{t('install')}</Button>
+          {isInstalled ? (
+            <Button variant='outline' size='sm' disabled>{t('installedTag')}</Button>
+          ) : canInstall ? (
+            <Button variant='primary' size='sm' onClick={onInstall}>{t('install')}</Button>
+          ) : (
+            <a style={s.link} href={item.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
+          )}
           <a style={s.link} href={item.htmlUrl} target='_blank' rel='noreferrer'>{t('openInGithub')}</a>
           <button type='button' style={s.detailToggle} aria-expanded={expanded} onClick={onToggle}>
             {t('details')}
@@ -408,6 +468,10 @@ function CardRow({ item, t, expanded, detail, detailError, onToggle, onInstall }
               <dd style={s.kvDd}>{detail.manifest.license ?? t('none')}</dd>
               <dt style={s.kvDt}>{t('verifiedCommit')}</dt>
               <dd style={s.kvDd}>{detail.resolvedRef}</dd>
+              <dt style={s.kvDt}>{t('installSource')}</dt>
+              <dd style={s.kvDd}>{item.install.source} · {item.install.mode === 'automatic' ? t('automaticInstall') : t('guidedInstall')}</dd>
+              <dt style={s.kvDt}>{t('profiles')}</dt>
+              <dd style={s.kvDd}>{item.install.profiles.length > 0 ? item.install.profiles.join(', ') : t('profileUnknown')}</dd>
             </dl>
           ) : null}
           {detail?.patch !== null && detail?.patch !== undefined ? (
@@ -416,6 +480,61 @@ function CardRow({ item, t, expanded, detail, detailError, onToggle, onInstall }
         </div>
       ) : null}
     </li>
+  )
+}
+
+interface InstalledListProps {
+  entries: MarketplaceInstalledEntry[]
+  loading: boolean
+  error: string | null
+  t: MarketplaceTabProps['t']
+  onRetry: () => void
+  onUpdate: (entry: MarketplaceInstalledEntry) => void
+  onUninstall: (entry: MarketplaceInstalledEntry) => void
+}
+
+function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninstall }: InstalledListProps): ReactNode {
+  if (loading) return <p style={s.muted}>{t('loadingInstalled')}</p>
+  if (error !== null) {
+    return (
+      <div style={s.failure}>
+        <p role='alert' style={s.muted}>{t('installedError')} {error}</p>
+        <Button variant='outline' size='sm' onClick={onRetry}>{t('retry')}</Button>
+      </div>
+    )
+  }
+  if (entries.length === 0) return <p style={s.muted}>{t('emptyInstalled')}</p>
+  return (
+    <ul style={s.installedList}>
+      {entries.map((entry) => (
+        <li key={entry.packageName} style={s.installedCard}>
+          <div style={s.installedInfo}>
+            <strong style={s.title} title={entry.packageName}>{entry.packageName}</strong>
+            <span style={s.muted} title={entry.currentSpec}>
+              {fmt(t, 'installedVersion', { version: entry.version })}
+              {entry.availableVersion !== null ? ' · ' + fmt(t, 'registryVersion', { version: entry.availableVersion }) : ''}
+            </span>
+            <span style={entry.updateAvailable ? s.tag : s.meta}>
+              {entry.registryRepo === null
+                ? t('notInRegistry')
+                : entry.updateAvailable
+                  ? t('updateAvailable')
+                  : t('upToDate')}
+            </span>
+          </div>
+          <div style={s.installedActions}>
+            {entry.updateAvailable && entry.canUpdate ? (
+              <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>{t('update')}</Button>
+            ) : entry.updateAvailable && entry.install !== null ? (
+              <a style={s.link} href={entry.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
+            ) : (
+              <Button variant='outline' size='sm' disabled>{t('upToDate')}</Button>
+            )}
+            <Button variant='outline' size='sm' onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
+          </div>
+        </li>
+      ))}
+    </ul>
   )
 }
 

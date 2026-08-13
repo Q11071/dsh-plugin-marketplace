@@ -15,6 +15,17 @@ const rateSchema = z.object({
   source: z.union([z.literal('core'), z.literal('search')]),
 })
 
+const installMetadataSchema = z.object({
+  mode: z.union([z.literal('automatic'), z.literal('guided')]),
+  source: z.union([z.literal('github'), z.literal('npm'), z.literal('tarball'), z.literal('manual')]),
+  spec: z.string(),
+  profiles: z.array(z.string()),
+  requiresBuildApproval: z.boolean(),
+  requiresRestart: z.boolean(),
+  manualSteps: z.boolean(),
+  instructionsUrl: z.string(),
+})
+
 const repoSummarySchema = z.object({
   owner: z.string(),
   repo: z.string(),
@@ -30,6 +41,12 @@ const repoSummarySchema = z.object({
   verifiedCommit: z.string(),
   htmlUrl: z.string(),
   topics: z.array(z.string()),
+  packageName: z.string(),
+  version: z.string(),
+  bundlePatch: z.string(),
+  hasClient: z.boolean(),
+  verifiedAt: z.string(),
+  install: installMetadataSchema,
 })
 
 const manifestSchema = z.object({
@@ -80,10 +97,18 @@ const jobStatusValueSchema = z.object({
 })
 
 const installedValueSchema = z.object({
+  profile: z.string(),
   entries: z.array(z.object({
     packageName: z.string(),
     version: z.string(),
     isBundle: z.boolean(),
+    currentSpec: z.string(),
+    registryRepo: z.union([z.string(), z.null()]),
+    availableVersion: z.union([z.string(), z.null()]),
+    verifiedCommit: z.union([z.string(), z.null()]),
+    updateAvailable: z.boolean(),
+    canUpdate: z.boolean(),
+    install: z.union([installMetadataSchema, z.null()]),
   })),
 })
 

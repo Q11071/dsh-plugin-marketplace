@@ -56,7 +56,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
       update: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.update({ repo, ref })).jobId,
       uninstall: async (packageName) => unwrapMarketplace(await scope.remote.marketplace.uninstall({ packageName })).jobId,
       jobStatus: async (jobId) => unwrapMarketplace(await scope.remote.marketplace.jobStatus({ jobId })),
-      installed: async () => unwrapMarketplace(await scope.remote.marketplace.installed()).entries,
+      installed: async () => unwrapMarketplace(await scope.remote.marketplace.installed()),
     })
 
     scope.slots.inject('settings.plugins.tab', () => scope.slots.register({
@@ -75,6 +75,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
 export type {
   MarketplaceInstallRequest,
   MarketplaceInstalledEntry,
+  MarketplaceInstalled,
   MarketplaceJobStatus,
   MarketplacePluginDetails,
   MarketplaceSearchPage,

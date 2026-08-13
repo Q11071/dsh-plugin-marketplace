@@ -137,7 +137,19 @@ export function installedEntries(manifest: ProfileManifest, dir: string): Market
   for (const packageName of Object.keys(manifest.dependencies ?? {})) {
     const version = installedVersion(packageName, dir)
     if (version === null) continue
-    entries.push({ packageName, version, isBundle: bundles.has(packageName) })
+    const declared = manifest.dependencies?.[packageName]
+    entries.push({
+      packageName,
+      version,
+      isBundle: bundles.has(packageName),
+      currentSpec: typeof declared === 'string' ? declared : '',
+      registryRepo: null,
+      availableVersion: null,
+      verifiedCommit: null,
+      updateAvailable: false,
+      canUpdate: false,
+      install: null,
+    })
   }
   return entries.sort((a, b) => a.packageName.localeCompare(b.packageName))
 }

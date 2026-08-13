@@ -43,6 +43,24 @@ export interface MarketplaceRepoSummary {
   topics: string[]
 }
 
+export type MarketplaceInstallSource = 'github' | 'npm' | 'tarball' | 'manual'
+export type MarketplaceInstallMode = 'automatic' | 'guided'
+
+/** Centrally verified instructions used by the UI and installer. */
+export interface MarketplaceInstallMetadata {
+  /** Automatic entries may be executed by the marketplace; guided entries only link to instructions. */
+  mode: MarketplaceInstallMode
+  source: MarketplaceInstallSource
+  /** Exact pnpm package spec. Empty for manual-only installs. */
+  spec: string
+  /** Profiles explicitly known to be compatible. Empty means that the target is unknown. */
+  profiles: string[]
+  requiresBuildApproval: boolean
+  requiresRestart: boolean
+  manualSteps: boolean
+  instructionsUrl: string
+}
+
 /** One centrally verified plugin published by the Registry. */
 export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
   packageName: string
@@ -50,11 +68,12 @@ export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
   bundlePatch: string
   hasClient: boolean
   verifiedAt: string
+  install: MarketplaceInstallMetadata
 }
 
 /** Signed-content payload before an optional detached signature is added. */
 export interface MarketplaceRegistry {
-  schemaVersion: 1
+  schemaVersion: 2
   generatedAt: string
   plugins: MarketplaceRegistryPlugin[]
 }
@@ -87,7 +106,7 @@ export interface MarketplacePluginDetails {
 /** One search page. */
 export interface MarketplaceSearchPage {
   totalCount: number
-  items: MarketplaceRepoSummary[]
+  items: MarketplaceRegistryPlugin[]
   rate: MarketplaceRateLimit
 }
 
@@ -115,9 +134,19 @@ export interface MarketplaceInstalledEntry {
   version: string
   /** Whether the profile bundle layer stack includes this package. */
   isBundle: boolean
+  /** Dependency spec currently recorded in the profile package.json. */
+  currentSpec: string
+  /** Registry repository when this installed package is centrally managed. */
+  registryRepo: string | null
+  availableVersion: string | null
+  verifiedCommit: string | null
+  updateAvailable: boolean
+  canUpdate: boolean
+  install: MarketplaceInstallMetadata | null
 }
 
 export interface MarketplaceInstalled {
+  profile: string
   entries: MarketplaceInstalledEntry[]
 }
 
