@@ -10,6 +10,14 @@ import type {
 
 const PAGE_SIZE = 30
 
+function safePackagePath(value: string): boolean {
+  return value === '' || (value.length <= 512
+    && !value.startsWith('/')
+    && !value.includes('\\')
+    && !value.includes('\0')
+    && value.split('/').every(segment => segment !== '' && segment !== '.' && segment !== '..'))
+}
+
 const installSchema = z.object({
   mode: z.union([z.literal('automatic'), z.literal('guided')]),
   source: z.union([z.literal('github'), z.literal('npm'), z.literal('tarball'), z.literal('manual')]),
@@ -53,6 +61,16 @@ const registryV2Schema = z.object({
   schemaVersion: z.literal(2),
   generatedAt: z.iso.datetime(),
   plugins: z.array(registryPluginBaseSchema.extend({ install: installSchema }).strict()),
+}).strict()
+
+const registryV3Schema = z.object({
+  schemaVersion: z.literal(3),
+  generatedAt: z.iso.datetime(),
+  plugins: z.array(registryPluginBaseSchema.extend({
+    id: z.string().min(1),
+    packagePath: z.string().refine(safePackagePath),
+    install: installSchema,
+  }).strict()),
 }).strict()
 
 /** Loader schema for Registry access policy. */
@@ -104,6 +122,7 @@ export class RegistryClient {
       if (terms.length === 0) return true
       const text = [
         plugin.fullName,
+        plugin.packagePath,
         plugin.packageName,
         plugin.description ?? '',
         plugin.language ?? '',
@@ -115,7 +134,7 @@ export class RegistryClient {
       const primary = sort === 'updated'
         ? Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
         : right.stars - left.stars
-      return primary !== 0 ? primary : left.fullName.localeCompare(right.fullName)
+      return primary !== 0 ? primary : left.id.localeCompare(right.id)
     })
     const offset = (page - 1) * PAGE_SIZE
     return {
@@ -126,14 +145,21 @@ export class RegistryClient {
   }
 
   /** Find one currently verified repository, case-insensitively. */
-  async find(repo: string): Promise<MarketplaceRegistryPlugin | undefined> {
-    const normalized = repo.trim().toLocaleLowerCase()
-    return (await this.load()).plugins.find(plugin => plugin.fullName.toLocaleLowerCase() === normalized)
+  async find(repo: string, packagePath = ''): Promise<MarketplaceRegistryPlugin | undefined> {
+    const normalized = registryId(repo.trim(), packagePath).toLocaleLowerCase()
+    return (await this.load()).plugins.find(plugin => plugin.id.toLocaleLowerCase() === normalized)
   }
 
   /** Find the Registry owner of one installed npm package name. */
-  async findByPackage(packageName: string): Promise<MarketplaceRegistryPlugin | undefined> {
-    return (await this.load()).plugins.find(plugin => plugin.packageName === packageName)
+  async findByPackage(packageName: string, currentSpec = ''): Promise<MarketplaceRegistryPlugin | undefined> {
+    const matches = (await this.load()).plugins.filter(plugin => plugin.packageName === packageName)
+    if (matches.length <= 1) return matches[0]
+    const source = githubIdentity(currentSpec)
+    if (source !== null) {
+      return matches.find(plugin => plugin.fullName.toLocaleLowerCase() === source.repo
+        && plugin.packagePath.toLocaleLowerCase() === source.packagePath) ?? matches[0]
+    }
+    return matches[0]
   }
 
   private async load(): Promise<MarketplaceRegistry> {
@@ -179,11 +205,13 @@ export class RegistryClient {
     const registry = normalizeRegistry(raw)
     const names = new Set<string>()
     for (const plugin of registry.plugins) {
-      const key = plugin.fullName.toLocaleLowerCase()
-      if (names.has(key)) throw new Error(`Registry repeats repository ${JSON.stringify(plugin.fullName)}`)
+      const expectedId = registryId(plugin.fullName, plugin.packagePath)
+      if (plugin.id !== expectedId) throw new Error(`Registry plugin id does not match repository and packagePath: ${JSON.stringify(plugin.id)}`)
+      const key = plugin.id.toLocaleLowerCase()
+      if (names.has(key)) throw new Error(`Registry repeats plugin identity ${JSON.stringify(plugin.id)}`)
       names.add(key)
       if (plugin.install.mode === 'automatic') {
-        const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
+        const expected = githubSpec(plugin.fullName, plugin.verifiedCommit, plugin.packagePath)
         if (plugin.install.source !== 'github' || plugin.install.spec.toLocaleLowerCase() !== expected.toLocaleLowerCase()) {
           throw new Error(`Registry automatic install is not pinned to ${JSON.stringify(expected)}`)
         }
@@ -194,21 +222,47 @@ export class RegistryClient {
   }
 }
 
-/** Continue accepting v1 registries while remote mirrors migrate to install metadata. */
+/** Continue accepting v1/v2 registries while remote mirrors migrate to packagePath identities. */
 function normalizeRegistry(raw: unknown): MarketplaceRegistry {
   const version = typeof raw === 'object' && raw !== null && 'schemaVersion' in raw
     ? (raw as { schemaVersion?: unknown }).schemaVersion
     : undefined
-  if (version === 2) return registryV2Schema.parse(raw) as MarketplaceRegistry
+  if (version === 3) return registryV3Schema.parse(raw) as MarketplaceRegistry
+  if (version === 2) {
+    const legacy = registryV2Schema.parse(raw)
+    return {
+      schemaVersion: 3,
+      generatedAt: legacy.generatedAt,
+      plugins: legacy.plugins.map(plugin => withRootIdentity(plugin)),
+    }
+  }
   const legacy = registryV1Schema.parse(raw)
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     generatedAt: legacy.generatedAt,
     plugins: legacy.plugins.map(plugin => ({
-      ...plugin,
+      ...withRootIdentity(plugin),
       install: legacyInstall(plugin),
     })),
   }
+}
+
+function withRootIdentity<T extends { fullName: string }>(plugin: T): T & { id: string; packagePath: string } {
+  return { ...plugin, id: plugin.fullName, packagePath: '' }
+}
+
+function registryId(repo: string, packagePath: string): string {
+  return packagePath === '' ? repo : repo + '&path:/' + packagePath
+}
+
+function githubSpec(repo: string, commit: string, packagePath: string): string {
+  return 'github:' + repo + '#' + commit + (packagePath === '' ? '' : '&path:/' + packagePath)
+}
+
+function githubIdentity(spec: string): { repo: string; packagePath: string } | null {
+  const match = /^github:([^/#&]+\/[^/#&]+)(?:#[^&]+)?(?:&path:\/([^&]+))?$/i.exec(spec.trim())
+  if (match === null) return null
+  return { repo: match[1]!.toLocaleLowerCase(), packagePath: (match[2] ?? '').toLocaleLowerCase() }
 }
 
 function legacyInstall(plugin: z.output<typeof registryPluginBaseSchema>): MarketplaceRegistryPlugin['install'] {

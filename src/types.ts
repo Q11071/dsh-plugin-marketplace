@@ -63,6 +63,10 @@ export interface MarketplaceInstallMetadata {
 
 /** One centrally verified plugin published by the Registry. */
 export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
+  /** Stable Registry identity: owner/repo plus an optional &path:/package/subdir suffix. */
+  id: string
+  /** POSIX repository-relative package directory; empty string means repository root. */
+  packagePath: string
   packageName: string
   version: string
   bundlePatch: string
@@ -73,7 +77,7 @@ export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
 
 /** Signed-content payload before an optional detached signature is added. */
 export interface MarketplaceRegistry {
-  schemaVersion: 2
+  schemaVersion: 3
   generatedAt: string
   plugins: MarketplaceRegistryPlugin[]
 }
@@ -92,6 +96,7 @@ export interface MarketplacePluginManifest {
 /** details() outcome: manifest + bundle patch text for pre-install review. */
 export interface MarketplacePluginDetails {
   repo: string
+  packagePath: string
   /** Ref the caller asked for ('' means auto-select). */
   ref: string
   /** Concrete ref used for the raw fetch. */
@@ -132,12 +137,16 @@ export interface MarketplaceJobStatus {
 export interface MarketplaceInstalledEntry {
   packageName: string
   version: string
-  /** Whether the profile bundle layer stack includes this package. */
+  /** Whether the installed dependency declares a DSH bundle patch. */
   isBundle: boolean
+  /** Whether the bundle currently participates in the Profile layer stack. */
+  enabled: boolean
   /** Dependency spec currently recorded in the profile package.json. */
   currentSpec: string
   /** Registry repository when this installed package is centrally managed. */
   registryRepo: string | null
+  registryId: string | null
+  packagePath: string
   availableVersion: string | null
   verifiedCommit: string | null
   updateAvailable: boolean
@@ -160,6 +169,13 @@ export type MarketplaceDetailsOutcome = MarketplaceResult<MarketplacePluginDetai
 export type MarketplaceInstallOutcome = MarketplaceResult<MarketplaceJobHandle>
 export type MarketplaceJobStatusOutcome = MarketplaceResult<MarketplaceJobStatus>
 export type MarketplaceInstalledOutcome = MarketplaceResult<MarketplaceInstalled>
+export type MarketplaceToggleOutcome = MarketplaceResult<MarketplaceToggleResult>
+
+export interface MarketplaceToggleResult {
+  packageName: string
+  enabled: boolean
+  requiresRestart: boolean
+}
 
 export interface MarketplaceSearchRequest {
   query: string
@@ -170,12 +186,14 @@ export interface MarketplaceSearchRequest {
 export interface MarketplaceDetailsRequest {
   /** owner/repo */
   repo: string
+  packagePath: string
   /** Exact tag, or '' for auto (latest release, then default branch). */
   ref: string
 }
 
 export interface MarketplaceInstallRequest {
   repo: string
+  packagePath: string
   ref: string
 }
 
@@ -185,4 +203,9 @@ export interface MarketplaceJobStatusRequest {
 
 export interface MarketplaceUninstallRequest {
   packageName: string
+}
+
+export interface MarketplaceToggleRequest {
+  packageName: string
+  enabled: boolean
 }

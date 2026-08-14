@@ -21,6 +21,8 @@ import type {
   MarketplaceSearchPage,
   MarketplaceSearchRequest,
   MarketplaceUninstallRequest,
+  MarketplaceToggleRequest,
+  MarketplaceToggleResult,
 } from '../types.ts'
 import { readProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
@@ -37,6 +39,7 @@ import {
   installedVersion,
   profileLocation,
   reconcileBundles,
+  setBundleEnabled,
   type ProfileLocation,
 } from './profile.ts'
 
@@ -102,7 +105,7 @@ export class MarketplaceService extends TypertRemoteService {
   @Remote('details')
   async details(request: MarketplaceDetailsRequest): Promise<MarketplaceResult<MarketplacePluginDetails>> {
     try {
-      return ok(await this.github.details(request.repo, request.ref ?? ''))
+      return ok(await this.github.details(request.repo, request.ref ?? '', request.packagePath ?? ''))
     } catch (error) {
       return toFailure(error)
     }
@@ -110,7 +113,7 @@ export class MarketplaceService extends TypertRemoteService {
 
   @Remote('installPlugin')
   async installPlugin(request: MarketplaceInstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
-    return this.startJob('install', request.repo, request.ref ?? '', (packageName) => {
+    return this.startJob('install', request.repo, request.packagePath ?? '', request.ref ?? '', (packageName) => {
       if (this.jobs.activeFor(packageName)) {
         return fail('job-running', 'Another job is already running for ' + packageName + '.')
       }
@@ -120,7 +123,7 @@ export class MarketplaceService extends TypertRemoteService {
 
   @Remote('update')
   async update(request: MarketplaceInstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
-    return this.startJob('update', request.repo, request.ref ?? '', (packageName) => {
+    return this.startJob('update', request.repo, request.packagePath ?? '', request.ref ?? '', (packageName) => {
       if (this.jobs.activeFor(packageName)) {
         return fail('job-running', 'Another job is already running for ' + packageName + '.')
       }
@@ -149,6 +152,27 @@ export class MarketplaceService extends TypertRemoteService {
     }
   }
 
+  @Remote('setEnabled')
+  async setEnabled(request: MarketplaceToggleRequest): Promise<MarketplaceResult<MarketplaceToggleResult>> {
+    try {
+      const packageName = request.packageName.trim()
+      if (packageName === '' || !/^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
+        return fail('bad-package', 'Malformed package name: ' + request.packageName)
+      }
+      if (this.jobs.activeFor(packageName)) {
+        return fail('job-running', 'Another job is already running for ' + packageName + '.')
+      }
+      const profile = profileLocation(this.ctx)
+      ensureProfile(profile.dir, profile.name)
+      if (!setBundleEnabled(packageName, request.enabled, profile.dir)) {
+        return fail('not-a-dsh-plugin', packageName + ' is not an installed DSH bundle in profile ' + profile.name + '.')
+      }
+      return ok({ packageName, enabled: request.enabled, requiresRestart: true })
+    } catch (error) {
+      return toFailure(error)
+    }
+  }
+
   @Remote('jobStatus')
   async jobStatus(request: MarketplaceJobStatusRequest): Promise<MarketplaceResult<MarketplaceJobStatus>> {
     const job = this.jobs.get(request.jobId)
@@ -164,9 +188,11 @@ export class MarketplaceService extends TypertRemoteService {
       const profile = profileLocation(this.ctx)
       const entries = installedEntries(readProfileManifest(NAME, profile.dir), profile.dir)
       await Promise.all(entries.map(async (entry) => {
-        const registered = await this.registry.findByPackage(entry.packageName)
+        const registered = await this.registry.findByPackage(entry.packageName, entry.currentSpec)
         if (registered === undefined) return
         entry.registryRepo = registered.fullName
+        entry.registryId = registered.id
+        entry.packagePath = registered.packagePath
         entry.availableVersion = registered.version
         entry.verifiedCommit = registered.verifiedCommit
         entry.install = registered.install
@@ -191,11 +217,12 @@ export class MarketplaceService extends TypertRemoteService {
   private async startJob(
     kind: 'install' | 'update',
     repo: string,
+    packagePath: string,
     ref: string,
     gate: (packageName: string) => Err | undefined,
   ): Promise<MarketplaceResult<{ jobId: string }>> {
     try {
-      const registered = await this.registry.find(repo)
+      const registered = await this.registry.find(repo, packagePath)
       if (registered === undefined) {
         return fail('not-in-registry', repo + ' is not present in the verified DSH plugin Registry.')
       }
@@ -205,7 +232,7 @@ export class MarketplaceService extends TypertRemoteService {
           verifiedCommit: registered.verifiedCommit,
         })
       }
-      const details = await this.github.details(registered.fullName, registered.verifiedCommit)
+      const details = await this.github.details(registered.fullName, registered.verifiedCommit, registered.packagePath)
       const manifest = details.manifest
       if (manifest === null || manifest.bundlePatch === null || details.patch === null) {
         return fail(
@@ -281,6 +308,7 @@ export class MarketplaceService extends TypertRemoteService {
 function executableSpec(plugin: MarketplaceRegistryPlugin): string {
   if (plugin.install.source === 'github') {
     const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
+      + (plugin.packagePath === '' ? '' : '&path:/' + plugin.packagePath)
     if (plugin.install.spec.toLocaleLowerCase() !== expected.toLocaleLowerCase()) {
       throw new RegistryError('Registry GitHub install spec does not match the verified repository commit.', {
         repository: plugin.fullName,

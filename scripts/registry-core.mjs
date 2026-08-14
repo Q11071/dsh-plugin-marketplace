@@ -5,7 +5,7 @@ import { parseDocument } from 'yaml'
 export const MAX_MANIFEST_BYTES = 256 * 1024
 export const MAX_PATCH_BYTES = 64 * 1024
 export const MAX_README_BYTES = 256 * 1024
-export const INSTALL_CLASSIFIER_VERSION = 6
+export const INSTALL_CLASSIFIER_VERSION = 8
 
 /** Candidate is structurally not a DSH bundle. */
 export class InvalidCandidateError extends Error {
@@ -33,6 +33,26 @@ export function safePatchPath(value) {
     && !value.includes('\0')
     && !value.split('/').includes('..')
     && !/^[a-z][a-z\d+.-]*:/i.test(value)
+}
+
+/** Canonical repository-relative package directory used by Registry v3. */
+export function normalizePackagePath(value) {
+  if (typeof value !== 'string') throw new InvalidCandidateError('packagePath must be a string')
+  const normalized = value.replace(/^\.\//, '').replace(/\/$/, '')
+  if (normalized === '') return ''
+  if (normalized.length > 512
+    || normalized.startsWith('/')
+    || normalized.includes('\\')
+    || normalized.includes('\0')
+    || normalized.split('/').some(segment => segment === '' || segment === '.' || segment === '..')) {
+    throw new InvalidCandidateError('packagePath must be a safe repository-relative directory')
+  }
+  return normalized
+}
+
+export function registryPluginId(repository, packagePath = '') {
+  const normalized = normalizePackagePath(packagePath)
+  return normalized === '' ? repository : repository + '&path:/' + normalized
 }
 
 /** Validate package metadata and return the Registry identity fields. */
@@ -118,7 +138,7 @@ export function validateManifest(text) {
  * is not sufficient to require a build when the runtime files are committed
  * and the author explicitly documents GitHub installation for this plugin.
  */
-export function classifyInstall(identity, repository, treePaths, readmeText, verifiedGitHubRepositories = [repository]) {
+export function classifyInstall(identity, repository, treePaths, readmeText, verifiedGitHubRepositories = [repository], packagePath = '') {
   const hints = identity.installHints
   const files = new Set(treePaths.map(normalizeRepoPath))
   const artifactGroups = hints.runtimeEntryGroups.map(group => {
@@ -126,7 +146,8 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
     return { label: group.label, paths: group.paths, found }
   })
   const runtimeArtifactsCommitted = artifactGroups.length > 0 && artifactGroups.every(group => group.found !== null)
-  const readme = readmeInstallEvidence(readmeText ?? '', identity.packageName, verifiedGitHubRepositories)
+  const normalizedPackagePath = normalizePackagePath(packagePath)
+  const readme = readmeInstallEvidence(readmeText ?? '', identity.packageName, verifiedGitHubRepositories, normalizedPackagePath)
   const fallbackProfiles = identity.hasClient ? ['web'] : []
   // A README placeholder means the author supports a caller-selected profile.
   // Registry v2 cannot express a wildcard without breaking older strict
@@ -156,8 +177,12 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
     || !runtimeArtifactsCommitted
     || hints.declaredRequiresBuildApproval === true
     || prepareNeedsApproval
+  const subdirectoryNeedsEvidence = normalizedPackagePath !== ''
+    && hints.declaredProfiles === undefined
+    && !readme.directGitHub
   const manualSteps = requiresBuildApproval
     || (hints.declaredManualSteps ?? profiles.length === 0)
+    || subdirectoryNeedsEvidence
   const reviewReasons = []
   const resolvedReasons = []
   if (hasPrepare && runtimeArtifactsCommitted && readme.directGitHub && !requiresBuildApproval) {
@@ -175,6 +200,9 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
   }
   if (readme.unverifiedGitHubRepositories.length > 0) {
     reviewReasons.push('readme-github-repository-owner-does-not-resolve-to-this-candidate')
+  }
+  if (subdirectoryNeedsEvidence) {
+    reviewReasons.push('subdirectory-package-has-no-matching-path-install-command-or-manifest-declaration')
   }
   const requiresManualReview = reviewReasons.length > 0
   return {
@@ -257,7 +285,7 @@ export function validateBundlePatch(text, packageName) {
 }
 
 /** Construct the public Registry row after both files passed. */
-export function verifiedPlugin(candidate, commit, identity, verifiedAt, installOverride = undefined) {
+export function verifiedPlugin(candidate, commit, identity, verifiedAt, installOverride = undefined, packagePath = '') {
   const license = plainObject(candidate.license) && typeof candidate.license.spdx_id === 'string'
     ? candidate.license.spdx_id
     : null
@@ -265,7 +293,10 @@ export function verifiedPlugin(candidate, commit, identity, verifiedAt, installO
     ? candidate.owner.login
     : candidate.full_name.split('/')[0]
   const { installHints, ...publicIdentity } = identity
+  const normalizedPackagePath = normalizePackagePath(packagePath)
+  const id = registryPluginId(candidate.full_name, normalizedPackagePath)
   const githubSpec = 'github:' + candidate.full_name + '#' + commit
+    + (normalizedPackagePath === '' ? '' : '&path:/' + normalizedPackagePath)
   const source = installOverride?.source ?? 'github'
   const profiles = installOverride?.profiles ?? installHints.profiles
   const requiresBuildApproval = installOverride?.requiresBuildApproval ?? installHints.requiresBuildApproval
@@ -281,6 +312,8 @@ export function verifiedPlugin(candidate, commit, identity, verifiedAt, installO
     owner,
     repo: candidate.name,
     fullName: candidate.full_name,
+    id,
+    packagePath: normalizedPackagePath,
     description: typeof candidate.description === 'string' ? candidate.description : null,
     stars: integer(candidate.stargazers_count),
     forks: integer(candidate.forks_count),
@@ -290,7 +323,9 @@ export function verifiedPlugin(candidate, commit, identity, verifiedAt, installO
     updatedAt: iso(candidate.updated_at),
     defaultBranch: candidate.default_branch,
     verifiedCommit: commit,
-    htmlUrl: candidate.html_url,
+    htmlUrl: normalizedPackagePath === ''
+      ? candidate.html_url
+      : candidate.html_url + '/tree/' + commit + '/' + encodeRawPath(normalizedPackagePath),
     topics: Array.isArray(candidate.topics) ? candidate.topics.filter(topic => typeof topic === 'string') : [],
     ...publicIdentity,
     install: {
@@ -301,7 +336,9 @@ export function verifiedPlugin(candidate, commit, identity, verifiedAt, installO
       requiresBuildApproval,
       requiresRestart,
       manualSteps,
-      instructionsUrl: installOverride?.instructionsUrl ?? candidate.html_url + '#readme',
+      instructionsUrl: installOverride?.instructionsUrl ?? (normalizedPackagePath === ''
+        ? candidate.html_url + '#readme'
+        : candidate.html_url + '/tree/' + commit + '/' + encodeRawPath(normalizedPackagePath) + '#readme'),
     },
     verifiedAt,
   }
@@ -328,9 +365,16 @@ export function refreshPluginMetadata(plugin, candidate) {
     license,
     updatedAt: iso(candidate.updated_at),
     defaultBranch: candidate.default_branch,
-    htmlUrl: candidate.html_url,
+    htmlUrl: plugin.packagePath === ''
+      ? candidate.html_url
+      : candidate.html_url + '/tree/' + plugin.verifiedCommit + '/' + encodeRawPath(plugin.packagePath),
     topics: Array.isArray(candidate.topics) ? candidate.topics.filter(topic => typeof topic === 'string') : [],
-    install: { ...plugin.install, instructionsUrl: candidate.html_url + '#readme' },
+    install: {
+      ...plugin.install,
+      instructionsUrl: plugin.packagePath === ''
+        ? candidate.html_url + '#readme'
+        : candidate.html_url + '/tree/' + plugin.verifiedCommit + '/' + encodeRawPath(plugin.packagePath) + '#readme',
+    },
   }
 }
 
@@ -394,7 +438,7 @@ export function readmeGitHubRepositories(text) {
   return repositories
 }
 
-function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
+function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories, expectedPackagePath) {
   const profiles = new Set()
   const specs = []
   const unverifiedGitHubRepositories = new Set()
@@ -412,7 +456,7 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
       && !allowedRepositories.has(github.toLocaleLowerCase())) {
       unverifiedGitHubRepositories.add(github)
     }
-    const kind = matchingInstallSpec(spec, packageName, allowedRepositories)
+    const kind = matchingInstallSpec(spec, packageName, allowedRepositories, expectedPackagePath)
     if (kind === null) continue
     if (commandAnyProfile) anyProfile = true
     else profiles.add(profile)
@@ -463,19 +507,32 @@ function shellLikeTokens(value) {
   return tokens
 }
 
-function matchingInstallSpec(spec, packageName, allowedRepositories) {
+function matchingInstallSpec(spec, packageName, allowedRepositories, expectedPackagePath) {
   const lower = spec.toLocaleLowerCase()
-  const github = githubRepositoryFromSpec(spec)
-  if (github !== null) return allowedRepositories.has(github.toLocaleLowerCase()) ? 'github' : null
+  const github = githubSpecifierFromSpec(spec)
+  if (github !== null) {
+    return allowedRepositories.has(github.repository.toLocaleLowerCase())
+      && github.packagePath === expectedPackagePath.toLocaleLowerCase()
+      ? 'github'
+      : null
+  }
   if (lower === packageName.toLocaleLowerCase() || lower.startsWith(packageName.toLocaleLowerCase() + '@')) return 'npm'
   if (/^https:\/\/.+\.tgz(?:[?#].*)?$/i.test(spec)) return 'tarball'
   return null
 }
 
 function githubRepositoryFromSpec(spec) {
+  return githubSpecifierFromSpec(spec)?.repository ?? null
+}
+
+function githubSpecifierFromSpec(spec) {
   const github = /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)([^/#]+)\/([^/#&]+)(?:[&#].*)?$/i.exec(spec)
   if (github === null) return null
-  return github[1] + '/' + github[2].replace(/\.git$/i, '')
+  const pathMatch = /(?:^|&)path:\/([^&]+)(?:&|$)/i.exec(spec)
+  return {
+    repository: github[1] + '/' + github[2].replace(/\.git$/i, ''),
+    packagePath: (pathMatch?.[1] ?? '').replace(/\/$/, '').toLocaleLowerCase(),
+  }
 }
 
 function normalizeRepoPath(value) {

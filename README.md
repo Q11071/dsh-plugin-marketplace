@@ -8,10 +8,11 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
 
 1. GitHub Action 每天搜索一次 `topic:dsh-plugin archived:false`。
 2. 扫描器读取候选仓库默认分支当前 commit，并将其解析为不可变的 40 位 SHA。
-3. 扫描器在该 SHA 下静态读取并验证 `package.json`、`dsh.bundle.patch`
-   指向的 YAML 文件及 loader entry；不会安装依赖，也不会执行第三方代码或
-   YAML 中的 `!!js` 内容。
-4. 验证成功的仓库进入 `registry/plugins.json`；失败原因写入
+3. 扫描器在该 SHA 下枚举根目录及子目录的 `package.json`，分别验证
+   `dsh.bundle.patch` 指向的 YAML 文件及 loader entry；不会安装依赖，也不会执行
+   第三方代码或 YAML 中的 `!!js` 内容。monorepo 的运行产物、补丁和 README 均以
+   各自 package 目录为基准解析。
+4. 验证成功的 package 进入 `registry/plugins.json`；失败原因写入
    `registry/rejected.json`，不会出现在市场中。安装证据有冲突或不足时，插件仍
    可展示，但只提供引导安装，并写入 `registry/install-review.json` 等待复核。
 5. 未变化且已经验证/拒绝的仓库复用上次结果；有新提交、首次发现或上次网络
@@ -28,7 +29,7 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
 ## 安装市场插件
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.2.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.3.0
 ```
 
 本地开发安装：
@@ -38,7 +39,9 @@ dsh plugin --profile web add D:/path/to/dsh_Market
 ```
 
 重启 DSH 后打开“设置 → 插件 → 插件市场”。市场内包含“插件市场”和“已安装插件”
-两个子页面；后者读取当前运行 Profile，可检查 Registry 更新、执行更新和卸载。
+两个子页面；后者读取当前运行 Profile，可检查 Registry 更新、执行更新、卸载，
+也可把 bundle 从 `dsh.profile.bundles` 中停用或重新启用。启停不删除依赖，重启
+DSH 后生效；更新其他插件也不会意外重新启用已停用 bundle。
 npm 包内自带构建后的 `lib/`
 和当次发布的 Registry 快照，因此远程 Registry 暂时不可用时仍可读取快照。
 
@@ -80,7 +83,8 @@ pnpm registry:scan
 ```
 
 不要把 token 写入仓库。扫描器处理 GitHub Search 的 1,000 条结果上限，会按
-仓库创建日期自动分区；文件大小上限为 `package.json` 256 KiB、补丁 64 KiB。
+仓库创建日期自动分区；文件大小上限为 `package.json` 256 KiB、补丁 64 KiB，
+单仓库最多检查 256 个 package manifest。
 
 ## 验证规则
 
@@ -93,14 +97,17 @@ pnpm registry:scan
 - patch 至少插入一个 `name` 等于该 npm 包名的 loader entry；
 - 所有被发布字段和精确 commit 均通过 Registry schema 校验。
 
-Registry v2 的每个插件还包含 `install` 字段。安装分类不是只看某一个文件或
+Registry v3 使用 `owner/repo + packagePath` 作为插件身份：根 package 的 `id` 是
+`owner/repo`，子目录 package 的 `id` 是 `owner/repo&path:/子目录`；精确 GitHub
+安装源相应写成 `github:owner/repo#commit&path:/子目录`。因此同一个 monorepo 的
+多个 bundle 不会互相覆盖。v3 的每个插件还包含 `install` 字段。安装分类不是只看某一个文件或
 关键词，而是交叉检查：
 
 - `package.json` 中的 host/client 入口及可选 `dsh.marketplace` 声明；
 - Git tree 中是否真的提交了入口对应的运行产物；
 - README 是否明确给出 `dsh plugin --profile ... add github:...`；
 - README 使用旧 owner/别名时，其 GitHub repository ID 是否与候选仓库一致；
-- README 中的 `<profile>` / `<name>` 表示调用者选择 Profile；Registry v2 会保守映射
+- README 中的 `<profile>` / `<name>` 表示调用者选择 Profile；Registry v3 会保守映射
   到 DSH 自带的 `web`、`headless` 模板，带 Web client 的插件只映射到 `web`；
 - `add` 与安装源之间允许 pnpm 的 `-w` / `--workspace-root` 等选项，但仍要求 DSH
   官方 CLI 必需的 `--profile`，省略 Profile 的示例不会成为自动安装证据；
@@ -129,7 +136,8 @@ Registry v2 的每个插件还包含 `install` 字段。安装分类不是只看
 
 中心 Registry 可通过 `policy/install-overrides.json` 为已核对官方 README 的仓库
 补充 npm、专用 Profile 或人工安装信息。npm、tarball 和 manual 来源默认只提供
-引导说明；当前自动执行限定为与验证 commit 完全一致的 GitHub spec。
+引导说明；monorepo package 使用完整 `owner/repo&path:/子目录` 作为 override key。
+当前自动执行限定为与验证 commit 和 packagePath 完全一致的 GitHub spec。
 
 这能挡住错误 topic、普通仓库和结构不完整的伪插件，但不能证明插件代码本身
 无恶意。安装仍意味着插件在下一次启动后拥有本机进程权限，因此 UI 保留风险确认。
@@ -141,6 +149,7 @@ Registry v2 的每个插件还包含 `install` 字段。安装分类不是只看
 
 ```powershell
 pnpm registry:test
+pnpm profile:test
 pnpm build
 pnpm verify
 pnpm exec tsc --noEmit

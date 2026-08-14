@@ -17,16 +17,18 @@ import type {
   MarketplacePluginDetails,
   MarketplaceRegistryPlugin,
   MarketplaceSearchPage,
+  MarketplaceToggleResult,
 } from '../types.ts'
 import type { PluginMarketplaceLocaleKey } from './locales.ts'
 
 /** Registration-side Remote face used by the section. */
 export interface MarketplaceTabInjected {
   search: (query: string, page: number, sort: 'stars' | 'updated') => Promise<MarketplaceSearchPage>
-  details: (repo: string, ref: string) => Promise<MarketplacePluginDetails>
-  install: (repo: string, ref: string) => Promise<string>
-  update: (repo: string, ref: string) => Promise<string>
+  details: (repo: string, packagePath: string, ref: string) => Promise<MarketplacePluginDetails>
+  install: (repo: string, packagePath: string, ref: string) => Promise<string>
+  update: (repo: string, packagePath: string, ref: string) => Promise<string>
   uninstall: (packageName: string) => Promise<string>
+  setEnabled: (packageName: string, enabled: boolean) => Promise<MarketplaceToggleResult>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
   installed: () => Promise<MarketplaceInstalled>
 }
@@ -45,6 +47,7 @@ type ViewState =
 type ConfirmRequest = {
   mode: 'install' | 'update' | 'uninstall'
   repo: string
+  packagePath: string
   ref: string
   packageName: string
 }
@@ -128,7 +131,7 @@ function jobPhaseLabel(phase: string, t: MarketplaceTabProps['t']): string {
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, install, update, uninstall, jobStatus, installed, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, install, update, uninstall, setEnabled, jobStatus, installed, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
@@ -148,6 +151,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null)
   const [acknowledged, setAcknowledged] = useState(false)
   const [banner, setBanner] = useState<string | null>(null)
+  const [toggleBusy, setToggleBusy] = useState<string | null>(null)
 
   // Debounce the free-text query.
   useEffect(() => {
@@ -190,20 +194,20 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
 
   useEffect(() => { refreshInstalled() }, [refreshInstalled])
 
-  const loadDetails = useCallback((repo: string, verifiedCommit: string): Promise<MarketplacePluginDetails> => {
-    const cached = detailsMap.get(repo)
+  const loadDetails = useCallback((id: string, repo: string, packagePath: string, verifiedCommit: string): Promise<MarketplacePluginDetails> => {
+    const cached = detailsMap.get(id)
     if (cached !== undefined) return Promise.resolve(cached)
-    return details(repo, verifiedCommit).then((result) => {
-      setDetailsMap((current) => new Map(current).set(repo, result))
+    return details(repo, packagePath, verifiedCommit).then((result) => {
+      setDetailsMap((current) => new Map(current).set(id, result))
       setDetailErrors((current) => {
         const next = new Map(current)
-        next.delete(repo)
+        next.delete(id)
         return next
       })
       return result
     }).catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error)
-      setDetailErrors((current) => new Map(current).set(repo, message))
+      setDetailErrors((current) => new Map(current).set(id, message))
       throw error
     })
   }, [details, detailsMap])
@@ -250,9 +254,9 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
     return () => { window.clearInterval(handle) }
   }, [jobs, jobStatus, refreshInstalled, t])
 
-  const openConfirm = (mode: ConfirmRequest['mode'], repo: string, ref: string, packageName: string): void => {
+  const openConfirm = (mode: ConfirmRequest['mode'], repo: string, packagePath: string, ref: string, packageName: string): void => {
     setAcknowledged(false)
-    setConfirm({ mode, repo, ref, packageName })
+    setConfirm({ mode, repo, packagePath, ref, packageName })
   }
 
   const runConfirm = (): void => {
@@ -263,8 +267,8 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
     const start = request.mode === 'uninstall'
       ? uninstall(request.packageName)
       : request.mode === 'update'
-        ? update(request.repo, request.ref)
-        : install(request.repo, request.ref)
+        ? update(request.repo, request.packagePath, request.ref)
+        : install(request.repo, request.packagePath, request.ref)
     void start.then((jobId) => { trackJob(jobId, request.mode, request.packageName) }).catch((error: unknown) => {
       setBanner(error instanceof Error ? error.message : String(error))
     })
@@ -272,7 +276,9 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
 
   const onInstall = (item: MarketplaceRegistryPlugin): void => {
     void loadDetails(
+      item.id,
       item.fullName === '' ? item.owner + '/' + item.repo : item.fullName,
+      item.packagePath,
       item.verifiedCommit,
     ).then((result) => {
       if (result.manifest === null || result.manifest.bundlePatch === null) {
@@ -283,10 +289,26 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
         setBanner(t('alreadyInstalled'))
         return
       }
-      openConfirm('install', result.repo, result.resolvedRef, result.manifest.name)
+      openConfirm('install', result.repo, result.packagePath, result.resolvedRef, result.manifest.name)
     }).catch((error: unknown) => {
       setBanner(error instanceof Error ? error.message : String(error))
     })
+  }
+
+  const onSetEnabled = (entry: MarketplaceInstalledEntry): void => {
+    const enabled = !entry.enabled
+    setToggleBusy(entry.packageName)
+    void setEnabled(entry.packageName, enabled).then((result) => {
+      setInstalledMap((current) => {
+        const next = new Map(current)
+        const value = next.get(result.packageName)
+        if (value !== undefined) next.set(result.packageName, { ...value, enabled: result.enabled })
+        return next
+      })
+      if (result.requiresRestart) setBanner(t('restartBanner'))
+    }).catch((error: unknown) => {
+      setBanner(error instanceof Error ? error.message : String(error))
+    }).finally(() => { setToggleBusy(null) })
   }
 
   const retry = (): void => { setSeq((value) => value + 1) }
@@ -341,18 +363,18 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
             <ul style={s.cards}>
               {ready.items.map((item) => (
                 <CardRow
-                  key={item.fullName}
+                  key={item.id}
                   item={item}
                   t={t}
                   currentProfile={installedProfile}
                   isInstalled={installedMap.has(item.packageName)}
-                  expanded={expanded === item.fullName}
-                  detail={detailsMap.get(item.fullName)}
-                  detailError={detailErrors.get(item.fullName)}
+                  expanded={expanded === item.id}
+                  detail={detailsMap.get(item.id)}
+                  detailError={detailErrors.get(item.id)}
                   onToggle={() => {
-                    if (expanded === item.fullName) { setExpanded(null); return }
-                    setExpanded(item.fullName)
-                    void loadDetails(item.fullName, item.verifiedCommit).catch(() => { /* the error renders in the card */ })
+                    if (expanded === item.id) { setExpanded(null); return }
+                    setExpanded(item.id)
+                    void loadDetails(item.id, item.fullName, item.packagePath, item.verifiedCommit).catch(() => { /* the error renders in the card */ })
                   }}
                   onInstall={() => { onInstall(item) }}
                 />
@@ -376,10 +398,12 @@ export function MarketplaceTab({ search, details, install, update, uninstall, jo
           onRetry={refreshInstalled}
           onUpdate={(entry) => {
             if (entry.registryRepo !== null && entry.verifiedCommit !== null) {
-              openConfirm('update', entry.registryRepo, entry.verifiedCommit, entry.packageName)
+              openConfirm('update', entry.registryRepo, entry.packagePath, entry.verifiedCommit, entry.packageName)
             }
           }}
-          onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
+          onUninstall={(entry) => { openConfirm('uninstall', '', '', '', entry.packageName) }}
+          onSetEnabled={onSetEnabled}
+          toggleBusy={toggleBusy}
         />
       )}
       {jobs.size > 0 ? (
@@ -432,12 +456,13 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
     <li style={s.card}>
       <div style={s.cardBody}>
         <div style={s.titleRow}>
-          <strong style={s.title} title={item.fullName}>{item.fullName}</strong>
+          <strong style={s.title} title={item.id}>{item.fullName}</strong>
           <span style={s.tag}>{t('verified')}</span>
         </div>
         <p style={s.description} title={item.description ?? undefined}>{item.description === null || item.description === '' ? '\u00A0' : item.description}</p>
         <div style={s.metaRow}>
           {meta.map((value) => <span key={value} style={s.meta}>{value}</span>)}
+          {item.packagePath !== '' ? <span style={s.meta}>/{item.packagePath}</span> : null}
           {detail !== undefined && detail.manifest?.hasClient === true ? <span style={s.tag}>{t('hasClient')}</span> : null}
         </div>
         <div style={s.actions}>
@@ -491,9 +516,11 @@ interface InstalledListProps {
   onRetry: () => void
   onUpdate: (entry: MarketplaceInstalledEntry) => void
   onUninstall: (entry: MarketplaceInstalledEntry) => void
+  onSetEnabled: (entry: MarketplaceInstalledEntry) => void
+  toggleBusy: string | null
 }
 
-function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninstall }: InstalledListProps): ReactNode {
+function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninstall, onSetEnabled, toggleBusy }: InstalledListProps): ReactNode {
   if (loading) return <p style={s.muted}>{t('loadingInstalled')}</p>
   if (error !== null) {
     return (
@@ -521,6 +548,7 @@ function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninst
                   ? t('updateAvailable')
                   : t('upToDate')}
             </span>
+            <span style={entry.enabled ? s.tag : s.meta}>{entry.enabled ? t('enabled') : t('disabled')}</span>
           </div>
           <div style={s.installedActions}>
             {entry.updateAvailable && entry.canUpdate ? (
@@ -530,6 +558,9 @@ function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninst
             ) : (
               <Button variant='outline' size='sm' disabled>{t('upToDate')}</Button>
             )}
+            <Button variant='outline' size='sm' disabled={toggleBusy === entry.packageName} onClick={() => { onSetEnabled(entry) }}>
+              {entry.enabled ? t('disable') : t('enable')}
+            </Button>
             <Button variant='outline' size='sm' onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
           </div>
         </li>

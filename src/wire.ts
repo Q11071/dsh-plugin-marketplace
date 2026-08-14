@@ -41,6 +41,8 @@ const repoSummarySchema = z.object({
   verifiedCommit: z.string(),
   htmlUrl: z.string(),
   topics: z.array(z.string()),
+  id: z.string(),
+  packagePath: z.string(),
   packageName: z.string(),
   version: z.string(),
   bundlePatch: z.string(),
@@ -60,6 +62,7 @@ const manifestSchema = z.object({
 
 const detailsValueSchema = z.object({
   repo: z.string(),
+  packagePath: z.string(),
   ref: z.string(),
   resolvedRef: z.string(),
   manifest: z.union([manifestSchema, z.null()]),
@@ -102,8 +105,11 @@ const installedValueSchema = z.object({
     packageName: z.string(),
     version: z.string(),
     isBundle: z.boolean(),
+    enabled: z.boolean(),
     currentSpec: z.string(),
     registryRepo: z.union([z.string(), z.null()]),
+    registryId: z.union([z.string(), z.null()]),
+    packagePath: z.string(),
     availableVersion: z.union([z.string(), z.null()]),
     verifiedCommit: z.union([z.string(), z.null()]),
     updateAvailable: z.boolean(),
@@ -120,11 +126,13 @@ const searchRequestSchema = z.object({
 
 const detailsRequestSchema = z.object({
   repo: z.string(),
+  packagePath: z.string(),
   ref: z.string(),
 })
 
 const installRequestSchema = z.object({
   repo: z.string(),
+  packagePath: z.string(),
   ref: z.string(),
 })
 
@@ -134,6 +142,17 @@ const jobStatusRequestSchema = z.object({
 
 const uninstallRequestSchema = z.object({
   packageName: z.string(),
+})
+
+const toggleRequestSchema = z.object({
+  packageName: z.string(),
+  enabled: z.boolean(),
+})
+
+const toggleValueSchema = z.object({
+  packageName: z.string(),
+  enabled: z.boolean(),
+  requiresRestart: z.boolean(),
 })
 
 /** Business failure: typed code + message + optional payload. */
@@ -194,6 +213,7 @@ export const TYPERT = {
     invocation('installPlugin', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('update', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('uninstall', [param('request', uninstallRequestSchema, `${REQUEST_TYPES}MarketplaceUninstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
+    invocation('setEnabled', [param('request', toggleRequestSchema, `${REQUEST_TYPES}MarketplaceToggleRequest`)], result(resultSchema(toggleValueSchema), `${REQUEST_TYPES}MarketplaceToggleOutcome`)),
     invocation('jobStatus', [param('request', jobStatusRequestSchema, `${REQUEST_TYPES}MarketplaceJobStatusRequest`)], result(resultSchema(jobStatusValueSchema), `${REQUEST_TYPES}MarketplaceJobStatusOutcome`)),
     invocation('installed', [], result(resultSchema(installedValueSchema), `${REQUEST_TYPES}MarketplaceInstalledOutcome`)),
   ],

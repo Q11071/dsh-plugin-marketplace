@@ -19,6 +19,8 @@ import type {
   MarketplaceSearchPage,
   MarketplaceSearchRequest,
   MarketplaceUninstallRequest,
+  MarketplaceToggleRequest,
+  MarketplaceToggleResult,
 } from './types.ts'
 
 export type { MarketplaceJobHandle } from './types.ts'
@@ -30,6 +32,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     installPlugin: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     update: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     uninstall: (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    setEnabled: (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     jobStatus: (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     installed: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
   }
@@ -39,6 +42,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/installPlugin': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/update': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/uninstall': (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    'marketplace/setEnabled': (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     'marketplace/jobStatus': (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     'marketplace/installed': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
   }

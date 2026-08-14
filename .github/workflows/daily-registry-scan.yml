@@ -27,6 +27,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:test
+      - run: pnpm profile:test
       - name: Discover and validate candidates
         run: pnpm registry:scan
         env:

@@ -8,6 +8,8 @@ import {
   InvalidCandidateError,
   classifyInstall,
   encodeRawPath,
+  normalizePackagePath,
+  registryPluginId,
   safePatchPath,
   validateBundlePatch,
   validateManifest,
@@ -29,6 +31,9 @@ assert.equal(safePatchPath('./nested/plugin.yml'), true)
 assert.equal(safePatchPath('../outside.yml'), false)
 assert.equal(safePatchPath('C:/outside.yml'), false)
 assert.equal(encodeRawPath('./nested/plugin.yml'), 'nested/plugin.yml')
+assert.equal(normalizePackagePath('./packages/plugin/'), 'packages/plugin')
+assert.equal(registryPluginId('owner/repo', 'packages/plugin'), 'owner/repo&path:/packages/plugin')
+assertInvalid(() => normalizePackagePath('../outside'), 'unsafe monorepo packagePath')
 
 assertInvalid(
   () => validateManifest('{"name":"bad","version":"1.0.0"}'),
@@ -55,7 +60,46 @@ const row = verifiedPlugin({
 }, 'a'.repeat(40), marketplaceClassification.identity, '2026-08-13T00:00:00Z')
 assert.equal(row.install.mode, 'automatic')
 assert.equal(row.install.spec, 'github:owner/repo#' + 'a'.repeat(40))
+assert.equal(row.id, 'owner/repo')
+assert.equal(row.packagePath, '')
 assert.deepEqual(row.install.profiles, ['web'])
+
+const monorepoRow = verifiedPlugin({
+  full_name: 'owner/repo',
+  name: 'repo',
+  default_branch: 'main',
+  html_url: 'https://github.com/owner/repo',
+  updated_at: '2026-08-13T00:00:00Z',
+  owner: { login: 'owner' },
+}, 'b'.repeat(40), marketplaceClassification.identity, '2026-08-13T00:00:00Z', undefined, 'packages/plugin/console')
+assert.equal(monorepoRow.id, 'owner/repo&path:/packages/plugin/console')
+assert.equal(monorepoRow.packagePath, 'packages/plugin/console')
+assert.equal(monorepoRow.install.spec, 'github:owner/repo#' + 'b'.repeat(40) + '&path:/packages/plugin/console')
+assert.equal(monorepoRow.htmlUrl, 'https://github.com/owner/repo/tree/' + 'b'.repeat(40) + '/packages/plugin/console')
+
+const monorepoClassification = classifyInstall(
+  identity,
+  'owner/repo',
+  ['lib/index.js', 'lib/client.js'],
+  'dsh plugin --profile web add "github:owner/repo#main&path:/packages/plugin/console"',
+  ['owner/repo'],
+  'packages/plugin/console',
+)
+assert.equal(monorepoClassification.identity.installHints.manualSteps, false)
+assert.equal(monorepoClassification.inspection.readme.directGitHub, true)
+
+const wrongMonorepoPath = classifyInstall(
+  identity,
+  'owner/repo',
+  ['lib/index.js', 'lib/client.js'],
+  'dsh plugin --profile web add "github:owner/repo#main&path:/packages/another-plugin"',
+  ['owner/repo'],
+  'packages/plugin/console',
+)
+assert.equal(wrongMonorepoPath.identity.installHints.manualSteps, true)
+assert.ok(wrongMonorepoPath.inspection.reviewReasons.includes(
+  'subdirectory-package-has-no-matching-path-install-command-or-manifest-declaration',
+))
 
 const prepareManifest = validateManifest(JSON.stringify({
   name: '@dsh-external/dsh-side-panel',

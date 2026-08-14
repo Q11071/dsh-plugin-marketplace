@@ -13,7 +13,9 @@ import {
   candidateFingerprint,
   classifyInstall,
   encodeRawPath,
+  normalizePackagePath,
   readmeGitHubRepositories,
+  registryPluginId,
   refreshPluginMetadata,
   validateBundlePatch,
   validateManifest,
@@ -34,6 +36,7 @@ const apiHeaders = {
 }
 const rawHeaders = { 'user-agent': 'dsh-plugin-registry' }
 const now = new Date().toISOString()
+const MAX_PACKAGE_MANIFESTS = 256
 
 const statePath = path.join(root, 'registry', 'state.json')
 const pluginsPath = path.join(root, 'registry', 'plugins.json')
@@ -75,8 +78,8 @@ await Promise.all(Array.from({ length: workers }, async () => {
 
 async function processCandidate(candidate) {
   const key = candidate.full_name.toLocaleLowerCase()
-  const installOverride = installOverrides.get(key)
-  const fingerprint = candidateFingerprint(candidate, installOverride)
+  const repositoryOverrides = overridesForRepository(candidate.full_name)
+  const fingerprint = candidateFingerprint(candidate, repositoryOverrides)
   const old = plainObject(previous[key]) ? previous[key] : undefined
   const blockedReason = denylist.get(key)
   if (blockedReason !== undefined) {
@@ -86,31 +89,30 @@ async function processCandidate(candidate) {
   if (old !== undefined
     && sameFingerprint(old.fingerprint, fingerprint)
     && old.status === 'verified'
-    && plainObject(old.plugin)
-    && validInstallMetadata(old.plugin.install)
-    && validInspection(old.inspection)) {
+    && validPluginCollection(old.plugins)
+    && validInspectionCollection(old.inspections)) {
     next[key] = {
       ...stateRow(candidate, fingerprint, 'verified', null),
       checkedAt: old.checkedAt,
       commit: old.commit,
-      plugin: refreshPluginMetadata(old.plugin, candidate),
-      inspection: old.inspection,
+      plugins: old.plugins.map(plugin => refreshPluginMetadata(plugin, candidate)),
+      inspections: old.inspections,
     }
     reused += 1
     return
   }
-  if (old !== undefined && sameRepositoryFingerprint(old.fingerprint, fingerprint) && old.status === 'invalid') {
+  if (old !== undefined && sameFingerprint(old.fingerprint, fingerprint) && old.status === 'invalid') {
     next[key] = { ...stateRow(candidate, fingerprint, 'invalid', old.reason), checkedAt: old.checkedAt }
     reused += 1
     return
   }
   try {
-    const result = await validateCandidate(candidate, installOverride)
+    const result = await validateCandidate(candidate)
     next[key] = {
       ...stateRow(candidate, fingerprint, 'verified', null),
       commit: result.commit,
-      plugin: result.plugin,
-      inspection: result.inspection,
+      plugins: result.plugins,
+      inspections: result.inspections,
     }
   } catch (error) {
     if (error instanceof InvalidCandidateError) {
@@ -131,9 +133,9 @@ for (const [key, value] of Object.entries(previous)) {
 }
 
 const plugins = Object.values(next)
-  .filter(row => plainObject(row) && row.status === 'verified' && plainObject(row.plugin))
-  .map(row => row.plugin)
-  .sort((left, right) => left.fullName.localeCompare(right.fullName))
+  .filter(row => plainObject(row) && row.status === 'verified' && validPluginCollection(row.plugins))
+  .flatMap(row => row.plugins)
+  .sort((left, right) => left.id.localeCompare(right.id))
 const rejected = Object.values(next)
   .filter(row => plainObject(row) && row.status !== 'verified')
   .map(row => ({
@@ -145,8 +147,8 @@ const rejected = Object.values(next)
   .sort((left, right) => left.repository.localeCompare(right.repository))
 const installReview = installReviewRows(next)
 
-await atomicJson(statePath, { schemaVersion: 2, generatedAt: now, repositories: sortObject(next) })
-await atomicJson(pluginsPath, { schemaVersion: 2, generatedAt: now, plugins })
+await atomicJson(statePath, { schemaVersion: 3, generatedAt: now, repositories: sortObject(next) })
+await atomicJson(pluginsPath, { schemaVersion: 3, generatedAt: now, plugins })
 await atomicJson(rejectedPath, { schemaVersion: 1, generatedAt: now, repositories: rejected })
 await atomicJson(installReviewPath, { schemaVersion: 1, generatedAt: now, repositories: installReview })
 console.log(
@@ -201,7 +203,7 @@ async function searchPage(query, page) {
   return { totalCount: integer(response.total_count), items }
 }
 
-async function validateCandidate(candidate, installOverride) {
+async function validateCandidate(candidate) {
   const commitResponse = await apiJson(new URL(
     'https://api.github.com/repos/' + candidate.full_name + '/commits/' + encodeURIComponent(candidate.default_branch),
   ), true)
@@ -210,8 +212,6 @@ async function validateCandidate(candidate, installOverride) {
     throw new RetryCandidateError('GitHub did not return the default-branch commit SHA')
   }
   const rawBase = 'https://raw.githubusercontent.com/' + candidate.full_name + '/' + commit + '/'
-  const manifestText = await rawText(new URL(rawBase + 'package.json'), MAX_MANIFEST_BYTES, 'package.json')
-  const identity = validateManifest(manifestText)
   const treeResponse = await apiJson(new URL(
     'https://api.github.com/repos/' + candidate.full_name + '/git/trees/' + commit + '?recursive=1',
   ), true)
@@ -220,39 +220,82 @@ async function validateCandidate(candidate, installOverride) {
       .filter(entry => plainObject(entry) && entry.type === 'blob' && typeof entry.path === 'string')
       .map(entry => entry.path)
     : []
-  if (treeResponse.truncated === true) {
-    const known = new Set(treePaths)
-    for (const group of identity.installHints.runtimeEntryGroups) {
-      for (const entryPath of group.paths) {
-        if (!known.has(entryPath) && await rawExists(new URL(rawBase + encodeRawPath(entryPath)))) {
-          treePaths.push(entryPath)
-          known.add(entryPath)
+  const manifestPaths = treePaths
+    .filter(value => value === 'package.json' || value.endsWith('/package.json'))
+    .filter(value => !value.split('/').includes('node_modules'))
+    .sort((left, right) => pathDepth(left) - pathDepth(right) || left.localeCompare(right))
+  if (manifestPaths.length > MAX_PACKAGE_MANIFESTS) {
+    throw new InvalidCandidateError('repository contains more than ' + String(MAX_PACKAGE_MANIFESTS) + ' package.json files; narrow the plugin workspace')
+  }
+  const rootReadmePath = preferredReadme(treePaths)
+  const rootReadmeText = rootReadmePath === null
+    ? null
+    : await optionalRawText(new URL(rawBase + encodeRawPath(rootReadmePath)), MAX_README_BYTES, rootReadmePath)
+  const plugins = []
+  const inspections = []
+  for (const manifestPath of manifestPaths) {
+    const packagePath = normalizePackagePath(path.posix.dirname(manifestPath) === '.' ? '' : path.posix.dirname(manifestPath))
+    try {
+      const manifestText = await rawText(new URL(rawBase + encodeRawPath(manifestPath)), MAX_MANIFEST_BYTES, manifestPath)
+      const identity = validateManifest(manifestText)
+      const packageTreePaths = relativePackagePaths(treePaths, packagePath)
+      if (treeResponse.truncated === true) {
+        const known = new Set(packageTreePaths)
+        for (const group of identity.installHints.runtimeEntryGroups) {
+          for (const entryPath of group.paths) {
+            if (!known.has(entryPath) && await rawExists(packageRawUrl(rawBase, packagePath, entryPath))) {
+              packageTreePaths.push(entryPath)
+              known.add(entryPath)
+            }
+          }
         }
       }
+      const packageReadmePath = preferredReadme(packageTreePaths)
+      const readmeText = packageReadmePath === null
+        ? rootReadmeText
+        : await optionalRawText(
+          packageRawUrl(rawBase, packagePath, packageReadmePath),
+          MAX_README_BYTES,
+          joinPackagePath(packagePath, packageReadmePath),
+        )
+      const verifiedGitHubRepositories = await verifiedReadmeRepositories(candidate, readmeText)
+      const classification = classifyInstall(
+        identity,
+        candidate.full_name,
+        packageTreePaths,
+        readmeText,
+        verifiedGitHubRepositories,
+        packagePath,
+      )
+      if (suspiciousPackagePath(packagePath) && !classification.inspection.readme.directGitHub) continue
+      const patchLabel = joinPackagePath(packagePath, classification.identity.bundlePatch)
+      const patchText = await rawText(
+        packageRawUrl(rawBase, packagePath, classification.identity.bundlePatch),
+        MAX_PATCH_BYTES,
+        patchLabel,
+      )
+      validateBundlePatch(patchText, classification.identity.packageName)
+      const id = registryPluginId(candidate.full_name, packagePath)
+      const installOverride = installOverrides.get(id.toLocaleLowerCase())
+      plugins.push(verifiedPlugin(candidate, commit, classification.identity, now, installOverride, packagePath))
+      inspections.push({
+        id,
+        packagePath,
+        ...classification.inspection,
+        treeTruncated: treeResponse.truncated === true,
+      })
+    } catch (error) {
+      if (error instanceof InvalidCandidateError) continue
+      throw error
     }
   }
-  const readmePath = preferredReadme(treePaths)
-  const readmeText = readmePath === null
-    ? null
-    : await optionalRawText(new URL(rawBase + encodeRawPath(readmePath)), MAX_README_BYTES, readmePath)
-  const verifiedGitHubRepositories = await verifiedReadmeRepositories(candidate, readmeText)
-  const classification = classifyInstall(
-    identity,
-    candidate.full_name,
-    treePaths,
-    readmeText,
-    verifiedGitHubRepositories,
-  )
-  const patchText = await rawText(
-    new URL(rawBase + encodeRawPath(classification.identity.bundlePatch)),
-    MAX_PATCH_BYTES,
-    classification.identity.bundlePatch,
-  )
-  validateBundlePatch(patchText, classification.identity.packageName)
+  if (plugins.length === 0) {
+    throw new InvalidCandidateError('no package.json in the repository declares a valid DSH bundle')
+  }
   return {
     commit,
-    plugin: verifiedPlugin(candidate, commit, classification.identity, now, installOverride),
-    inspection: { ...classification.inspection, treeTruncated: treeResponse.truncated === true },
+    plugins,
+    inspections,
   }
 }
 
@@ -423,11 +466,6 @@ function sameFingerprint(previousFingerprint, currentFingerprint) {
   return previousFingerprint === currentFingerprint
 }
 
-function sameRepositoryFingerprint(previousFingerprint, currentFingerprint) {
-  if (typeof previousFingerprint !== 'string') return false
-  return previousFingerprint.split('\n').slice(0, 3).join('\n') === currentFingerprint.split('\n').slice(0, 3).join('\n')
-}
-
 async function readJson(file) {
   return JSON.parse(await readFile(file, 'utf8'))
 }
@@ -462,6 +500,24 @@ function validInstallMetadata(value) {
     && typeof value.instructionsUrl === 'string'
 }
 
+function validPluginCollection(value) {
+  return Array.isArray(value)
+    && value.length > 0
+    && value.every(plugin => plainObject(plugin)
+      && typeof plugin.id === 'string'
+      && typeof plugin.packagePath === 'string'
+      && validInstallMetadata(plugin.install))
+}
+
+function validInspectionCollection(value) {
+  return Array.isArray(value)
+    && value.length > 0
+    && value.every(inspection => plainObject(inspection)
+      && typeof inspection.id === 'string'
+      && typeof inspection.packagePath === 'string'
+      && validInspection(inspection))
+}
+
 function validInspection(value) {
   return plainObject(value)
     && value.classifierVersion === INSTALL_CLASSIFIER_VERSION
@@ -484,29 +540,35 @@ function preferredReadme(paths) {
 function installReviewRows(state) {
   const rows = []
   for (const row of Object.values(state)) {
-    if (!plainObject(row) || row.status !== 'verified' || !plainObject(row.plugin) || !validInspection(row.inspection)) continue
-    const inspection = row.inspection
-    if (inspection.reviewReasons.length > 0) {
-      rows.push(reviewRow(row, 'needs-review', inspection.reviewReasons))
-    } else if (row.plugin.install.mode === 'automatic' && inspection.resolvedReasons.length > 0) {
-      rows.push(reviewRow(row, 'auto-resolved', inspection.resolvedReasons))
+    if (!plainObject(row) || row.status !== 'verified' || !validPluginCollection(row.plugins) || !validInspectionCollection(row.inspections)) continue
+    const plugins = new Map(row.plugins.map(plugin => [plugin.id, plugin]))
+    for (const inspection of row.inspections) {
+      const plugin = plugins.get(inspection.id)
+      if (plugin === undefined) continue
+      if (inspection.reviewReasons.length > 0) {
+        rows.push(reviewRow(row, plugin, inspection, 'needs-review', inspection.reviewReasons))
+      } else if (plugin.install.mode === 'automatic' && inspection.resolvedReasons.length > 0) {
+        rows.push(reviewRow(row, plugin, inspection, 'auto-resolved', inspection.resolvedReasons))
+      }
     }
   }
-  return rows.sort((left, right) => left.repository.localeCompare(right.repository))
+  return rows.sort((left, right) => left.id.localeCompare(right.id))
 }
 
-function reviewRow(row, status, reasons) {
+function reviewRow(row, plugin, inspection, status, reasons) {
   return {
     repository: row.repository,
+    id: plugin.id,
+    packagePath: plugin.packagePath,
     status,
-    mode: row.plugin.install.mode,
+    mode: plugin.install.mode,
     reasons,
-    profiles: row.inspection.profiles,
-    profileSource: row.inspection.profileSource,
-    lifecycleScripts: row.inspection.lifecycleScripts,
-    runtimeArtifactsCommitted: row.inspection.runtimeArtifactsCommitted,
-    artifactGroups: row.inspection.artifactGroups,
-    readme: row.inspection.readme,
+    profiles: inspection.profiles,
+    profileSource: inspection.profileSource,
+    lifecycleScripts: inspection.lifecycleScripts,
+    runtimeArtifactsCommitted: inspection.runtimeArtifactsCommitted,
+    artifactGroups: inspection.artifactGroups,
+    readme: inspection.readme,
     checkedAt: row.checkedAt,
   }
 }
@@ -516,26 +578,59 @@ function installOverrideMap(document) {
     throw new Error('policy/install-overrides.json has an invalid root object')
   }
   const result = new Map()
-  for (const [repo, value] of Object.entries(document.repositories)) {
-    if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !plainObject(value)) {
-      throw new Error('invalid install override for ' + repo)
+  for (const [id, value] of Object.entries(document.repositories)) {
+    const match = /^([\w.-]+\/[\w.-]+)(?:&path:\/(.+))?$/.exec(id)
+    if (match === null || !plainObject(value)) {
+      throw new Error('invalid install override for ' + id)
     }
+    const canonical = registryPluginId(match[1], match[2] ?? '')
     const allowed = new Set(['source', 'spec', 'profiles', 'requiresBuildApproval', 'requiresRestart', 'manualSteps', 'instructionsUrl'])
-    if (Object.keys(value).some(key => !allowed.has(key))) throw new Error('unknown install override field for ' + repo)
-    if (value.source !== undefined && !['github', 'npm', 'tarball', 'manual'].includes(value.source)) throw new Error('invalid install source for ' + repo)
-    if (value.spec !== undefined && typeof value.spec !== 'string') throw new Error('invalid install spec for ' + repo)
+    if (Object.keys(value).some(key => !allowed.has(key))) throw new Error('unknown install override field for ' + id)
+    if (value.source !== undefined && !['github', 'npm', 'tarball', 'manual'].includes(value.source)) throw new Error('invalid install source for ' + id)
+    if (value.spec !== undefined && typeof value.spec !== 'string') throw new Error('invalid install spec for ' + id)
     if (value.profiles !== undefined && (!Array.isArray(value.profiles) || value.profiles.some(profile => typeof profile !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,63}$/.test(profile)))) {
-      throw new Error('invalid install profiles for ' + repo)
+      throw new Error('invalid install profiles for ' + id)
     }
     for (const field of ['requiresBuildApproval', 'requiresRestart', 'manualSteps']) {
-      if (value[field] !== undefined && typeof value[field] !== 'boolean') throw new Error('invalid ' + field + ' for ' + repo)
+      if (value[field] !== undefined && typeof value[field] !== 'boolean') throw new Error('invalid ' + field + ' for ' + id)
     }
     if (value.instructionsUrl !== undefined) {
-      if (typeof value.instructionsUrl !== 'string' || new URL(value.instructionsUrl).protocol !== 'https:') throw new Error('invalid instructionsUrl for ' + repo)
+      if (typeof value.instructionsUrl !== 'string' || new URL(value.instructionsUrl).protocol !== 'https:') throw new Error('invalid instructionsUrl for ' + id)
     }
-    result.set(repo.toLocaleLowerCase(), value)
+    result.set(canonical.toLocaleLowerCase(), value)
   }
   return result
+}
+
+function overridesForRepository(repository) {
+  const prefix = repository.toLocaleLowerCase()
+  return Object.fromEntries([...installOverrides.entries()]
+    .filter(([id]) => id === prefix || id.startsWith(prefix + '&path:/'))
+    .sort(([left], [right]) => left.localeCompare(right)))
+}
+
+function pathDepth(value) {
+  return value.split('/').length
+}
+
+function relativePackagePaths(treePaths, packagePath) {
+  if (packagePath === '') return [...treePaths]
+  const prefix = packagePath + '/'
+  return treePaths.filter(value => value.startsWith(prefix)).map(value => value.slice(prefix.length))
+}
+
+function joinPackagePath(packagePath, value) {
+  const relative = String(value).replace(/^\.\//, '')
+  return packagePath === '' ? relative : packagePath + '/' + relative
+}
+
+function packageRawUrl(rawBase, packagePath, value) {
+  return new URL(rawBase + encodeRawPath(joinPackagePath(packagePath, value)))
+}
+
+function suspiciousPackagePath(packagePath) {
+  const blocked = new Set(['.dev', '.github', 'test', 'tests', 'fixture', 'fixtures', 'example', 'examples', 'vendor', 'third-party'])
+  return packagePath.split('/').some(segment => blocked.has(segment.toLocaleLowerCase()))
 }
 
 function messageOf(error) {

@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:dsh:plugin-registry:v2",
+  "$id": "urn:dsh:plugin-registry:v3",
   "title": "DSH verified plugin registry",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "generatedAt", "plugins"],
   "properties": {
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "generatedAt": { "type": "string", "format": "date-time" },
     "plugins": {
       "type": "array",
@@ -16,7 +16,7 @@
         "required": [
           "owner", "repo", "fullName", "description", "stars", "forks",
           "openIssues", "language", "license", "updatedAt", "defaultBranch",
-          "verifiedCommit", "htmlUrl", "topics", "packageName", "version",
+          "verifiedCommit", "htmlUrl", "topics", "id", "packagePath", "packageName", "version",
           "bundlePatch", "hasClient", "verifiedAt", "install"
         ],
         "properties": {
@@ -34,6 +34,8 @@
           "verifiedCommit": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
           "htmlUrl": { "type": "string", "format": "uri" },
           "topics": { "type": "array", "items": { "type": "string" } },
+          "id": { "type": "string", "minLength": 1 },
+          "packagePath": { "type": "string", "pattern": "^(?:|(?!.*(?:^|/)\\.{1,2}(?:/|$))[^/\\\\]+(?:/[^/\\\\]+)*)$" },
           "packageName": { "type": "string", "minLength": 1 },
           "version": { "type": "string", "minLength": 1 },
           "bundlePatch": { "type": "string", "minLength": 1 },

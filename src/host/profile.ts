@@ -19,6 +19,7 @@ import {
   type ProfileManifest,
 } from '@deepseek-ai/dsh-app-boot'
 import type { MarketplaceInstalledEntry } from '../types.ts'
+import { reconcileBundleNames, toggleBundleName } from './bundle-state.ts'
 
 const NAME = 'dsh'
 
@@ -103,31 +104,34 @@ export function installedVersion(packageName: string, dir: string): string | nul
  */
 export function reconcileBundles(before: ProfileManifest, dir: string): ProfileManifest {
   const after = readProfileManifest(NAME, dir)
-  const beforeDeps = new Set(Object.keys(before.dependencies ?? {}))
+  const beforeDeps = Object.keys(before.dependencies ?? {})
   const dependencies = Object.keys(after.dependencies ?? {})
-  const plugins = [...(after.dsh?.profile?.bundles ?? [])]
-  let changed = false
-  for (const packageName of dependencies) {
-    const isBundle = exportsPatch(packageName, dir)
-    if (isBundle && !plugins.includes(packageName)) {
-      plugins.push(packageName)
-      changed = true
-    }
-  }
-  const dependencySet = new Set(dependencies)
-  for (const packageName of [...plugins]) {
-    const wasDependency = beforeDeps.has(packageName) || dependencySet.has(packageName)
-    const stillBundle = dependencySet.has(packageName) && exportsPatch(packageName, dir)
-    if (wasDependency && !stillBundle) {
-      plugins.splice(plugins.indexOf(packageName), 1)
-      changed = true
-    }
-  }
-  if (changed) {
+  // Existing dependencies absent from the layer list are deliberately
+  // disabled. Only newly added bundles join automatically.
+  const current = after.dsh?.profile?.bundles ?? []
+  const plugins = reconcileBundleNames(beforeDeps, dependencies, current, packageName => exportsPatch(packageName, dir))
+  if (!sameNames(current, plugins)) {
     after.dsh = { ...after.dsh, profile: { ...after.dsh?.profile, bundles: plugins } }
     writeProfileManifest(dir, after)
   }
   return after
+}
+
+/** Persist whether one installed bundle participates in the Profile layer stack. */
+export function setBundleEnabled(packageName: string, enabled: boolean, dir: string): boolean {
+  const manifest = readProfileManifest(NAME, dir)
+  if (manifest.dependencies?.[packageName] === undefined || !exportsPatch(packageName, dir)) return false
+  const current = manifest.dsh?.profile?.bundles ?? []
+  const bundles = toggleBundleName(current, packageName, enabled)
+  if (!sameNames(current, bundles)) {
+    manifest.dsh = { ...manifest.dsh, profile: { ...manifest.dsh?.profile, bundles } }
+    writeProfileManifest(dir, manifest)
+  }
+  return true
+}
+
+function sameNames(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index])
 }
 
 /** Installed dependency rows with versions and bundle-layer membership. */
@@ -138,12 +142,16 @@ export function installedEntries(manifest: ProfileManifest, dir: string): Market
     const version = installedVersion(packageName, dir)
     if (version === null) continue
     const declared = manifest.dependencies?.[packageName]
+    const isBundle = exportsPatch(packageName, dir)
     entries.push({
       packageName,
       version,
-      isBundle: bundles.has(packageName),
+      isBundle,
+      enabled: isBundle && bundles.has(packageName),
       currentSpec: typeof declared === 'string' ? declared : '',
       registryRepo: null,
+      registryId: null,
+      packagePath: '',
       availableVersion: null,
       verifiedCommit: null,
       updateAvailable: false,
