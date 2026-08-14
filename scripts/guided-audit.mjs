@@ -66,18 +66,40 @@ async function audit(plugin) {
 }
 
 async function githubReadme(repository, commit) {
-  const response = await fetch('https://api.github.com/repos/' + repository + '/readme?ref=' + commit, {
-    headers: {
-      accept: 'application/vnd.github.raw+json',
-      authorization: 'Bearer ' + token,
-      'user-agent': 'dsh-plugin-registry-audit',
-      'x-github-api-version': '2022-11-28',
-    },
-    signal: AbortSignal.timeout(20_000),
-  })
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(repository + ' README returned HTTP ' + response.status)
-  return { path: response.headers.get('content-location'), text: await response.text() }
+  const url = 'https://api.github.com/repos/' + repository + '/readme?ref=' + commit
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    let response
+    try {
+      response = await fetch(url, {
+        headers: {
+          accept: 'application/vnd.github.raw+json',
+          authorization: 'Bearer ' + token,
+          'user-agent': 'dsh-plugin-registry-audit',
+          'x-github-api-version': '2022-11-28',
+        },
+        signal: AbortSignal.timeout(20_000),
+      })
+    } catch (error) {
+      if (attempt === 3) throw new Error(repository + ' README request failed: ' + messageOf(error))
+      await retryDelay(attempt)
+      continue
+    }
+    if (response.status === 404) return null
+    if (response.ok) return { path: response.headers.get('content-location'), text: await response.text() }
+    const retryable = response.status === 408 || response.status === 429 || response.status >= 500
+    await response.body?.cancel()
+    if (!retryable || attempt === 3) throw new Error(repository + ' README returned HTTP ' + response.status)
+    await retryDelay(attempt)
+  }
+  throw new Error(repository + ' README retry budget exhausted')
+}
+
+function retryDelay(attempt) {
+  return new Promise(resolve => setTimeout(resolve, 500 * (2 ** attempt)))
+}
+
+function messageOf(error) {
+  return error instanceof Error ? error.message : String(error)
 }
 
 function installCommands(text) {
