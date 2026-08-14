@@ -151,6 +151,7 @@ export function installedEntries(manifest: ProfileManifest, dir: string): Market
       currentSpec: typeof declared === 'string' ? declared : '',
       registryRepo: null,
       availableVersion: null,
+      availableVersionSource: null,
       verifiedCommit: null,
       updateAvailable: false,
       canUpdate: false,

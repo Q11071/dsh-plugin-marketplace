@@ -157,6 +157,8 @@ export interface MarketplaceInstalledEntry {
   /** Registry repository when this installed package is centrally managed. */
   registryRepo: string | null
   availableVersion: string | null
+  /** Where the available version was read from. Self-update uses the live repository. */
+  availableVersionSource: 'registry' | 'repository' | null
   verifiedCommit: string | null
   updateAvailable: boolean
   canUpdate: boolean

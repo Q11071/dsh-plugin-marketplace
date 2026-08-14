@@ -66,6 +66,7 @@ type RestartState = 'idle' | 'requesting' | 'restarting'
 const POLL_MS = 700
 const DEBOUNCE_MS = 400
 const RESULT_PAGE_SIZE = 30
+const SELF_PACKAGE = 'dsh-plugin-marketplace'
 const CATEGORY_OPTIONS: MarketplacePluginCategory[] = [
   'ui',
   'agents',
@@ -408,6 +409,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
   const rate = ready?.rate ?? null
   const hasActiveJobs = [...jobs.values()].some((job) => job.finishedAt === null)
   const restartDisabled = restartState !== 'idle' || hasActiveJobs
+  const isSelfUpdate = confirm?.mode === 'update' && confirm.packageName === SELF_PACKAGE
 
   return (
     <div style={s.section} aria-busy={view.status === 'loading' || restartState !== 'idle'}>
@@ -535,11 +537,11 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
       ) : null}
       <RiskConfirmation
         open={confirm !== null}
-        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
-        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
+        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : isSelfUpdate ? t('confirmSelfUpdateTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
+        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : isSelfUpdate ? t('confirmSelfUpdateDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
         acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
-        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
+        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : isSelfUpdate ? t('selfUpdate') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
         onCancel={() => { setConfirm(null); setAcknowledged(false) }}
@@ -660,7 +662,9 @@ function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninst
             <strong style={s.title} title={entry.packageName}>{entry.packageName}</strong>
             <span style={s.muted} title={entry.currentSpec}>
               {fmt(t, 'installedVersion', { version: entry.version })}
-              {entry.availableVersion !== null ? ' · ' + fmt(t, 'registryVersion', { version: entry.availableVersion }) : ''}
+              {entry.availableVersion !== null
+                ? ' · ' + fmt(t, entry.availableVersionSource === 'repository' ? 'repositoryVersion' : 'registryVersion', { version: entry.availableVersion })
+                : ''}
             </span>
             <span style={entry.updateAvailable ? s.tag : s.meta}>
               {entry.registryRepo === null
@@ -673,7 +677,9 @@ function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninst
           </div>
           <div style={s.installedActions}>
             {entry.updateAvailable && entry.canUpdate ? (
-              <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>{t('update')}</Button>
+              <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
+                {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}
+              </Button>
             ) : entry.updateAvailable && entry.install !== null ? (
               <a style={s.link} href={entry.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
             ) : (

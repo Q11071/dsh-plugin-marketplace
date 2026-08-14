@@ -35,7 +35,7 @@ tarball 验证结果及保留引导安装的原因。公开 Registry 的格式�
 ## 安装市场插件
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.4.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.5.0
 ```
 
 本地开发安装：
@@ -50,6 +50,9 @@ dsh plugin --profile web add D:/path/to/dsh_Market
 DSH 后生效；更新其他插件也不会意外重新启用已停用 bundle。“已安装插件”页和
 “重启后生效”提示条均提供“重启 DSH”按钮：确认后会等待当前插件任务结束，使用
 相同启动参数和 Profile 自动重启，页面在服务恢复后自动刷新。
+插件市场自身不等待每日 Registry 刷新：“已安装插件”页会直接读取本仓库主分支
+`package.json` 的版本。发现新版本后显示“自更新”，执行时仍把安装来源固定为刚刚
+解析出的精确 commit，不会把可变的 `main` 直接交给 pnpm。
 市场还提供扫描时生成的分类筛选，以及“近期热门”排序。热门程度按当前 Star 数与
 最近 7 天最早日快照之间的正增长计算；每天只保存一个基线，不会增加 GitHub API
 请求。刚加入 Registry、还没有历史基线的插件增长值为 0。
@@ -170,6 +173,7 @@ pnpm registry:discovery
 pnpm discovery:test
 pnpm profile:test
 pnpm restart:test
+pnpm self-update:test
 pnpm build
 pnpm verify
 pnpm exec tsc --noEmit

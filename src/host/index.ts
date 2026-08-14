@@ -31,6 +31,15 @@ import { GitHubClient, GitHubError } from './github.ts'
 import { JobTable, runPnpmJob, type JobRecord } from './installer.ts'
 import { scheduleProcessRestart } from './restart.ts'
 import {
+  SELF_BRANCH,
+  SELF_PACKAGE,
+  SELF_REPOSITORY,
+  applySelfUpdate,
+  compareSemver,
+  selfUpdateTarget,
+  type SelfUpdateTarget,
+} from './self-update.ts'
+import {
   RegistryClient,
   RegistryConfigSchema,
   RegistryError,
@@ -80,6 +89,7 @@ export class MarketplaceService extends TypertRemoteService {
   private readonly github = new GitHubClient()
   private readonly registry: RegistryClient
   private readonly jobs = new JobTable()
+  private selfUpdateCache: { details: MarketplacePluginDetails; target: SelfUpdateTarget; expiresAt: number } | undefined
   private pendingInstallResolution = 0
   private restartPending = false
 
@@ -199,11 +209,25 @@ export class MarketplaceService extends TypertRemoteService {
     try {
       const profile = profileLocation(this.ctx)
       const entries = installedEntries(readProfileManifest(NAME, profile.dir), profile.dir)
+      let liveSelf: SelfUpdateTarget | undefined
+      if (entries.some(entry => entry.packageName === SELF_PACKAGE)) {
+        try {
+          liveSelf = (await this.liveSelfUpdate()).target
+        } catch {
+          // A repository outage must not hide the installed list. The normal
+          // Registry lookup below remains available as a conservative fallback.
+        }
+      }
       await Promise.all(entries.map(async (entry) => {
+        if (entry.packageName === SELF_PACKAGE && liveSelf !== undefined) {
+          Object.assign(entry, applySelfUpdate(entry, liveSelf, profile.name))
+          return
+        }
         const registered = await this.registry.findByPackage(entry.packageName)
         if (registered === undefined) return
         entry.registryRepo = registered.fullName
         entry.availableVersion = registered.version
+        entry.availableVersionSource = 'registry'
         entry.verifiedCommit = registered.verifiedCommit
         entry.install = registered.install
         const versionOrder = compareSemver(registered.version, entry.version)
@@ -258,17 +282,27 @@ export class MarketplaceService extends TypertRemoteService {
     }
     this.pendingInstallResolution += 1
     try {
-      const registered = await this.registry.find(repo)
+      const directSelfUpdate = kind === 'update'
+        && repo.trim().toLocaleLowerCase() === SELF_REPOSITORY.toLocaleLowerCase()
+      let registered: MarketplaceRegistryPlugin | SelfUpdateTarget | undefined
+      let details: MarketplacePluginDetails | undefined
+      if (directSelfUpdate) {
+        const live = await this.liveSelfUpdate(true)
+        registered = live.target
+        details = live.details
+      } else {
+        registered = await this.registry.find(repo)
+      }
       if (registered === undefined) {
         return fail('not-in-registry', repo + ' is not present in the verified DSH plugin Registry.')
       }
-      if (ref !== '' && ref.toLocaleLowerCase() !== registered.verifiedCommit.toLocaleLowerCase()) {
+      if (!directSelfUpdate && ref !== '' && ref.toLocaleLowerCase() !== registered.verifiedCommit.toLocaleLowerCase()) {
         return fail('unverified-ref', 'The requested ref is not the commit approved by the DSH plugin Registry.', {
           requestedRef: ref,
           verifiedCommit: registered.verifiedCommit,
         })
       }
-      const details = await this.github.details(registered.fullName, registered.verifiedCommit)
+      details ??= await this.github.details(registered.fullName, registered.verifiedCommit)
       const manifest = details.manifest
       if (manifest === null || manifest.bundlePatch === null || details.patch === null) {
         return fail(
@@ -311,6 +345,18 @@ export class MarketplaceService extends TypertRemoteService {
     }
   }
 
+  /** Read main/package.json directly, then freeze the update to its resolved commit. */
+  private async liveSelfUpdate(force = false): Promise<{ details: MarketplacePluginDetails; target: SelfUpdateTarget }> {
+    if (!force && this.selfUpdateCache !== undefined && Date.now() < this.selfUpdateCache.expiresAt) {
+      return this.selfUpdateCache
+    }
+    const details = await this.github.details(SELF_REPOSITORY, SELF_BRANCH)
+    const target = selfUpdateTarget(details)
+    const cached = { details, target, expiresAt: Date.now() + 5 * 60_000 }
+    this.selfUpdateCache = cached
+    return cached
+  }
+
   /** Detached job body: pnpm → reconcile → settle; failures land in the job. */
   private async drive(
     job: JobRecord,
@@ -343,7 +389,7 @@ export class MarketplaceService extends TypertRemoteService {
   }
 }
 
-function executableSpec(plugin: MarketplaceRegistryPlugin): string {
+function executableSpec(plugin: MarketplaceRegistryPlugin | SelfUpdateTarget): string {
   if (plugin.install.source === 'github') {
     const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
     if (plugin.install.spec.toLocaleLowerCase() !== expected.toLocaleLowerCase()) {
@@ -368,43 +414,5 @@ function executableSpec(plugin: MarketplaceRegistryPlugin): string {
 function isGitHubSpec(value: string): boolean {
   return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
 }
-
-/** Compare semver values without introducing a runtime dependency into the host bundle. */
-function compareSemver(left: string, right: string): number {
-  const parse = (value: string): { core: [number, number, number]; prerelease: string[] } | null => {
-    const match = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(value)
-    if (match === null) return null
-    return {
-      core: [Number(match[1]), Number(match[2]), Number(match[3])],
-      prerelease: match[4]?.split('.') ?? [],
-    }
-  }
-  const a = parse(left)
-  const b = parse(right)
-  if (a === null || b === null) return left === right ? 0 : -1
-  for (let index = 0; index < 3; index += 1) {
-    const av = a.core[index]!
-    const bv = b.core[index]!
-    if (av !== bv) return av > bv ? 1 : -1
-  }
-  if (a.prerelease.length === 0 || b.prerelease.length === 0) {
-    if (a.prerelease.length === b.prerelease.length) return 0
-    return a.prerelease.length === 0 ? 1 : -1
-  }
-  const maximum = Math.max(a.prerelease.length, b.prerelease.length)
-  for (let index = 0; index < maximum; index += 1) {
-    const av = a.prerelease[index]
-    const bv = b.prerelease[index]
-    if (av === undefined || bv === undefined) return av === undefined ? -1 : 1
-    if (av === bv) continue
-    const an = /^\d+$/.test(av)
-    const bn = /^\d+$/.test(bv)
-    if (an && bn) return Number(av) > Number(bv) ? 1 : -1
-    if (an !== bn) return an ? -1 : 1
-    return av.localeCompare(bv) > 0 ? 1 : -1
-  }
-  return 0
-}
-
 
 export default MarketplaceService

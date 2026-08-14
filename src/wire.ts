@@ -121,6 +121,7 @@ const installedValueSchema = z.object({
     currentSpec: z.string(),
     registryRepo: z.union([z.string(), z.null()]),
     availableVersion: z.union([z.string(), z.null()]),
+    availableVersionSource: z.union([z.literal('registry'), z.literal('repository'), z.null()]),
     verifiedCommit: z.union([z.string(), z.null()]),
     updateAvailable: z.boolean(),
     canUpdate: z.boolean(),
