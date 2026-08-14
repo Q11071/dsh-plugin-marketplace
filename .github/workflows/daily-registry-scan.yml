@@ -2,7 +2,7 @@ name: Refresh verified plugin Registry
 
 on:
   schedule:
-    - cron: '17 2 * * *'
+    - cron: '17 */2 * * *'
   workflow_dispatch:
 
 permissions:
@@ -29,14 +29,15 @@ jobs:
       - run: pnpm registry:test
       - run: pnpm discovery:test
       - run: pnpm profile:test
+      - run: pnpm self-update:test
       - name: Discover and validate candidates
         run: pnpm registry:scan
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
       - name: Audit every guided install classification
         run: pnpm registry:audit
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
       - name: Verify generated Registry
         run: pnpm registry:verify
       - name: Commit Registry changes

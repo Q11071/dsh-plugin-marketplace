@@ -6,7 +6,7 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
 
 ## 工作方式
 
-1. GitHub Action 每天搜索一次 `topic:dsh-plugin archived:false`。
+1. GitHub Action 每两小时搜索一次 `topic:dsh-plugin archived:false`。
 2. 扫描器读取候选仓库默认分支当前 commit，并将其解析为不可变的 40 位 SHA。
 3. 扫描器在该 SHA 下静态读取并验证 `package.json`、`dsh.bundle.patch`
    指向的 YAML 文件及 loader entry；若同一精确版本已发布到 npm，还会下载
@@ -16,7 +16,7 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
    `registry/rejected.json`，不会出现在市场中。安装证据有冲突或不足时，插件仍
    可展示，但只提供引导安装，并写入 `registry/install-review.json` 等待复核。
 5. 未变化且已确认可从精确 GitHub commit 自动安装的仓库复用上次结果；引导安装
-   和 npm 来源每天重新核验，以便新发布的 npm 版本自动解除错误的引导分类。
+   和 npm 来源每两小时重新核验，以便新发布的 npm 版本自动解除错误的引导分类。
    临时网络失败保留上一次有效结果，不会造成市场条目批量下架。
 6. Registry 同时记录安装来源、兼容 Profile、构建授权、重启和人工步骤；客户端
    只对当前 Profile 中满足自动安装条件的插件开放一键安装。
@@ -28,7 +28,7 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
 `registry/discovery.json` 发布分类和 Star 增长元数据，又不改变旧客户端严格读取的
 `plugins.json` v2 格式。`registry/install-review.json` 记录安装
 分类所依据的 README 命令、Profile、生命周期脚本和运行产物；
-`registry/guided-audit.json` 每天逐项记录所有引导安装条目的 README 命令、npm
+`registry/guided-audit.json` 每轮逐项记录所有引导安装条目的 README 命令、npm
 tarball 验证结果及保留引导安装的原因。公开 Registry 的格式由
 `registry/schema.json` 描述。
 
@@ -50,7 +50,7 @@ dsh plugin --profile web add D:/path/to/dsh_Market
 DSH 后生效；更新其他插件也不会意外重新启用已停用 bundle。“已安装插件”页和
 “重启后生效”提示条均提供“重启 DSH”按钮：确认后会等待当前插件任务结束，使用
 相同启动参数和 Profile 自动重启，页面在服务恢复后自动刷新。
-插件市场自身不等待每日 Registry 刷新：“已安装插件”页会直接读取本仓库主分支
+插件市场自身不等待定时 Registry 刷新：“已安装插件”页会直接读取本仓库主分支
 `package.json` 的版本。发现新版本后显示“自更新”，执行时仍把安装来源固定为刚刚
 解析出的精确 commit，不会把可变的 `main` 直接交给 pnpm。
 市场还提供扫描时生成的分类筛选，以及“近期热门”排序。热门程度按当前 Star 数与
@@ -82,11 +82,17 @@ dsh web --profile web
 
 ## 自动扫描
 
-`.github/workflows/daily-registry-scan.yml` 默认每天 UTC 02:17 执行，也支持
-在 Actions 页面手动运行。工作流使用仓库自动提供的 `GITHUB_TOKEN`，验证后只
-提交五个 Registry JSON 文件。按 GitHub 当前计费规则，公开仓库使用标准
-GitHub-hosted runner 免费；私有仓库会消耗账户套餐包含的分钟数，超额后计费。
+.github/workflows/daily-registry-scan.yml` 默认每两小时在第 17 分钟执行，也支持
+在 Actions 页面手动运行。扫描和引导审计优先使用 Actions Secret
+`REGISTRY_GITHUB_TOKEN` 中的只读 PAT；未配置时回退到仓库自动提供的
+`GITHUB_TOKEN`。PAT 不参与 Registry 提交，写入仍由 Actions checkout 的内置
+凭据完成。按 GitHub 当前计费规则，公开仓库使用标准 GitHub-hosted runner 免费；
+私有仓库会消耗账户套餐包含的分钟数，超额后计费。
 参见 [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)。
+
+在仓库“Settings → Secrets and variables → Actions”中添加
+`REGISTRY_GITHUB_TOKEN` 后即可启用 PAT 额度。令牌只保存在 GitHub Secrets，
+不要写入工作流、README 或任何提交。
 
 首次在本机生成 Registry：
 
