@@ -97,7 +97,8 @@ pnpm registry:audit
 ```
 
 不要把 token 写入仓库。扫描器处理 GitHub Search 的 1,000 条结果上限，会按
-仓库创建日期自动分区；文件大小上限为 `package.json` 256 KiB、补丁 64 KiB、
+仓库创建时间自动细分到秒，并在 Search 配额重置后继续；文件大小上限为
+`package.json` 256 KiB、补丁 64 KiB、
 npm 压缩包 50 MiB、解包内容 150 MiB。
 
 ## 验证规则

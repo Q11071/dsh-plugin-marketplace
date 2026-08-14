@@ -193,21 +193,21 @@ async function discoverAll() {
   const first = await searchPage(base, 1)
   if (first.totalCount <= 1000) return await remainingPages(base, first)
   const start = new Date(Date.UTC(2008, 0, 1))
-  const end = new Date()
+  const end = new Date(Math.floor(Date.now() / 1000) * 1000)
   const partitions = await discoverRange(start, end)
   return dedupe(partitions.flat())
 }
 
 async function discoverRange(start, end) {
-  const qualifier = ' created:' + date(start) + '..' + date(end)
+  const qualifier = ' created:' + timestamp(start) + '..' + timestamp(end)
   const query = 'topic:dsh-plugin archived:false fork:false' + qualifier
   const first = await searchPage(query, 1)
   if (first.totalCount <= 1000) return [await remainingPages(query, first)]
-  const days = Math.floor((end.getTime() - start.getTime()) / 86_400_000)
-  if (days <= 0) throw new Error('More than 1,000 dsh-plugin candidates share creation date ' + date(start))
-  const leftDays = Math.floor(days / 2)
-  const middle = new Date(start.getTime() + leftDays * 86_400_000)
-  const rightStart = new Date(middle.getTime() + 86_400_000)
+  const seconds = Math.floor((end.getTime() - start.getTime()) / 1000)
+  if (seconds <= 0) throw new Error('More than 1,000 dsh-plugin candidates share creation second ' + timestamp(start))
+  const leftSeconds = Math.floor(seconds / 2)
+  const middle = new Date(start.getTime() + leftSeconds * 1000)
+  const rightStart = new Date(middle.getTime() + 1000)
   const left = await discoverRange(start, middle)
   const right = await discoverRange(rightStart, end)
   return [...left, ...right]
@@ -550,8 +550,8 @@ function sortObject(value) {
   return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)))
 }
 
-function date(value) {
-  return value.toISOString().slice(0, 10)
+function timestamp(value) {
+  return value.toISOString().replace('.000Z', 'Z')
 }
 
 function integer(value) {
