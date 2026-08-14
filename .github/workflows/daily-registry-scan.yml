@@ -37,6 +37,8 @@ jobs:
         run: pnpm registry:audit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify generated Registry
+        run: pnpm verify
       - name: Commit Registry changes
         shell: bash
         run: |
