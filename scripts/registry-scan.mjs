@@ -36,6 +36,8 @@ const apiHeaders = {
 }
 const rawHeaders = { 'user-agent': 'dsh-plugin-registry' }
 const now = new Date().toISOString()
+const MAX_RATE_WAIT_MS = 90_000
+let apiPausedUntil = 0
 
 const statePath = path.join(root, 'registry', 'state.json')
 const pluginsPath = path.join(root, 'registry', 'plugins.json')
@@ -323,28 +325,52 @@ function relevantNpmReviewReasons(reasons) {
 }
 
 async function apiJson(url, candidateRequest = false) {
-  let response
-  try {
-    response = await fetchWithRetry(url, { headers: apiHeaders }, 3)
-  } catch (error) {
-    if (candidateRequest) throw new RetryCandidateError('GitHub API request failed: ' + messageOf(error))
-    throw error
+  for (let rateAttempt = 0; rateAttempt < 4; rateAttempt += 1) {
+    await waitForApiWindow()
+    let response
+    try {
+      response = await fetchWithRetry(url, { headers: apiHeaders }, 3)
+    } catch (error) {
+      if (candidateRequest) throw new RetryCandidateError('GitHub API request failed: ' + messageOf(error))
+      throw error
+    }
+    if (response.status === 401) throw new Error('GitHub rejected GITHUB_TOKEN')
+    rememberApiWindow(response)
+    if (response.status === 403 || response.status === 429) {
+      const reset = response.headers.get('x-ratelimit-reset')
+      const message = 'GitHub API rate limit reached' + (reset === null ? '' : '; reset epoch ' + reset)
+      await response.body?.cancel()
+      if (apiPausedUntil > Date.now() && apiPausedUntil - Date.now() <= MAX_RATE_WAIT_MS && rateAttempt < 3) {
+        console.log(message + '; waiting before retry')
+        continue
+      }
+      if (candidateRequest) throw new RetryCandidateError(message)
+      throw new Error(message)
+    }
+    if (response.status === 404 && candidateRequest) throw new InvalidCandidateError('default branch has no readable commit')
+    if (!response.ok) {
+      const message = 'GitHub API returned HTTP ' + String(response.status)
+      if (candidateRequest && response.status >= 500) throw new RetryCandidateError(message)
+      if (candidateRequest) throw new InvalidCandidateError(message)
+      throw new Error(message)
+    }
+    return await response.json()
   }
-  if (response.status === 401) throw new Error('GitHub rejected GITHUB_TOKEN')
-  if (response.status === 403 || response.status === 429) {
-    const reset = response.headers.get('x-ratelimit-reset')
-    const message = 'GitHub API rate limit reached' + (reset === null ? '' : '; reset epoch ' + reset)
-    if (candidateRequest) throw new RetryCandidateError(message)
-    throw new Error(message)
-  }
-  if (response.status === 404 && candidateRequest) throw new InvalidCandidateError('default branch has no readable commit')
-  if (!response.ok) {
-    const message = 'GitHub API returned HTTP ' + String(response.status)
-    if (candidateRequest && response.status >= 500) throw new RetryCandidateError(message)
-    if (candidateRequest) throw new InvalidCandidateError(message)
-    throw new Error(message)
-  }
-  return await response.json()
+  throw new Error('GitHub API rate limit retry budget exhausted')
+}
+
+function rememberApiWindow(response) {
+  const remaining = Number(response.headers.get('x-ratelimit-remaining'))
+  const reset = Number(response.headers.get('x-ratelimit-reset'))
+  if (remaining !== 0 || !Number.isFinite(reset)) return
+  apiPausedUntil = Math.max(apiPausedUntil, reset * 1000 + 1_000)
+}
+
+async function waitForApiWindow() {
+  const delay = apiPausedUntil - Date.now()
+  if (delay <= 0) return
+  if (delay > MAX_RATE_WAIT_MS) throw new Error('GitHub API rate-limit reset is too far in the future')
+  await new Promise(resolve => setTimeout(resolve, delay))
 }
 
 async function rawText(url, maximum, label) {
