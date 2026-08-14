@@ -100,12 +100,17 @@ Registry v2 的每个插件还包含 `install` 字段。安装分类不是只看
 - Git tree 中是否真的提交了入口对应的运行产物；
 - README 是否明确给出 `dsh plugin --profile ... add github:...`；
 - README 使用旧 owner/别名时，其 GitHub repository ID 是否与候选仓库一致；
+- README 中的 `<profile>` / `<name>` 表示调用者选择 Profile；Registry v2 会保守映射
+  到 DSH 自带的 `web`、`headless` 模板，带 Web client 的插件只映射到 `web`；
+- `add` 与安装源之间允许 pnpm 的 `-w` / `--workspace-root` 等选项，但仍要求 DSH
+  官方 CLI 必需的 `--profile`，省略 Profile 的示例不会成为自动安装证据；
 - `preinstall` / `install` / `postinstall` / `prepare` 生命周期脚本；
 - README Profile 与 manifest 声明是否冲突。
 
 `preinstall`、`install`、`postinstall` 或缺少运行产物时始终要求构建授权。
 `prepare` 本身不再直接判为引导安装：只有运行产物已提交、且作者 README 明确
-记录 GitHub 安装命令时才可自动安装。证据缺失或互相矛盾的仓库保持引导安装，
+记录 GitHub 安装命令、也没有声明 `allowBuilds` / build approval 时才可自动安装。
+证据缺失或互相矛盾的仓库保持引导安装，
 并进入 `registry/install-review.json`，不会靠猜测放开一键安装。插件作者也可以在
 `package.json` 中声明更明确的信息：
 

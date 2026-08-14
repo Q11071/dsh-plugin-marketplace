@@ -104,6 +104,60 @@ const unverifiedOwnerOnly = classifyInstall(
 assert.equal(unverifiedOwnerOnly.identity.installHints.requiresBuildApproval, false)
 assert.equal(unverifiedOwnerOnly.identity.installHints.manualSteps, true)
 
+const anyProfile = classifyInstall(
+  validateManifest(JSON.stringify({
+    name: 'any-profile-plugin',
+    version: '1.0.0',
+    main: './index.js',
+    dsh: { bundle: { patch: './cordis.patch.yml' } },
+  })),
+  'owner/any-profile-plugin',
+  ['index.js'],
+  'dsh plugin --profile <profile> add github:owner/any-profile-plugin',
+)
+assert.equal(anyProfile.inspection.readme.anyProfile, true)
+assert.deepEqual(anyProfile.identity.installHints.profiles, ['headless', 'web'])
+assert.equal(anyProfile.identity.installHints.manualSteps, false)
+
+const workspaceRootOption = classifyInstall(
+  identity,
+  'owner/repo',
+  ['lib/index.js', 'lib/client.js'],
+  'dsh plugin --profile web add -w github:owner/repo#<reviewed-commit>',
+)
+assert.equal(workspaceRootOption.inspection.readme.directGitHub, true)
+assert.deepEqual(workspaceRootOption.identity.installHints.profiles, ['web'])
+assert.equal(workspaceRootOption.identity.installHints.manualSteps, false)
+
+const missingRequiredProfile = classifyInstall(
+  identity,
+  'owner/repo',
+  ['lib/index.js', 'lib/client.js'],
+  'dsh plugin add github:owner/repo',
+)
+assert.equal(missingRequiredProfile.inspection.readme.directGitHub, false)
+assert.equal(missingRequiredProfile.identity.installHints.manualSteps, false)
+assert.deepEqual(missingRequiredProfile.identity.installHints.profiles, ['web'])
+
+const placeholderOwner = classifyInstall(
+  identity,
+  'owner/repo',
+  ['lib/index.js', 'lib/client.js'],
+  'dsh plugin --profile <profile> add github:you/repo',
+)
+assert.equal(placeholderOwner.inspection.readme.directGitHub, false)
+assert.equal(placeholderOwner.identity.installHints.manualSteps, true)
+assert.deepEqual(placeholderOwner.inspection.readme.unverifiedGitHubRepositories, ['you/repo'])
+
+const documentedBuildApproval = classifyInstall(
+  prepareManifest,
+  'ccq1/dsh-side-panel',
+  ['lib/index.js', 'lib/client.js'],
+  'dsh plugin --profile web add github:ccq1/dsh-side-panel\nAdd it to allowBuilds before installing.',
+)
+assert.equal(documentedBuildApproval.identity.installHints.requiresBuildApproval, true)
+assert.equal(documentedBuildApproval.identity.installHints.manualSteps, true)
+
 const prepareUndocumented = classifyInstall(
   prepareManifest,
   'ccq1/dsh-side-panel',

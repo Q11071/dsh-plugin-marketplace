@@ -5,7 +5,7 @@ import { parseDocument } from 'yaml'
 export const MAX_MANIFEST_BYTES = 256 * 1024
 export const MAX_PATCH_BYTES = 64 * 1024
 export const MAX_README_BYTES = 256 * 1024
-export const INSTALL_CLASSIFIER_VERSION = 5
+export const INSTALL_CLASSIFIER_VERSION = 6
 
 /** Candidate is structurally not a DSH bundle. */
 export class InvalidCandidateError extends Error {
@@ -128,11 +128,21 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
   const runtimeArtifactsCommitted = artifactGroups.length > 0 && artifactGroups.every(group => group.found !== null)
   const readme = readmeInstallEvidence(readmeText ?? '', identity.packageName, verifiedGitHubRepositories)
   const fallbackProfiles = identity.hasClient ? ['web'] : []
-  const profiles = hints.declaredProfiles ?? (readme.profiles.length > 0 ? readme.profiles : fallbackProfiles)
+  // A README placeholder means the author supports a caller-selected profile.
+  // Registry v2 cannot express a wildcard without breaking older strict
+  // clients, so publish the two DSH-owned profile templates. A Web client is
+  // intrinsically restricted to web even when its README says <profile>.
+  const anyProfileFallback = identity.hasClient ? ['web'] : ['headless', 'web']
+  const readmeProfiles = readme.profiles.length > 0
+    ? readme.profiles
+    : readme.anyProfile
+      ? anyProfileFallback
+      : []
+  const profiles = hints.declaredProfiles ?? (readmeProfiles.length > 0 ? readmeProfiles : fallbackProfiles)
   const profileSource = hints.declaredProfiles !== undefined
     ? 'manifest'
-    : readme.profiles.length > 0
-      ? 'readme'
+    : readmeProfiles.length > 0
+      ? readme.anyProfile && readme.profiles.length === 0 ? 'readme-any' : 'readme'
       : identity.hasClient
         ? 'client'
         : 'unknown'
@@ -140,7 +150,7 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
   const hasPrepare = hints.lifecycleScripts.includes('prepare')
   const prepareNeedsApproval = hasPrepare
     && runtimeArtifactsCommitted
-    && !readme.directGitHub
+    && (!readme.directGitHub || readme.requiresBuildApproval)
     && hints.declaredRequiresBuildApproval !== false
   const requiresBuildApproval = hardLifecycleScripts.length > 0
     || !runtimeArtifactsCommitted
@@ -188,6 +198,8 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
         found: readmeText !== null,
         directRemote: readme.directRemote,
         directGitHub: readme.directGitHub,
+        anyProfile: readme.anyProfile,
+        requiresBuildApproval: readme.requiresBuildApproval,
         profiles: readme.profiles,
         specs: readme.specs,
         verifiedGitHubRepositories: [...verifiedGitHubRepositories].sort(),
@@ -388,11 +400,12 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
   const unverifiedGitHubRepositories = new Set()
   let directRemote = false
   let directGitHub = false
+  let anyProfile = false
   const allowedRepositories = new Set(verifiedGitHubRepositories.map(value => value.toLocaleLowerCase()))
   const expectedRepositoryNames = new Set(
     verifiedGitHubRepositories.map(value => value.split('/')[1]?.toLocaleLowerCase()).filter(Boolean),
   )
-  for (const { profile, spec } of readmeInstallCommands(text)) {
+  for (const { profile, anyProfile: commandAnyProfile, spec } of readmeInstallCommands(text)) {
     const github = githubRepositoryFromSpec(spec)
     if (github !== null
       && expectedRepositoryNames.has(github.split('/')[1]?.toLocaleLowerCase())
@@ -401,7 +414,8 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
     }
     const kind = matchingInstallSpec(spec, packageName, allowedRepositories)
     if (kind === null) continue
-    profiles.add(profile)
+    if (commandAnyProfile) anyProfile = true
+    else profiles.add(profile)
     directRemote = directRemote || kind === 'github' || kind === 'npm' || kind === 'tarball'
     directGitHub = directGitHub || kind === 'github'
     if (specs.length < 8 && !specs.includes(spec)) specs.push(spec)
@@ -411,21 +425,42 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
     specs,
     directRemote,
     directGitHub,
+    anyProfile,
+    requiresBuildApproval: /\ballowBuilds\b|\bapprove[- ]builds?\b|\bbuild approval\b/iu.test(text),
     unverifiedGitHubRepositories: [...unverifiedGitHubRepositories].sort(),
   }
 }
 
 function readmeInstallCommands(text) {
   const commands = []
-  const expression = /\bdsh\s+plugin\s+--profile(?:\s+|=)(?:"([^"]+)"|'([^']+)'|([^\s`]+))\s+add\s+(?:"([^"]+)"|'([^']+)'|([^\s`]+))/giu
+  const expression = /\bdsh\s+plugin\s+--profile(?:\s+|=)(?:"([^"]+)"|'([^']+)'|([^\s`]+))\s+add\b([^\r\n`]*)/giu
   for (const match of text.matchAll(expression)) {
-    const profile = match[1] ?? match[2] ?? match[3] ?? ''
-    let spec = match[4] ?? match[5] ?? match[6] ?? ''
-    spec = spec.replace(/[),.;]+$/, '')
-    if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(profile)) continue
-    commands.push({ profile, spec })
+    const profileToken = match[1] ?? match[2] ?? match[3] ?? ''
+    const profile = normalizeReadmeProfile(profileToken)
+    if (profile === null) continue
+    const tokens = shellLikeTokens(match[4] ?? '')
+    const spec = tokens.find(token => !token.startsWith('-'))?.replace(/[),.;]+$/, '') ?? ''
+    if (spec === '') continue
+    commands.push({ ...profile, spec })
   }
   return commands
+}
+
+function normalizeReadmeProfile(value) {
+  if (/^[a-z0-9][a-z0-9._-]{0,63}$/.test(value)) return { profile: value, anyProfile: false }
+  if (/^<(?:profile|profile-name|name)>$/i.test(value)
+    || /^\$(?:DSH_)?PROFILE$/i.test(value)
+    || /^\$\{(?:DSH_)?PROFILE\}$/i.test(value)) {
+    return { profile: null, anyProfile: true }
+  }
+  return null
+}
+
+function shellLikeTokens(value) {
+  const tokens = []
+  const expression = /"([^"]*)"|'([^']*)'|([^\s]+)/g
+  for (const match of value.matchAll(expression)) tokens.push(match[1] ?? match[2] ?? match[3] ?? '')
+  return tokens
 }
 
 function matchingInstallSpec(spec, packageName, allowedRepositories) {
