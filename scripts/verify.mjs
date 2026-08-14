@@ -80,24 +80,16 @@ console.log('package manifest contract valid')
 
 // Bundled central Registry contract.
 const registry = JSON.parse(readFileSync(path.join(root, 'registry', 'plugins.json'), 'utf8'))
-if (registry.schemaVersion !== 3 || Number.isNaN(Date.parse(registry.generatedAt)) || !Array.isArray(registry.plugins)) {
+if (registry.schemaVersion !== 2 || Number.isNaN(Date.parse(registry.generatedAt)) || !Array.isArray(registry.plugins)) {
   throw new Error('bundled Registry root contract invalid')
 }
 const registryNames = new Set()
-const registryRepositories = new Set()
 for (const plugin of registry.plugins) {
   if (plugin === null || typeof plugin !== 'object') throw new Error('Registry plugin row must be an object')
-  const repository = typeof plugin.fullName === 'string' ? plugin.fullName.toLowerCase() : ''
-  if (!/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('Registry fullName invalid')
-  if (typeof plugin.packagePath !== 'string' || plugin.packagePath.startsWith('/') || plugin.packagePath.split('/').some(segment => segment === '.' || segment === '..')) {
-    throw new Error('Registry packagePath invalid: ' + plugin.fullName)
-  }
-  const expectedId = plugin.fullName + (plugin.packagePath === '' ? '' : '&path:/' + plugin.packagePath)
-  if (plugin.id !== expectedId) throw new Error('Registry id mismatch: ' + plugin.id)
-  const key = plugin.id.toLowerCase()
-  if (registryNames.has(key)) throw new Error('Registry repeats plugin identity ' + plugin.id)
+  const key = typeof plugin.fullName === 'string' ? plugin.fullName.toLowerCase() : ''
+  if (!/^[\w.-]+\/[\w.-]+$/.test(key)) throw new Error('Registry fullName invalid')
+  if (registryNames.has(key)) throw new Error('Registry repeats repository ' + plugin.fullName)
   registryNames.add(key)
-  registryRepositories.add(repository)
   if (!/^[0-9a-f]{40}$/i.test(plugin.verifiedCommit ?? '')) throw new Error('Registry commit invalid: ' + plugin.fullName)
   if (typeof plugin.packageName !== 'string' || plugin.packageName === '') throw new Error('Registry packageName missing')
   if (typeof plugin.bundlePatch !== 'string' || plugin.bundlePatch === '') throw new Error('Registry bundlePatch missing')
@@ -107,7 +99,6 @@ for (const plugin of registry.plugins) {
   if (!Array.isArray(plugin.install.profiles)) throw new Error('Registry install profiles invalid')
   if (plugin.install.mode === 'automatic') {
     const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
-      + (plugin.packagePath === '' ? '' : '&path:/' + plugin.packagePath)
     if (plugin.install.source !== 'github' || plugin.install.spec.toLowerCase() !== expected.toLowerCase()) {
       throw new Error('automatic Registry install is not pinned to the verified GitHub commit: ' + plugin.fullName)
     }
@@ -128,10 +119,9 @@ if (
 }
 const reviewNames = new Set()
 for (const row of installReview.repositories) {
-  const repository = typeof row?.repository === 'string' ? row.repository.toLowerCase() : ''
-  const key = typeof row?.id === 'string' ? row.id.toLowerCase() : ''
-  if (!registryRepositories.has(repository) || !registryNames.has(key)) throw new Error('install review references an unpublished plugin: ' + row?.id)
-  if (reviewNames.has(key)) throw new Error('install review repeats plugin ' + row.id)
+  const key = typeof row?.repository === 'string' ? row.repository.toLowerCase() : ''
+  if (!registryNames.has(key)) throw new Error('install review references an unpublished repository: ' + row?.repository)
+  if (reviewNames.has(key)) throw new Error('install review repeats repository ' + row.repository)
   reviewNames.add(key)
   if (!['needs-review', 'auto-resolved'].includes(row.status)) throw new Error('install review status invalid')
   if (!Array.isArray(row.reasons) || row.reasons.length === 0) throw new Error('install review reasons missing')

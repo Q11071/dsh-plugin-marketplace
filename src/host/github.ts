@@ -56,24 +56,6 @@ export function parseRepo(spec: string): { owner: string; repo: string } {
   return { owner: match[1] as string, repo: match[2] as string }
 }
 
-/** Normalize a Registry package subdirectory without allowing repository escape. */
-export function parsePackagePath(value: string): string {
-  const normalized = value.trim().replace(/^\.\//, '').replace(/\/$/, '')
-  if (normalized === '') return ''
-  if (normalized.length > 512
-    || normalized.startsWith('/')
-    || normalized.includes('\\')
-    || normalized.includes('\0')
-    || normalized.split('/').some(segment => segment === '' || segment === '.' || segment === '..')) {
-    throw new GitHubError('bad-repo', 'Malformed packagePath — expected a safe repository-relative directory.')
-  }
-  return normalized
-}
-
-function encodeRepoPath(value: string): string {
-  return value.split('/').map(encodeURIComponent).join('/')
-}
-
 /** A bundle patch path must stay inside the package. */
 function isSafePatchPath(value: string): boolean {
   return value.length > 0
@@ -176,17 +158,15 @@ export class GitHubClient {
   }
 
   /** Read the plugin manifest and bundle patch at one ref, for review before install. */
-  async details(repoSpec: string, ref: string, requestedPackagePath = ''): Promise<MarketplacePluginDetails> {
+  async details(repoSpec: string, ref: string): Promise<MarketplacePluginDetails> {
     const { owner, repo } = parseRepo(repoSpec)
-    const packagePath = parsePackagePath(requestedPackagePath)
     const resolved = await this.resolveRef(owner, repo, ref)
     const rawBase = RAW_BASE + '/' + owner + '/' + repo + '/' + resolved.ref
-    const packageBase = rawBase + '/' + (packagePath === '' ? '' : encodeRepoPath(packagePath) + '/')
     let manifest: MarketplacePluginManifest | null = null
     let patch: string | null = null
     const headers: Record<string, string> = { accept: 'application/vnd.github+json', 'user-agent': USER_AGENT }
     try {
-      const response = await fetch(packageBase + 'package.json', { headers })
+      const response = await fetch(rawBase + '/package.json', { headers })
       if (response.ok) {
         const pkg = await response.json() as Record<string, unknown>
         const dsh = pkg.dsh as Record<string, unknown> | undefined
@@ -205,7 +185,7 @@ export class GitHubClient {
           throw new GitHubError('bad-manifest', owner + '/' + repo + ' package.json has no name field.')
         }
         if (manifest.bundlePatch !== null) {
-          const patchResponse = await fetch(packageBase + encodeRepoPath(manifest.bundlePatch.replace(/^\.\//, '')), { headers })
+          const patchResponse = await fetch(rawBase + '/' + manifest.bundlePatch, { headers })
           patch = patchResponse.ok ? (await patchResponse.text()).slice(0, MAX_PATCH_CHARS) : null
         }
       } else if (response.status === 404) {
@@ -217,14 +197,11 @@ export class GitHubClient {
     }
     return {
       repo: owner + '/' + repo,
-      packagePath,
       ref,
       resolvedRef: resolved.ref,
       manifest,
       patch,
-      readmeUrl: packagePath === ''
-        ? 'https://github.com/' + owner + '/' + repo + '#readme'
-        : 'https://github.com/' + owner + '/' + repo + '/tree/' + resolved.ref + '/' + encodeRepoPath(packagePath) + '#readme',
+      readmeUrl: 'https://github.com/' + owner + '/' + repo + '#readme',
       rate: resolved.rate,
     }
   }

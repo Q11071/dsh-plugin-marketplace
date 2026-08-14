@@ -150,8 +150,6 @@ export function installedEntries(manifest: ProfileManifest, dir: string): Market
       enabled: isBundle && bundles.has(packageName),
       currentSpec: typeof declared === 'string' ? declared : '',
       registryRepo: null,
-      registryId: null,
-      packagePath: '',
       availableVersion: null,
       verifiedCommit: null,
       updateAvailable: false,

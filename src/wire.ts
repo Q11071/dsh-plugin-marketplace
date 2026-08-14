@@ -41,8 +41,6 @@ const repoSummarySchema = z.object({
   verifiedCommit: z.string(),
   htmlUrl: z.string(),
   topics: z.array(z.string()),
-  id: z.string(),
-  packagePath: z.string(),
   packageName: z.string(),
   version: z.string(),
   bundlePatch: z.string(),
@@ -62,7 +60,6 @@ const manifestSchema = z.object({
 
 const detailsValueSchema = z.object({
   repo: z.string(),
-  packagePath: z.string(),
   ref: z.string(),
   resolvedRef: z.string(),
   manifest: z.union([manifestSchema, z.null()]),
@@ -108,8 +105,6 @@ const installedValueSchema = z.object({
     enabled: z.boolean(),
     currentSpec: z.string(),
     registryRepo: z.union([z.string(), z.null()]),
-    registryId: z.union([z.string(), z.null()]),
-    packagePath: z.string(),
     availableVersion: z.union([z.string(), z.null()]),
     verifiedCommit: z.union([z.string(), z.null()]),
     updateAvailable: z.boolean(),
@@ -126,13 +121,11 @@ const searchRequestSchema = z.object({
 
 const detailsRequestSchema = z.object({
   repo: z.string(),
-  packagePath: z.string(),
   ref: z.string(),
 })
 
 const installRequestSchema = z.object({
   repo: z.string(),
-  packagePath: z.string(),
   ref: z.string(),
 })
 

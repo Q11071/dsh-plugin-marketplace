@@ -63,10 +63,6 @@ export interface MarketplaceInstallMetadata {
 
 /** One centrally verified plugin published by the Registry. */
 export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
-  /** Stable Registry identity: owner/repo plus an optional &path:/package/subdir suffix. */
-  id: string
-  /** POSIX repository-relative package directory; empty string means repository root. */
-  packagePath: string
   packageName: string
   version: string
   bundlePatch: string
@@ -77,7 +73,7 @@ export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
 
 /** Signed-content payload before an optional detached signature is added. */
 export interface MarketplaceRegistry {
-  schemaVersion: 3
+  schemaVersion: 2
   generatedAt: string
   plugins: MarketplaceRegistryPlugin[]
 }
@@ -96,7 +92,6 @@ export interface MarketplacePluginManifest {
 /** details() outcome: manifest + bundle patch text for pre-install review. */
 export interface MarketplacePluginDetails {
   repo: string
-  packagePath: string
   /** Ref the caller asked for ('' means auto-select). */
   ref: string
   /** Concrete ref used for the raw fetch. */
@@ -145,8 +140,6 @@ export interface MarketplaceInstalledEntry {
   currentSpec: string
   /** Registry repository when this installed package is centrally managed. */
   registryRepo: string | null
-  registryId: string | null
-  packagePath: string
   availableVersion: string | null
   verifiedCommit: string | null
   updateAvailable: boolean
@@ -186,14 +179,12 @@ export interface MarketplaceSearchRequest {
 export interface MarketplaceDetailsRequest {
   /** owner/repo */
   repo: string
-  packagePath: string
   /** Exact tag, or '' for auto (latest release, then default branch). */
   ref: string
 }
 
 export interface MarketplaceInstallRequest {
   repo: string
-  packagePath: string
   ref: string
 }
 
