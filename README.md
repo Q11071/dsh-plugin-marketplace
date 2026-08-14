@@ -33,7 +33,7 @@
 ### 1. 安装
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.6.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.6.1
 ```
 
 本地开发安装：

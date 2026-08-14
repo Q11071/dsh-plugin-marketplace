@@ -111,15 +111,36 @@ const s = {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
   } as React.CSSProperties,
   bannerText: { minWidth: 0, flex: 1 } as React.CSSProperties,
-  cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: 12, margin: 0, padding: 0, listStyle: 'none', alignItems: 'start' } as React.CSSProperties,
-  card: { border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, minWidth: 0, overflow: 'hidden' } as React.CSSProperties,
-  cardBody: { minHeight: 190, boxSizing: 'border-box', padding: '14px 16px 12px', display: 'flex', flexDirection: 'column', gap: 8 } as React.CSSProperties,
-  titleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } as React.CSSProperties,
-  title: { fontSize: 14, fontWeight: 600, lineHeight: '20px', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', minWidth: 0 } as React.CSSProperties,
-  description: { ...({ color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', margin: 0 } as React.CSSProperties), display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden', minHeight: 60 } as React.CSSProperties,
-  metaRow: { display: 'flex', alignContent: 'flex-start', alignItems: 'center', gap: '2px 8px', flexWrap: 'wrap', minHeight: 38, marginTop: 'auto' } as React.CSSProperties,
+  cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 270px), 1fr))', gap: 12, margin: 0, padding: 0, listStyle: 'none', alignItems: 'start' } as React.CSSProperties,
+  card: { border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 12, minWidth: 0, overflow: 'hidden' } as React.CSSProperties,
+  cardBody: { minHeight: 214, boxSizing: 'border-box', padding: '16px 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 } as React.CSSProperties,
+  titleRow: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, minHeight: 22 } as React.CSSProperties,
+  title: { fontSize: 14, fontWeight: 600, lineHeight: '22px', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', minWidth: 0 } as React.CSSProperties,
+  owner: { color: 'var(--dsw-alias-label-tertiary)', fontWeight: 400 } as React.CSSProperties,
+  verifiedBadge: {
+    display: 'inline-flex', alignItems: 'center', gap: 5, flex: 'none',
+    color: 'var(--dsw-alias-state-success-primary)',
+    background: 'color-mix(in srgb, var(--dsw-alias-state-success-primary) 10%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--dsw-alias-state-success-primary) 28%, transparent)',
+    borderRadius: 999, padding: '2px 7px', fontSize: 10, lineHeight: '16px',
+  } as React.CSSProperties,
+  verifiedDot: { width: 5, height: 5, borderRadius: '50%', background: 'var(--dsw-alias-state-success-primary)', flex: 'none' } as React.CSSProperties,
+  description: { ...({ color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', margin: 0 } as React.CSSProperties), display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', minHeight: 40 } as React.CSSProperties,
+  statsRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, minHeight: 20, marginTop: 'auto' } as React.CSSProperties,
+  statGroup: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 } as React.CSSProperties,
+  stat: { color: 'var(--dsw-alias-label-secondary)', fontSize: 12, lineHeight: '18px', whiteSpace: 'nowrap' } as React.CSSProperties,
+  growth: { color: 'var(--dsw-alias-state-success-primary)', fontSize: 11, lineHeight: '18px', whiteSpace: 'nowrap' } as React.CSSProperties,
+  updatedCompact: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 11, lineHeight: '18px', whiteSpace: 'nowrap' } as React.CSSProperties,
+  chipRow: { display: 'flex', alignItems: 'center', gap: 6, minHeight: 22, overflow: 'hidden' } as React.CSSProperties,
+  chip: {
+    display: 'inline-flex', alignItems: 'center', flex: 'none', maxWidth: 112,
+    border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 999,
+    background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-secondary)',
+    padding: '2px 8px', fontSize: 10, lineHeight: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+  } as React.CSSProperties,
   meta: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 12, lineHeight: '18px', whiteSpace: 'nowrap' } as React.CSSProperties,
-  actions: { display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', alignItems: 'center', gap: 10, minHeight: 32, paddingTop: 10, marginTop: 2, borderTop: '1px solid var(--dsw-alias-border-l2)' } as React.CSSProperties,
+  actions: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 34, paddingTop: 10, borderTop: '1px solid var(--dsw-alias-border-l2)' } as React.CSSProperties,
+  actionLinks: { minWidth: 0, marginLeft: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14 } as React.CSSProperties,
   detailToggle: { display: 'flex', alignItems: 'center', gap: 6, color: 'var(--dsw-alias-label-tertiary)', fontSize: 12, background: 'none', border: 0, cursor: 'pointer', padding: 0, font: 'inherit' } as React.CSSProperties,
   details: { borderTop: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-module-platform)', padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8 } as React.CSSProperties,
   kv: { display: 'grid', gridTemplateColumns: '76px minmax(0, 1fr)', gap: '4px 10px', margin: 0 } as React.CSSProperties,
@@ -178,6 +199,16 @@ function categoryLabel(category: MarketplacePluginCategory, t: MarketplaceTabPro
   if (category === 'security') return t('categorySecurity')
   if (category === 'observability') return t('categoryObservability')
   return t('categoryOther')
+}
+
+/** Keep dates useful without letting a full locale date dominate a compact card. */
+function compactDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  const options: Intl.DateTimeFormatOptions = date.getFullYear() === new Date().getFullYear()
+    ? { month: 'short', day: 'numeric' }
+    : { year: 'numeric', month: 'short', day: 'numeric' }
+  return date.toLocaleDateString(undefined, options)
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
@@ -586,13 +617,6 @@ interface CardRowProps {
 }
 
 function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detailError, onToggle, onInstall, onGuidedAgent, agentBusy }: CardRowProps): ReactNode {
-  const meta = [
-    item.stars > 0 ? '★ ' + item.stars : null,
-    item.starGrowth7d > 0 ? fmt(t, 'starGrowth7d', { stars: item.starGrowth7d }) : null,
-    item.license !== null ? item.license : null,
-    item.language !== null ? item.language : null,
-    item.updatedAt !== '' ? t('updated') + ' ' + new Date(item.updatedAt).toLocaleDateString() : null,
-  ].filter((value): value is string => value !== null)
   const canInstall = item.install.mode === 'automatic'
     && (item.install.source === 'github' || item.install.source === 'npm')
     && currentProfile !== ''
@@ -604,14 +628,21 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
     <li style={s.card}>
       <div style={s.cardBody}>
         <div style={s.titleRow}>
-          <strong style={s.title} title={item.fullName}>{item.fullName}</strong>
-          <span style={s.tag}>{t('verified')}</span>
+          <strong style={s.title} title={item.fullName}>
+            <span style={s.owner}>{item.owner}/</span>{item.repo}
+          </strong>
+          <span style={s.verifiedBadge}><span style={s.verifiedDot} aria-hidden='true' />{t('verified')}</span>
         </div>
         <p style={s.description} title={item.description ?? undefined}>{item.description === null || item.description === '' ? '\u00A0' : item.description}</p>
-        <div style={s.metaRow}>
-          {meta.map((value) => <span key={value} style={s.meta}>{value}</span>)}
-          {item.categories.slice(0, 2).map((category) => <span key={category} style={s.tag}>{categoryLabel(category, t)}</span>)}
-          {detail !== undefined && detail.manifest?.hasClient === true ? <span style={s.tag}>{t('hasClient')}</span> : null}
+        <div style={s.statsRow}>
+          <div style={s.statGroup}>
+            <span style={s.stat} title={t('stars')}>★ {item.stars}</span>
+            {item.starGrowth7d > 0 ? <span style={s.growth}>{fmt(t, 'starGrowth7d', { stars: item.starGrowth7d })}</span> : null}
+          </div>
+          {item.updatedAt !== '' ? <span style={s.updatedCompact} title={t('updated') + ' ' + new Date(item.updatedAt).toLocaleDateString()}>{compactDate(item.updatedAt)}</span> : null}
+        </div>
+        <div style={s.chipRow}>
+          {item.categories.slice(0, 2).map((category) => <span key={category} style={s.chip}>{categoryLabel(category, t)}</span>)}
         </div>
         <div style={s.actions}>
           {isInstalled ? (
@@ -620,16 +651,20 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
             <Button variant='primary' size='sm' onClick={onInstall}>{t('install')}</Button>
           ) : canUseAgent ? (
             <Button variant='primary' size='sm' disabled={agentBusy} onClick={onGuidedAgent}>
-              {agentBusy ? t('agentStarting') : t('agentInstall')}
+              {agentBusy ? t('agentBusy') : t('agentInstall')}
             </Button>
           ) : (
             <a style={s.link} href={item.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
           )}
-          <a style={s.link} href={item.htmlUrl} target='_blank' rel='noreferrer'>{t('openInGithub')}</a>
-          <button type='button' style={s.detailToggle} aria-expanded={expanded} onClick={onToggle}>
-            {t('details')}
-            <IconChevronDownOutline14 size={12} aria-hidden='true' />
-          </button>
+          <div style={s.actionLinks}>
+            <a style={s.link} href={item.htmlUrl} target='_blank' rel='noreferrer' title={item.fullName}>{t('openInGithub')}</a>
+            <button type='button' style={s.detailToggle} aria-expanded={expanded} onClick={onToggle}>
+              {t('details')}
+              <span style={{ ...s.chevron, display: 'inline-flex', transform: expanded ? 'rotate(180deg)' : undefined }}>
+                <IconChevronDownOutline14 size={12} aria-hidden='true' />
+              </span>
+            </button>
+          </div>
         </div>
       </div>
       {expanded ? (
@@ -643,6 +678,16 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
               <dd style={s.kvDd}>{detail.manifest.name + '@' + detail.manifest.version}</dd>
               <dt style={s.kvDt}>{t('license')}</dt>
               <dd style={s.kvDd}>{detail.manifest.license ?? t('none')}</dd>
+              <dt style={s.kvDt}>{t('language')}</dt>
+              <dd style={s.kvDd}>{item.language ?? t('none')}</dd>
+              <dt style={s.kvDt}>{t('category')}</dt>
+              <dd style={s.kvDd}>{item.categories.map((category) => categoryLabel(category, t)).join(', ')}</dd>
+              {detail.manifest.hasClient ? (
+                <>
+                  <dt style={s.kvDt}>{t('hasClient')}</dt>
+                  <dd style={s.kvDd}>web</dd>
+                </>
+              ) : null}
               <dt style={s.kvDt}>{t('verifiedCommit')}</dt>
               <dd style={s.kvDd}>{detail.resolvedRef}</dd>
               <dt style={s.kvDt}>{t('installSource')}</dt>
