@@ -13,6 +13,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const require = createRequire(import.meta.url)
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 const checkout = process.env.DSH_CHECKOUT ?? 'D:/DSH/deepseek-harness'
+const registryOnly = process.argv.includes('--registry-only')
 /** Resolve esbuild from the checkout's pnpm store (newest version wins). */
 function resolveEsbuild(checkout) {
   const pnpmDir = path.join(checkout, 'node_modules', '.pnpm')
@@ -24,11 +25,12 @@ function resolveEsbuild(checkout) {
   throw new Error('esbuild not found under ' + pnpmDir)
 }
 
-const esbuild = require(resolveEsbuild(checkout))
+const esbuild = registryOnly ? undefined : require(resolveEsbuild(checkout))
 
 const PKG = 'dsh-plugin-marketplace'
 
 // ── 1. typert manifest validation (the exact loader code path) ────────────
+if (!registryOnly) {
 const manifestUrl = pathToFileURL(path.join(root, 'lib', 'typert.js')).href
 const entry = `
 import { validateTypertManifest } from '@deepseek-ai/dsh-typert-loader'
@@ -50,6 +52,7 @@ try {
   await import(pathToFileURL(probePath).href)
 } finally {
   if (existsSync(probePath)) unlinkSync(probePath)
+}
 }
 
 // ── 2. client bundle shape ────────────────────────────────────────────────
