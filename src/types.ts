@@ -163,11 +163,18 @@ export type MarketplaceInstallOutcome = MarketplaceResult<MarketplaceJobHandle>
 export type MarketplaceJobStatusOutcome = MarketplaceResult<MarketplaceJobStatus>
 export type MarketplaceInstalledOutcome = MarketplaceResult<MarketplaceInstalled>
 export type MarketplaceToggleOutcome = MarketplaceResult<MarketplaceToggleResult>
+export type MarketplaceRestartOutcome = MarketplaceResult<MarketplaceRestartResult>
 
 export interface MarketplaceToggleResult {
   packageName: string
   enabled: boolean
   requiresRestart: boolean
+}
+
+/** Accepted restart request. The process exits only after this crosses the wire. */
+export interface MarketplaceRestartResult {
+  accepted: true
+  profile: string
 }
 
 export interface MarketplaceSearchRequest {

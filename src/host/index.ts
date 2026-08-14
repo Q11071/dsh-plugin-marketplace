@@ -18,6 +18,7 @@ import type {
   MarketplaceResult,
   MarketplacePluginDetails,
   MarketplaceRegistryPlugin,
+  MarketplaceRestartResult,
   MarketplaceSearchPage,
   MarketplaceSearchRequest,
   MarketplaceUninstallRequest,
@@ -27,6 +28,7 @@ import type {
 import { readProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
 import { JobTable, runPnpmJob, type JobRecord } from './installer.ts'
+import { scheduleProcessRestart } from './restart.ts'
 import {
   RegistryClient,
   RegistryConfigSchema,
@@ -77,6 +79,8 @@ export class MarketplaceService extends TypertRemoteService {
   private readonly github = new GitHubClient()
   private readonly registry: RegistryClient
   private readonly jobs = new JobTable()
+  private pendingInstallResolution = 0
+  private restartPending = false
 
   constructor(ctx: Context, config: RegistryConfig) {
     super(ctx, 'marketplace')
@@ -134,6 +138,9 @@ export class MarketplaceService extends TypertRemoteService {
   @Remote('uninstall')
   async uninstall(request: MarketplaceUninstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
     try {
+      if (this.restartPending) {
+        return fail('restart-pending', 'DSH is already preparing to restart.')
+      }
       const packageName = request.packageName.trim()
       if (packageName === '' || !/^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
         return fail('bad-package', 'Malformed package name: ' + request.packageName)
@@ -155,6 +162,9 @@ export class MarketplaceService extends TypertRemoteService {
   @Remote('setEnabled')
   async setEnabled(request: MarketplaceToggleRequest): Promise<MarketplaceResult<MarketplaceToggleResult>> {
     try {
+      if (this.restartPending) {
+        return fail('restart-pending', 'DSH is already preparing to restart.')
+      }
       const packageName = request.packageName.trim()
       if (packageName === '' || !/^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
         return fail('bad-package', 'Malformed package name: ' + request.packageName)
@@ -211,6 +221,29 @@ export class MarketplaceService extends TypertRemoteService {
     }
   }
 
+  @Remote('restart')
+  async restart(): Promise<MarketplaceResult<MarketplaceRestartResult>> {
+    try {
+      if (this.restartPending) {
+        return fail('restart-pending', 'DSH is already preparing to restart.')
+      }
+      if (this.pendingInstallResolution > 0 || this.jobs.hasActive()) {
+        return fail('job-running', 'Wait for all plugin install, update, or uninstall jobs to finish before restarting DSH.')
+      }
+      const profile = profileLocation(this.ctx)
+      this.restartPending = true
+      try {
+        await scheduleProcessRestart()
+      } catch (error) {
+        this.restartPending = false
+        throw error
+      }
+      return ok({ accepted: true, profile: profile.name })
+    } catch (error) {
+      return toFailure(error)
+    }
+  }
+
   /** Shared install/update pipeline: resolve → gate → spawn detached job. */
   private async startJob(
     kind: 'install' | 'update',
@@ -218,6 +251,10 @@ export class MarketplaceService extends TypertRemoteService {
     ref: string,
     gate: (packageName: string) => Err | undefined,
   ): Promise<MarketplaceResult<{ jobId: string }>> {
+    if (this.restartPending) {
+      return fail('restart-pending', 'DSH is already preparing to restart.')
+    }
+    this.pendingInstallResolution += 1
     try {
       const registered = await this.registry.find(repo)
       if (registered === undefined) {
@@ -267,6 +304,8 @@ export class MarketplaceService extends TypertRemoteService {
       return ok({ jobId: job.jobId })
     } catch (error) {
       return toFailure(error)
+    } finally {
+      this.pendingInstallResolution -= 1
     }
   }
 

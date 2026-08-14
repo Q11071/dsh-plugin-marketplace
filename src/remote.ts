@@ -16,6 +16,7 @@ import type {
   MarketplaceJobStatusRequest,
   MarketplacePluginDetails,
   MarketplaceResult,
+  MarketplaceRestartResult,
   MarketplaceSearchPage,
   MarketplaceSearchRequest,
   MarketplaceUninstallRequest,
@@ -35,6 +36,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     setEnabled: (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     jobStatus: (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     installed: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
+    restart: () => Promise<RemoteResult<MarketplaceResult<MarketplaceRestartResult>>>
   }
   interface TypertRemoteMap {
     'marketplace/search': (request: MarketplaceSearchRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceSearchPage>>>
@@ -45,6 +47,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/setEnabled': (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     'marketplace/jobStatus': (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     'marketplace/installed': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
+    'marketplace/restart': () => Promise<RemoteResult<MarketplaceResult<MarketplaceRestartResult>>>
   }
   interface TypertRemoteNamespaceMap {
     marketplace: TypertRemoteNamespace$6d61726b6574706c616365

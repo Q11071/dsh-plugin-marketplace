@@ -33,7 +33,7 @@ tarball 验证结果及保留引导安装的原因。公开 Registry 的格式�
 ## 安装市场插件
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.3.2
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.3.3
 ```
 
 本地开发安装：
@@ -45,7 +45,9 @@ dsh plugin --profile web add D:/path/to/dsh_Market
 重启 DSH 后打开“设置 → 插件 → 插件市场”。市场内包含“插件市场”和“已安装插件”
 两个子页面；后者读取当前运行 Profile，可检查 Registry 更新、执行更新、卸载，
 也可把 bundle 从 `dsh.profile.bundles` 中停用或重新启用。启停不删除依赖，重启
-DSH 后生效；更新其他插件也不会意外重新启用已停用 bundle。
+DSH 后生效；更新其他插件也不会意外重新启用已停用 bundle。“已安装插件”页和
+“重启后生效”提示条均提供“重启 DSH”按钮：确认后会等待当前插件任务结束，使用
+相同启动参数和 Profile 自动重启，页面在服务恢复后自动刷新。
 npm 包内自带构建后的 `lib/`
 和当次发布的 Registry 快照，因此远程 Registry 暂时不可用时仍可读取快照。
 
@@ -157,6 +159,7 @@ GitHub spec，或内容已通过 tarball 级复验的精确 npm `包名@版本`�
 ```powershell
 pnpm registry:test
 pnpm profile:test
+pnpm restart:test
 pnpm build
 pnpm verify
 pnpm exec tsc --noEmit

@@ -13,10 +13,12 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type {
   MarketplaceInstalled,
   MarketplaceInstalledEntry,
+  MarketplaceJobKind,
   MarketplaceJobStatus,
   MarketplacePluginDetails,
   MarketplaceRegistryPlugin,
   MarketplaceSearchPage,
+  MarketplaceRestartResult,
   MarketplaceToggleResult,
 } from '../types.ts'
 import type { PluginMarketplaceLocaleKey } from './locales.ts'
@@ -31,6 +33,7 @@ export interface MarketplaceTabInjected {
   setEnabled: (packageName: string, enabled: boolean) => Promise<MarketplaceToggleResult>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
   installed: () => Promise<MarketplaceInstalled>
+  restart: () => Promise<MarketplaceRestartResult>
 }
 
 /** Full component props assembled by the Settings slot renderer. */
@@ -45,13 +48,14 @@ type ViewState =
   | { status: 'ready'; page: MarketplaceSearchPage }
 
 type ConfirmRequest = {
-  mode: 'install' | 'update' | 'uninstall'
+  mode: 'install' | 'update' | 'uninstall' | 'restart'
   repo: string
   ref: string
   packageName: string
 }
 
 type Subpage = 'catalog' | 'installed'
+type RestartState = 'idle' | 'requesting' | 'restarting'
 
 const POLL_MS = 700
 const DEBOUNCE_MS = 400
@@ -61,6 +65,7 @@ const s = {
   section: { width: '100%', maxWidth: 920, display: 'flex', flexDirection: 'column', gap: 16, color: 'var(--dsw-alias-label-primary)' } as React.CSSProperties,
   subnav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 2 } as React.CSSProperties,
   subnavGroup: { display: 'flex', alignItems: 'center', gap: 8 } as React.CSSProperties,
+  subnavMeta: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } as React.CSSProperties,
   toolbar: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) auto', alignItems: 'center', gap: 12 } as React.CSSProperties,
   search: { minWidth: 0 } as React.CSSProperties,
   sortGroup: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, whiteSpace: 'nowrap' } as React.CSSProperties,
@@ -72,7 +77,9 @@ const s = {
     background: 'color-mix(in srgb, var(--dsw-alias-state-success-primary) 10%, transparent)',
     color: 'var(--dsw-alias-label-primary)',
     borderRadius: 8, padding: '8px 12px', fontSize: 13,
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
   } as React.CSSProperties,
+  bannerText: { minWidth: 0, flex: 1 } as React.CSSProperties,
   cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: 12, margin: 0, padding: 0, listStyle: 'none', alignItems: 'start' } as React.CSSProperties,
   card: { border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, minWidth: 0, overflow: 'hidden' } as React.CSSProperties,
   cardBody: { minHeight: 190, boxSizing: 'border-box', padding: '14px 16px 12px', display: 'flex', flexDirection: 'column', gap: 8 } as React.CSSProperties,
@@ -130,7 +137,7 @@ function jobPhaseLabel(phase: string, t: MarketplaceTabProps['t']): string {
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, install, update, uninstall, setEnabled, jobStatus, installed, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, install, update, uninstall, setEnabled, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
@@ -151,6 +158,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
   const [acknowledged, setAcknowledged] = useState(false)
   const [banner, setBanner] = useState<string | null>(null)
   const [toggleBusy, setToggleBusy] = useState<string | null>(null)
+  const [restartState, setRestartState] = useState<RestartState>('idle')
 
   // Debounce the free-text query.
   useEffect(() => {
@@ -211,7 +219,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
     })
   }, [details, detailsMap])
 
-  const trackJob = useCallback((jobId: string, kind: ConfirmRequest['mode'], packageName: string) => {
+  const trackJob = useCallback((jobId: string, kind: MarketplaceJobKind, packageName: string) => {
     setJobs((current) => {
       const next = new Map(current)
       next.set(jobId, {
@@ -253,6 +261,36 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
     return () => { window.clearInterval(handle) }
   }, [jobs, jobStatus, refreshInstalled, t])
 
+  // Once the host accepts a restart, wait for it to go offline and come back.
+  // The elapsed-time fallback covers a restart that is faster than one probe.
+  useEffect(() => {
+    if (restartState !== 'restarting') return undefined
+    let disposed = false
+    let sawOffline = false
+    const startedAt = Date.now()
+    const probe = async (): Promise<void> => {
+      try {
+        const url = new URL(window.location.href)
+        url.searchParams.set('_dsh_restart_probe', String(Date.now()))
+        await window.fetch(url, { cache: 'no-store', credentials: 'same-origin' })
+        if (!disposed && (sawOffline || Date.now() - startedAt >= 8_000)) {
+          window.location.reload()
+        }
+      } catch {
+        if (!disposed) sawOffline = true
+      }
+    }
+    const first = window.setTimeout(() => { void probe() }, 750)
+    const interval = window.setInterval(() => { void probe() }, 500)
+    const fallback = window.setTimeout(() => { window.location.reload() }, 30_000)
+    return () => {
+      disposed = true
+      window.clearTimeout(first)
+      window.clearInterval(interval)
+      window.clearTimeout(fallback)
+    }
+  }, [restartState])
+
   const openConfirm = (mode: ConfirmRequest['mode'], repo: string, ref: string, packageName: string): void => {
     setAcknowledged(false)
     setConfirm({ mode, repo, ref, packageName })
@@ -263,12 +301,24 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
     setConfirm(null)
     setAcknowledged(false)
     const request = confirm
-    const start = request.mode === 'uninstall'
+    if (request.mode === 'restart') {
+      setRestartState('requesting')
+      setBanner(t('restarting'))
+      void restart().then(() => {
+        setRestartState('restarting')
+      }).catch((error: unknown) => {
+        setRestartState('idle')
+        setBanner(error instanceof Error ? error.message : String(error))
+      })
+      return
+    }
+    const jobKind = request.mode
+    const start = jobKind === 'uninstall'
       ? uninstall(request.packageName)
-      : request.mode === 'update'
+      : jobKind === 'update'
         ? update(request.repo, request.ref)
         : install(request.repo, request.ref)
-    void start.then((jobId) => { trackJob(jobId, request.mode, request.packageName) }).catch((error: unknown) => {
+    void start.then((jobId) => { trackJob(jobId, jobKind, request.packageName) }).catch((error: unknown) => {
       setBanner(error instanceof Error ? error.message : String(error))
     })
   }
@@ -309,19 +359,36 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
   }
 
   const retry = (): void => { setSeq((value) => value + 1) }
+  const openRestartConfirm = (): void => { openConfirm('restart', '', '', '') }
 
   const ready = view.status === 'ready' ? view.page : null
   const rate = ready?.rate ?? null
+  const hasActiveJobs = [...jobs.values()].some((job) => job.finishedAt === null)
+  const restartDisabled = restartState !== 'idle' || hasActiveJobs
 
   return (
-    <div style={s.section} aria-busy={view.status === 'loading'}>
-      {banner !== null ? <div style={s.banner} role={banner.startsWith(t('restartBanner')) ? 'status' : 'alert'}>{banner}</div> : null}
+    <div style={s.section} aria-busy={view.status === 'loading' || restartState !== 'idle'}>
+      {banner !== null ? (
+        <div style={s.banner} role={banner === t('restartBanner') || restartState !== 'idle' ? 'status' : 'alert'}>
+          <span style={s.bannerText}>{banner}</span>
+          {banner === t('restartBanner') ? (
+            <Button variant='outline' size='sm' disabled={restartDisabled} onClick={openRestartConfirm}>{t('restart')}</Button>
+          ) : null}
+        </div>
+      ) : null}
       <div style={s.subnav}>
         <div style={s.subnavGroup}>
           <Pill active={subpage === 'catalog'} onClick={() => { setSubpage('catalog') }}>{t('catalog')}</Pill>
           <Pill active={subpage === 'installed'} onClick={() => { setSubpage('installed'); refreshInstalled() }}>{t('installedPage')}</Pill>
         </div>
-        {installedProfile !== '' ? <span style={s.muted}>{fmt(t, 'currentProfile', { profile: installedProfile })}</span> : null}
+        <div style={s.subnavMeta}>
+          {installedProfile !== '' ? <span style={s.muted}>{fmt(t, 'currentProfile', { profile: installedProfile })}</span> : null}
+          {subpage === 'installed' ? (
+            <Button variant='outline' size='sm' disabled={restartDisabled} onClick={openRestartConfirm}>
+              {restartState === 'idle' ? t('restart') : t('restarting')}
+            </Button>
+          ) : null}
+        </div>
       </div>
       {subpage === 'catalog' ? (
         <>
@@ -412,11 +479,11 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
       ) : null}
       <RiskConfirmation
         open={confirm !== null}
-        title={confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
-        description={confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
-        acknowledgeLabel={confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : t('acknowledge')}
+        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
+        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
+        acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
-        confirmLabel={confirm?.mode === 'uninstall' ? t('confirmUninstall') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
+        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
         onCancel={() => { setConfirm(null); setAcknowledged(false) }}

@@ -148,6 +148,11 @@ const toggleValueSchema = z.object({
   requiresRestart: z.boolean(),
 })
 
+const restartValueSchema = z.object({
+  accepted: z.literal(true),
+  profile: z.string(),
+})
+
 /** Business failure: typed code + message + optional payload. */
 const failureSchema = z.object({
   code: z.string(),
@@ -209,6 +214,7 @@ export const TYPERT = {
     invocation('setEnabled', [param('request', toggleRequestSchema, `${REQUEST_TYPES}MarketplaceToggleRequest`)], result(resultSchema(toggleValueSchema), `${REQUEST_TYPES}MarketplaceToggleOutcome`)),
     invocation('jobStatus', [param('request', jobStatusRequestSchema, `${REQUEST_TYPES}MarketplaceJobStatusRequest`)], result(resultSchema(jobStatusValueSchema), `${REQUEST_TYPES}MarketplaceJobStatusOutcome`)),
     invocation('installed', [], result(resultSchema(installedValueSchema), `${REQUEST_TYPES}MarketplaceInstalledOutcome`)),
+    invocation('restart', [], result(resultSchema(restartValueSchema), `${REQUEST_TYPES}MarketplaceRestartOutcome`)),
   ],
   model: {
     services: [],

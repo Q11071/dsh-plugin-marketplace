@@ -58,6 +58,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
       setEnabled: async (packageName, enabled) => unwrapMarketplace(await scope.remote.marketplace.setEnabled({ packageName, enabled })),
       jobStatus: async (jobId) => unwrapMarketplace(await scope.remote.marketplace.jobStatus({ jobId })),
       installed: async () => unwrapMarketplace(await scope.remote.marketplace.installed()),
+      restart: async () => unwrapMarketplace(await scope.remote.marketplace.restart()),
     })
 
     scope.slots.inject('settings.plugins.tab', () => scope.slots.register({
@@ -79,5 +80,6 @@ export type {
   MarketplaceInstalled,
   MarketplaceJobStatus,
   MarketplacePluginDetails,
+  MarketplaceRestartResult,
   MarketplaceSearchPage,
 } from '../types.ts'

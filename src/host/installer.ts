@@ -75,6 +75,13 @@ export class JobTable {
     return false
   }
 
+  hasActive(): boolean {
+    for (const job of this.jobs.values()) {
+      if (job.finishedAt === null) return true
+    }
+    return false
+  }
+
   append(job: JobRecord, chunk: string): void {
     job.log = (job.log + chunk).slice(-MAX_LOG_CHARS)
   }
