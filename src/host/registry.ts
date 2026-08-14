@@ -5,10 +5,35 @@ import { z } from 'zod'
 import type {
   MarketplaceRegistry,
   MarketplaceRegistryPlugin,
+  MarketplacePluginCategory,
   MarketplaceSearchPage,
 } from '../types.ts'
 
 const PAGE_SIZE = 30
+
+const categorySchema = z.union([
+  z.literal('ui'),
+  z.literal('agents'),
+  z.literal('developer-tools'),
+  z.literal('models'),
+  z.literal('data'),
+  z.literal('integrations'),
+  z.literal('media'),
+  z.literal('security'),
+  z.literal('observability'),
+  z.literal('other'),
+])
+
+const discoverySchema = z.object({
+  schemaVersion: z.literal(1),
+  generatedAt: z.iso.datetime(),
+  windowDays: z.literal(7),
+  plugins: z.array(z.object({
+    fullName: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
+    categories: z.array(categorySchema).min(1).max(3),
+    starGrowth7d: z.number().int().nonnegative(),
+  }).strict()),
+}).strict()
 
 const installSchema = z.object({
   mode: z.union([z.literal('automatic'), z.literal('guided')]),
@@ -78,29 +103,46 @@ interface RegistryCache {
 /** Registry read or validation failure surfaced as a marketplace business error. */
 export class RegistryError extends Error {
   readonly code = 'registry-unavailable'
+  readonly details: Record<string, unknown>
 
-  constructor(message: string, readonly details: Record<string, unknown> = {}) {
+  constructor(message: string, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'RegistryError'
+    this.details = details
   }
 }
 
 /** Read, cache, validate, and search one central Registry document. */
 export class RegistryClient {
   private cache: RegistryCache | undefined
+  private readonly source: string
+  private readonly bundledSource: string
+  private readonly cacheMs: number
+  private readonly timeoutMs: number
 
   constructor(
-    private readonly source: string,
-    private readonly bundledSource: string,
-    private readonly cacheMs: number,
-    private readonly timeoutMs: number,
-  ) {}
+    source: string,
+    bundledSource: string,
+    cacheMs: number,
+    timeoutMs: number,
+  ) {
+    this.source = source
+    this.bundledSource = bundledSource
+    this.cacheMs = cacheMs
+    this.timeoutMs = timeoutMs
+  }
 
   /** Search only centrally verified entries. */
-  async search(query: string, page: number, sort: 'stars' | 'updated'): Promise<MarketplaceSearchPage> {
+  async search(
+    query: string,
+    page: number,
+    sort: 'stars' | 'updated' | 'trending',
+    category: MarketplacePluginCategory | 'all',
+  ): Promise<MarketplaceSearchPage> {
     const registry = await this.load()
     const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean)
     const filtered = registry.plugins.filter((plugin) => {
+      if (category !== 'all' && !plugin.categories.includes(category)) return false
       if (terms.length === 0) return true
       const text = [
         plugin.fullName,
@@ -108,14 +150,19 @@ export class RegistryClient {
         plugin.description ?? '',
         plugin.language ?? '',
         ...plugin.topics,
+        ...plugin.categories,
       ].join('\n').toLocaleLowerCase()
       return terms.every(term => text.includes(term))
     })
     filtered.sort((left, right) => {
       const primary = sort === 'updated'
         ? Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
-        : right.stars - left.stars
-      return primary !== 0 ? primary : left.fullName.localeCompare(right.fullName)
+        : sort === 'trending'
+          ? right.starGrowth7d - left.starGrowth7d
+          : right.stars - left.stars
+      if (primary !== 0) return primary
+      const secondary = sort === 'trending' ? right.stars - left.stars : 0
+      return secondary !== 0 ? secondary : left.fullName.localeCompare(right.fullName)
     })
     const offset = (page - 1) * PAGE_SIZE
     return {
@@ -176,7 +223,7 @@ export class RegistryClient {
     } else {
       throw new Error(`Unsupported Registry URL protocol ${JSON.stringify(url.protocol)}`)
     }
-    const registry = normalizeRegistry(raw)
+    const registry = applyDiscovery(normalizeRegistry(raw), await this.loadDiscovery(source))
     const names = new Set<string>()
     for (const plugin of registry.plugins) {
       const key = plugin.fullName.toLocaleLowerCase()
@@ -196,6 +243,29 @@ export class RegistryClient {
     this.cache = { registry, etag, expiresAt: Date.now() + this.cacheMs, source }
     return registry
   }
+
+  /** Discovery metadata is optional so custom and legacy registries still load. */
+  private async loadDiscovery(source: string): Promise<z.output<typeof discoverySchema> | undefined> {
+    try {
+      const url = discoverySource(source)
+      let raw: unknown
+      if (url.protocol === 'file:') {
+        raw = JSON.parse(await readFile(url, 'utf8')) as unknown
+      } else if (url.protocol === 'https:' || url.protocol === 'http:') {
+        const response = await fetch(url, {
+          headers: { accept: 'application/json' },
+          signal: AbortSignal.timeout(this.timeoutMs),
+        })
+        if (!response.ok) return undefined
+        raw = await response.json() as unknown
+      } else {
+        return undefined
+      }
+      return discoverySchema.parse(raw)
+    } catch {
+      return undefined
+    }
+  }
 }
 
 /** Continue accepting v1 registries while remote mirrors migrate to install metadata. */
@@ -203,16 +273,51 @@ function normalizeRegistry(raw: unknown): MarketplaceRegistry {
   const version = typeof raw === 'object' && raw !== null && 'schemaVersion' in raw
     ? (raw as { schemaVersion?: unknown }).schemaVersion
     : undefined
-  if (version === 2) return registryV2Schema.parse(raw) as MarketplaceRegistry
+  if (version === 2) {
+    const current = registryV2Schema.parse(raw)
+    return {
+      ...current,
+      plugins: current.plugins.map(plugin => withDefaultDiscovery(plugin)),
+    }
+  }
   const legacy = registryV1Schema.parse(raw)
   return {
     schemaVersion: 2,
     generatedAt: legacy.generatedAt,
-    plugins: legacy.plugins.map(plugin => ({
+    plugins: legacy.plugins.map(plugin => withDefaultDiscovery({
       ...plugin,
       install: legacyInstall(plugin),
     })),
   }
+}
+
+function withDefaultDiscovery<T extends z.output<typeof registryPluginBaseSchema> & { install: MarketplaceRegistryPlugin['install'] }>(
+  plugin: T,
+): MarketplaceRegistryPlugin {
+  return { ...plugin, categories: ['other'], starGrowth7d: 0 }
+}
+
+function applyDiscovery(
+  registry: MarketplaceRegistry,
+  discovery: z.output<typeof discoverySchema> | undefined,
+): MarketplaceRegistry {
+  if (discovery === undefined) return registry
+  const rows = new Map(discovery.plugins.map(row => [row.fullName.toLocaleLowerCase(), row]))
+  return {
+    ...registry,
+    plugins: registry.plugins.map(plugin => {
+      const row = rows.get(plugin.fullName.toLocaleLowerCase())
+      if (row === undefined) return plugin
+      return { ...plugin, categories: [...new Set(row.categories)], starGrowth7d: row.starGrowth7d }
+    }),
+  }
+}
+
+function discoverySource(source: string): URL {
+  const url = new URL(source)
+  const slash = url.pathname.lastIndexOf('/')
+  url.pathname = url.pathname.slice(0, slash + 1) + 'discovery.json'
+  return url
 }
 
 function legacyInstall(plugin: z.output<typeof registryPluginBaseSchema>): MarketplaceRegistryPlugin['install'] {

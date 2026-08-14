@@ -20,6 +20,7 @@ import {
   verifiedPlugin,
 } from './registry-core.mjs'
 import { verifyExactNpmRelease } from './npm-release.mjs'
+import { classifyPluginCategories, starGrowth7d, updateStarHistory } from './discovery-core.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 const token = process.env.GITHUB_TOKEN?.trim()
@@ -40,6 +41,7 @@ const statePath = path.join(root, 'registry', 'state.json')
 const pluginsPath = path.join(root, 'registry', 'plugins.json')
 const rejectedPath = path.join(root, 'registry', 'rejected.json')
 const installReviewPath = path.join(root, 'registry', 'install-review.json')
+const discoveryPath = path.join(root, 'registry', 'discovery.json')
 const denylistPath = path.join(root, 'policy', 'denylist.json')
 const installOverridesPath = path.join(root, 'policy', 'install-overrides.json')
 
@@ -81,7 +83,7 @@ async function processCandidate(candidate) {
   const old = plainObject(previous[key]) ? previous[key] : undefined
   const blockedReason = denylist.get(key)
   if (blockedReason !== undefined) {
-    next[key] = stateRow(candidate, fingerprint, 'blocked', blockedReason)
+    next[key] = stateRow(candidate, fingerprint, 'blocked', blockedReason, old)
     return
   }
   if (old !== undefined
@@ -93,7 +95,7 @@ async function processCandidate(candidate) {
     && validInstallMetadata(old.plugin.install)
     && validInspection(old.inspection)) {
     next[key] = {
-      ...stateRow(candidate, fingerprint, 'verified', null),
+      ...stateRow(candidate, fingerprint, 'verified', null, old),
       checkedAt: old.checkedAt,
       commit: old.commit,
       plugin: refreshPluginMetadata(old.plugin, candidate),
@@ -103,28 +105,28 @@ async function processCandidate(candidate) {
     return
   }
   if (old !== undefined && sameRepositoryFingerprint(old.fingerprint, fingerprint) && old.status === 'invalid') {
-    next[key] = { ...stateRow(candidate, fingerprint, 'invalid', old.reason), checkedAt: old.checkedAt }
+    next[key] = { ...stateRow(candidate, fingerprint, 'invalid', old.reason, old), checkedAt: old.checkedAt }
     reused += 1
     return
   }
   try {
     const result = await validateCandidate(candidate, installOverride)
     next[key] = {
-      ...stateRow(candidate, fingerprint, 'verified', null),
+      ...stateRow(candidate, fingerprint, 'verified', null, old),
       commit: result.commit,
       plugin: result.plugin,
       inspection: result.inspection,
     }
   } catch (error) {
     if (error instanceof InvalidCandidateError) {
-      next[key] = stateRow(candidate, fingerprint, 'invalid', error.message)
+      next[key] = stateRow(candidate, fingerprint, 'invalid', error.message, old)
     } else if (error instanceof RetryCandidateError) {
       // A temporary GitHub/npm failure must never unpublish a previously
       // verified plugin. Keep its last known-good immutable commit and old
       // fingerprint so the next daily run retries the new candidate state.
       if (old !== undefined && old.status === 'verified' && plainObject(old.plugin)) {
         next[key] = {
-          ...stateRow(candidate, old.fingerprint, 'verified', null),
+          ...stateRow(candidate, old.fingerprint, 'verified', null, old),
           checkedAt: old.checkedAt,
           commit: old.commit,
           plugin: refreshPluginMetadata(old.plugin, candidate),
@@ -133,7 +135,7 @@ async function processCandidate(candidate) {
           lastAttemptReason: error.message,
         }
       } else {
-        next[key] = stateRow(candidate, fingerprint, 'retry', error.message)
+        next[key] = stateRow(candidate, fingerprint, 'retry', error.message, old)
       }
     } else {
       throw error
@@ -162,11 +164,20 @@ const rejected = Object.values(next)
   }))
   .sort((left, right) => left.repository.localeCompare(right.repository))
 const installReview = installReviewRows(next)
+const discovery = Object.values(next)
+  .filter(row => plainObject(row) && row.status === 'verified' && plainObject(row.plugin))
+  .map(row => ({
+    fullName: row.plugin.fullName,
+    categories: classifyPluginCategories(row.plugin),
+    starGrowth7d: integer(row.starGrowth7d),
+  }))
+  .sort((left, right) => left.fullName.localeCompare(right.fullName))
 
 await atomicJson(statePath, { schemaVersion: 2, generatedAt: now, repositories: sortObject(next) })
 await atomicJson(pluginsPath, { schemaVersion: 2, generatedAt: now, plugins })
 await atomicJson(rejectedPath, { schemaVersion: 1, generatedAt: now, repositories: rejected })
 await atomicJson(installReviewPath, { schemaVersion: 1, generatedAt: now, repositories: installReview })
+await atomicJson(discoveryPath, { schemaVersion: 1, generatedAt: now, windowDays: 7, plugins: discovery })
 console.log(
   'published ' + String(plugins.length) + ' verified plugins; '
   + String(rejected.length) + ' hidden; '
@@ -446,8 +457,24 @@ async function fetchWithRetry(url, options, attempts) {
   throw lastError
 }
 
-function stateRow(candidate, fingerprint, status, reason) {
-  return { repository: candidate.full_name, fingerprint, status, reason, checkedAt: now }
+function stateRow(candidate, fingerprint, status, reason, old) {
+  const stars = integer(candidate.stargazers_count)
+  const starHistory = updateStarHistory(
+    old?.starHistory,
+    old?.plugin?.stars,
+    previousState.generatedAt,
+    stars,
+    now,
+  )
+  return {
+    repository: candidate.full_name,
+    fingerprint,
+    status,
+    reason,
+    checkedAt: now,
+    starHistory,
+    starGrowth7d: starGrowth7d(starHistory, stars),
+  }
 }
 
 function validCandidateSummary(value) {

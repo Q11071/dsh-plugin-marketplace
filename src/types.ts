@@ -25,6 +25,18 @@ export interface MarketplaceRateLimit {
 }
 
 /** One search-result repository row. */
+export type MarketplacePluginCategory =
+  | 'ui'
+  | 'agents'
+  | 'developer-tools'
+  | 'models'
+  | 'data'
+  | 'integrations'
+  | 'media'
+  | 'security'
+  | 'observability'
+  | 'other'
+
 export interface MarketplaceRepoSummary {
   owner: string
   repo: string
@@ -41,6 +53,10 @@ export interface MarketplaceRepoSummary {
   verifiedCommit: string
   htmlUrl: string
   topics: string[]
+  /** Scanner-generated discovery categories, ranked most relevant first. */
+  categories: MarketplacePluginCategory[]
+  /** Positive Star gain over the scanner's retained seven-day baseline. */
+  starGrowth7d: number
 }
 
 export type MarketplaceInstallSource = 'github' | 'npm' | 'tarball' | 'manual'
@@ -180,7 +196,8 @@ export interface MarketplaceRestartResult {
 export interface MarketplaceSearchRequest {
   query: string
   page: number
-  sort: 'stars' | 'updated'
+  sort: 'stars' | 'updated' | 'trending'
+  category: MarketplacePluginCategory | 'all'
 }
 
 export interface MarketplaceDetailsRequest {

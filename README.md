@@ -24,7 +24,9 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
    精确 GitHub commit 或精确 npm 版本。目标 Profile 不明、需要构建授权或额外
    步骤的插件只显示安装说明。
 
-`registry/state.json` 是增量扫描状态。`registry/install-review.json` 记录安装
+`registry/state.json` 是增量扫描状态；其中保留最近 7 天的每日 Star 基线。
+`registry/discovery.json` 发布分类和 Star 增长元数据，又不改变旧客户端严格读取的
+`plugins.json` v2 格式。`registry/install-review.json` 记录安装
 分类所依据的 README 命令、Profile、生命周期脚本和运行产物；
 `registry/guided-audit.json` 每天逐项记录所有引导安装条目的 README 命令、npm
 tarball 验证结果及保留引导安装的原因。公开 Registry 的格式由
@@ -33,7 +35,7 @@ tarball 验证结果及保留引导安装的原因。公开 Registry 的格式�
 ## 安装市场插件
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.3.3
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.4.0
 ```
 
 本地开发安装：
@@ -48,6 +50,9 @@ dsh plugin --profile web add D:/path/to/dsh_Market
 DSH 后生效；更新其他插件也不会意外重新启用已停用 bundle。“已安装插件”页和
 “重启后生效”提示条均提供“重启 DSH”按钮：确认后会等待当前插件任务结束，使用
 相同启动参数和 Profile 自动重启，页面在服务恢复后自动刷新。
+市场还提供扫描时生成的分类筛选，以及“近期热门”排序。热门程度按当前 Star 数与
+最近 7 天最早日快照之间的正增长计算；每天只保存一个基线，不会增加 GitHub API
+请求。刚加入 Registry、还没有历史基线的插件增长值为 0。
 npm 包内自带构建后的 `lib/`
 和当次发布的 Registry 快照，因此远程 Registry 暂时不可用时仍可读取快照。
 
@@ -69,6 +74,8 @@ dsh web --profile web
 也可以通过插件配置的 `registryUrl` 指定同一个 HTTPS 地址。远程内容在内存中
 缓存 15 分钟，支持 ETag；刷新失败时使用最近一次有效内容，再失败才回退到包内
 快照。`registryCacheMinutes` 和 `registryRequestTimeoutMs` 可调整缓存与超时。
+新版市场会在 Registry 同目录读取可选的 `discovery.json`；自建 Registry 未提供
+该文件时仍可正常搜索和安装，只会把分类暂时显示为“其他”并把 Star 增长记为 0。
 
 ## 自动扫描
 
@@ -158,6 +165,8 @@ GitHub spec，或内容已通过 tarball 级复验的精确 npm `包名@版本`�
 
 ```powershell
 pnpm registry:test
+pnpm registry:discovery
+pnpm discovery:test
 pnpm profile:test
 pnpm restart:test
 pnpm build

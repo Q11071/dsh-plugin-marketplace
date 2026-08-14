@@ -13,6 +13,11 @@ import {
   validateManifest,
   verifiedPlugin,
 } from './registry-core.mjs'
+import {
+  classifyPluginCategories,
+  starGrowth7d,
+  updateStarHistory,
+} from './discovery-core.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 
@@ -56,6 +61,27 @@ const row = verifiedPlugin({
 assert.equal(row.install.mode, 'automatic')
 assert.equal(row.install.spec, 'github:owner/repo#' + 'a'.repeat(40))
 assert.deepEqual(row.install.profiles, ['web'])
+assert.deepEqual(classifyPluginCategories({
+  fullName: 'owner/dsh-music-vision',
+  packageName: 'dsh-music-vision',
+  description: 'Multimodal audio and image tools',
+  topics: ['dsh-plugin', 'media'],
+}), ['media'])
+assert.deepEqual(classifyPluginCategories({
+  fullName: 'owner/dsh-secure-dashboard',
+  packageName: 'dsh-secure-dashboard',
+  description: 'Security audit dashboard with usage analytics',
+  topics: ['security', 'observability'],
+}), ['security', 'observability', 'ui'])
+const initialStarHistory = updateStarHistory(undefined, 10, '2026-08-13T02:17:00Z', 13, '2026-08-14T02:17:00Z')
+assert.deepEqual(initialStarHistory, [
+  { date: '2026-08-13', stars: 10 },
+  { date: '2026-08-14', stars: 13 },
+])
+assert.equal(starGrowth7d(initialStarHistory, 13), 3)
+const sameDayStarHistory = updateStarHistory(initialStarHistory, 13, '2026-08-14T02:17:00Z', 15, '2026-08-14T08:00:00Z')
+assert.deepEqual(sameDayStarHistory, initialStarHistory, 'same-day scans must preserve the earliest baseline')
+assert.equal(starGrowth7d(sameDayStarHistory, 15), 5)
 
 const npmClassification = classifyInstall(
   identity,

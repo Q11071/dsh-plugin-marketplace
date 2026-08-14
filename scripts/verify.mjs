@@ -109,6 +109,43 @@ for (const plugin of registry.plugins) {
 }
 console.log('bundled Registry contract valid: ' + registry.plugins.length + ' verified plugins')
 
+// Discovery metadata is a separate sidecar so older strict v2 clients keep
+// accepting plugins.json while newer clients gain categories and trends.
+const discovery = JSON.parse(readFileSync(path.join(root, 'registry', 'discovery.json'), 'utf8'))
+if (
+  discovery.schemaVersion !== 1 ||
+  discovery.windowDays !== 7 ||
+  Number.isNaN(Date.parse(discovery.generatedAt)) ||
+  !Array.isArray(discovery.plugins)
+) {
+  throw new Error('bundled discovery metadata root contract invalid')
+}
+const categoryNames = new Set([
+  'ui', 'agents', 'developer-tools', 'models', 'data',
+  'integrations', 'media', 'security', 'observability', 'other',
+])
+const discoveryNames = new Set()
+for (const row of discovery.plugins) {
+  const key = typeof row?.fullName === 'string' ? row.fullName.toLowerCase() : ''
+  if (!registryNames.has(key)) throw new Error('discovery metadata references an unpublished repository: ' + row?.fullName)
+  if (discoveryNames.has(key)) throw new Error('discovery metadata repeats repository ' + row.fullName)
+  discoveryNames.add(key)
+  if (
+    !Array.isArray(row.categories) ||
+    row.categories.length < 1 ||
+    row.categories.length > 3 ||
+    new Set(row.categories).size !== row.categories.length ||
+    row.categories.some(category => !categoryNames.has(category))
+  ) {
+    throw new Error('discovery categories invalid: ' + row.fullName)
+  }
+  if (!Number.isInteger(row.starGrowth7d) || row.starGrowth7d < 0) {
+    throw new Error('discovery Star growth invalid: ' + row.fullName)
+  }
+}
+if (discoveryNames.size !== registryNames.size) throw new Error('discovery metadata does not cover every Registry plugin')
+console.log('discovery metadata valid: ' + discovery.plugins.length + ' categorized plugins')
+
 // Install-classification audit. Ambiguous repositories stay guided until their
 // evidence changes; auto-resolved rows document conservative false positives
 // that the current classifier was able to prove safe to install from GitHub.

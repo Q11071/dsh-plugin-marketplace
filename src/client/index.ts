@@ -50,7 +50,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
 
     const t = scope.locale.bind(NS)
     const injected = (): MarketplaceTabInjected => ({
-      search: async (query, page, sort) => unwrapMarketplace(await scope.remote.marketplace.search({ query, page, sort })),
+      search: async (query, page, sort, category) => unwrapMarketplace(await scope.remote.marketplace.search({ query, page, sort, category })),
       details: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.details({ repo, ref })),
       install: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.installPlugin({ repo, ref })).jobId,
       update: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.update({ repo, ref })).jobId,

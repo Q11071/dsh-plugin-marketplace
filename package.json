@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-marketplace",
-  "description": "GitHub dsh-plugin marketplace for DSH — search, install, update, uninstall and restart inside Web Settings",
-  "version": "0.3.3",
+  "description": "Verified DSH plugin marketplace with categories, trending discovery, install management and controlled restart",
+  "version": "0.4.0",
   "packageManager": "pnpm@11.1.2",
   "license": "MIT",
   "repository": {
@@ -41,6 +41,7 @@
   "files": [
     "lib/**",
     "registry/plugins.json",
+    "registry/discovery.json",
     "cordis.patch.yml"
   ],
   "dsh": {
@@ -61,8 +62,10 @@
     "build": "node scripts/build.mjs",
     "verify": "node scripts/verify.mjs",
     "registry:scan": "node scripts/registry-scan.mjs",
+    "registry:discovery": "node scripts/discovery-backfill.mjs",
     "registry:audit": "node scripts/guided-audit.mjs",
     "registry:test": "node scripts/registry-test.mjs",
+    "discovery:test": "node --experimental-strip-types scripts/discovery-client-test.ts",
     "profile:test": "node --experimental-strip-types scripts/profile-test.ts",
     "restart:test": "node --experimental-strip-types scripts/restart-test.ts"
   },

@@ -26,6 +26,19 @@ const installMetadataSchema = z.object({
   instructionsUrl: z.string(),
 })
 
+const categorySchema = z.union([
+  z.literal('ui'),
+  z.literal('agents'),
+  z.literal('developer-tools'),
+  z.literal('models'),
+  z.literal('data'),
+  z.literal('integrations'),
+  z.literal('media'),
+  z.literal('security'),
+  z.literal('observability'),
+  z.literal('other'),
+])
+
 const repoSummarySchema = z.object({
   owner: z.string(),
   repo: z.string(),
@@ -41,6 +54,8 @@ const repoSummarySchema = z.object({
   verifiedCommit: z.string(),
   htmlUrl: z.string(),
   topics: z.array(z.string()),
+  categories: z.array(categorySchema),
+  starGrowth7d: z.number(),
   packageName: z.string(),
   version: z.string(),
   bundlePatch: z.string(),
@@ -116,7 +131,8 @@ const installedValueSchema = z.object({
 const searchRequestSchema = z.object({
   query: z.string(),
   page: z.number(),
-  sort: z.union([z.literal('stars'), z.literal('updated')]),
+  sort: z.union([z.literal('stars'), z.literal('updated'), z.literal('trending')]),
+  category: z.union([z.literal('all'), categorySchema]),
 })
 
 const detailsRequestSchema = z.object({

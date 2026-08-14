@@ -16,6 +16,7 @@ import type {
   MarketplaceJobKind,
   MarketplaceJobStatus,
   MarketplacePluginDetails,
+  MarketplacePluginCategory,
   MarketplaceRegistryPlugin,
   MarketplaceSearchPage,
   MarketplaceRestartResult,
@@ -25,7 +26,12 @@ import type { PluginMarketplaceLocaleKey } from './locales.ts'
 
 /** Registration-side Remote face used by the section. */
 export interface MarketplaceTabInjected {
-  search: (query: string, page: number, sort: 'stars' | 'updated') => Promise<MarketplaceSearchPage>
+  search: (
+    query: string,
+    page: number,
+    sort: 'stars' | 'updated' | 'trending',
+    category: MarketplacePluginCategory | 'all',
+  ) => Promise<MarketplaceSearchPage>
   details: (repo: string, ref: string) => Promise<MarketplacePluginDetails>
   install: (repo: string, ref: string) => Promise<string>
   update: (repo: string, ref: string) => Promise<string>
@@ -60,15 +66,38 @@ type RestartState = 'idle' | 'requesting' | 'restarting'
 const POLL_MS = 700
 const DEBOUNCE_MS = 400
 const RESULT_PAGE_SIZE = 30
+const CATEGORY_OPTIONS: MarketplacePluginCategory[] = [
+  'ui',
+  'agents',
+  'developer-tools',
+  'models',
+  'data',
+  'integrations',
+  'media',
+  'security',
+  'observability',
+  'other',
+]
 
 const s = {
   section: { width: '100%', maxWidth: 920, display: 'flex', flexDirection: 'column', gap: 16, color: 'var(--dsw-alias-label-primary)' } as React.CSSProperties,
   subnav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 2 } as React.CSSProperties,
   subnavGroup: { display: 'flex', alignItems: 'center', gap: 8 } as React.CSSProperties,
   subnavMeta: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } as React.CSSProperties,
-  toolbar: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) auto', alignItems: 'center', gap: 12 } as React.CSSProperties,
-  search: { minWidth: 0 } as React.CSSProperties,
-  sortGroup: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, whiteSpace: 'nowrap' } as React.CSSProperties,
+  toolbar: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } as React.CSSProperties,
+  search: { minWidth: 220, flex: '1 1 260px' } as React.CSSProperties,
+  sortGroup: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, whiteSpace: 'nowrap', flexWrap: 'wrap' } as React.CSSProperties,
+  categorySelect: {
+    minWidth: 124,
+    height: 30,
+    border: '1px solid var(--dsw-alias-border-l2)',
+    borderRadius: 8,
+    background: 'var(--dsw-alias-bg-layer-2)',
+    color: 'var(--dsw-alias-label-secondary)',
+    padding: '0 28px 0 10px',
+    font: 'inherit',
+    fontSize: 12,
+  } as React.CSSProperties,
   rateRow: { display: 'flex', justifyContent: 'flex-end', minHeight: 20, marginTop: -8 } as React.CSSProperties,
   muted: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', margin: 0 } as React.CSSProperties,
   failure: { display: 'flex', alignItems: 'center', gap: 10, color: 'var(--dsw-alias-state-error-primary)', fontSize: 13 } as React.CSSProperties,
@@ -136,6 +165,19 @@ function jobPhaseLabel(phase: string, t: MarketplaceTabProps['t']): string {
   return t('jobRunning')
 }
 
+function categoryLabel(category: MarketplacePluginCategory, t: MarketplaceTabProps['t']): string {
+  if (category === 'ui') return t('categoryUi')
+  if (category === 'agents') return t('categoryAgents')
+  if (category === 'developer-tools') return t('categoryDeveloperTools')
+  if (category === 'models') return t('categoryModels')
+  if (category === 'data') return t('categoryData')
+  if (category === 'integrations') return t('categoryIntegrations')
+  if (category === 'media') return t('categoryMedia')
+  if (category === 'security') return t('categorySecurity')
+  if (category === 'observability') return t('categoryObservability')
+  return t('categoryOther')
+}
+
 /** Render the marketplace: search, cards, install jobs, pagination. */
 export function MarketplaceTab({ search, details, install, update, uninstall, setEnabled, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
@@ -143,7 +185,8 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
   const [subpage, setSubpage] = useState<Subpage>('catalog')
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [sort, setSort] = useState<'stars' | 'updated'>('stars')
+  const [sort, setSort] = useState<'stars' | 'updated' | 'trending'>('stars')
+  const [category, setCategory] = useState<MarketplacePluginCategory | 'all'>('all')
   const [page, setPage] = useState(1)
   const [seq, setSeq] = useState(0)
   const [installedMap, setInstalledMap] = useState<Map<string, MarketplaceInstalledEntry>>(new Map())
@@ -174,14 +217,14 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
     if (subpage !== 'catalog') return undefined
     let current = true
     setView({ status: 'loading' })
-    void search(debouncedQuery, page, sort).then(
+    void search(debouncedQuery, page, sort, category).then(
       (result) => { if (current) setView({ status: 'ready', page: result }) },
       (error: unknown) => {
         if (current) setView({ status: 'error', message: error instanceof Error ? error.message : String(error) })
       },
     )
     return () => { current = false }
-  }, [debouncedQuery, sort, page, seq, search, subpage])
+  }, [debouncedQuery, sort, category, page, seq, search, subpage])
 
   const refreshInstalled = useCallback(() => {
     setInstalledLoading(true)
@@ -404,8 +447,21 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
               />
             </div>
             <div style={s.sortGroup}>
-              <Pill active={sort === 'stars'} onClick={() => { setSort('stars') }}>{t('sortStars')}</Pill>
-              <Pill active={sort === 'updated'} onClick={() => { setSort('updated') }}>{t('sortUpdated')}</Pill>
+              <select
+                style={s.categorySelect}
+                value={category}
+                aria-label={t('category')}
+                onChange={(event) => {
+                  setCategory(event.currentTarget.value as MarketplacePluginCategory | 'all')
+                  setPage(1)
+                }}
+              >
+                <option value='all'>{t('categoryAll')}</option>
+                {CATEGORY_OPTIONS.map((value) => <option key={value} value={value}>{categoryLabel(value, t)}</option>)}
+              </select>
+              <Pill active={sort === 'stars'} onClick={() => { setSort('stars'); setPage(1) }}>{t('sortStars')}</Pill>
+              <Pill active={sort === 'trending'} onClick={() => { setSort('trending'); setPage(1) }}>{t('sortTrending')}</Pill>
+              <Pill active={sort === 'updated'} onClick={() => { setSort('updated'); setPage(1) }}>{t('sortUpdated')}</Pill>
             </div>
           </div>
           {rate !== null && rate.limit > 0 ? (
@@ -422,7 +478,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
               <Button variant='outline' size='sm' onClick={retry}>{t('retry')}</Button>
             </div>
           ) : null}
-          {ready !== null && ready.items.length === 0 ? <p style={s.muted}>{debouncedQuery === '' ? t('empty') : t('emptySearch')}</p> : null}
+          {ready !== null && ready.items.length === 0 ? <p style={s.muted}>{debouncedQuery === '' && category === 'all' ? t('empty') : t('emptySearch')}</p> : null}
           {ready !== null && ready.items.length > 0 ? (
             <ul style={s.cards}>
               {ready.items.map((item) => (
@@ -508,6 +564,7 @@ interface CardRowProps {
 function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detailError, onToggle, onInstall }: CardRowProps): ReactNode {
   const meta = [
     item.stars > 0 ? '★ ' + item.stars : null,
+    item.starGrowth7d > 0 ? fmt(t, 'starGrowth7d', { stars: item.starGrowth7d }) : null,
     item.license !== null ? item.license : null,
     item.language !== null ? item.language : null,
     item.updatedAt !== '' ? t('updated') + ' ' + new Date(item.updatedAt).toLocaleDateString() : null,
@@ -526,6 +583,7 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
         <p style={s.description} title={item.description ?? undefined}>{item.description === null || item.description === '' ? '\u00A0' : item.description}</p>
         <div style={s.metaRow}>
           {meta.map((value) => <span key={value} style={s.meta}>{value}</span>)}
+          {item.categories.slice(0, 2).map((category) => <span key={category} style={s.tag}>{categoryLabel(category, t)}</span>)}
           {detail !== undefined && detail.manifest?.hasClient === true ? <span style={s.tag}>{t('hasClient')}</span> : null}
         </div>
         <div style={s.actions}>

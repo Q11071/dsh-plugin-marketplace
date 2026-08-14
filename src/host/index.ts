@@ -17,6 +17,7 @@ import type {
   MarketplaceJobStatusRequest,
   MarketplaceResult,
   MarketplacePluginDetails,
+  MarketplacePluginCategory,
   MarketplaceRegistryPlugin,
   MarketplaceRestartResult,
   MarketplaceSearchPage,
@@ -99,8 +100,9 @@ export class MarketplaceService extends TypertRemoteService {
   async search(request: MarketplaceSearchRequest): Promise<MarketplaceResult<MarketplaceSearchPage>> {
     try {
       const page = Number.isInteger(request.page) && request.page >= 1 ? request.page : 1
-      const sort = request.sort === 'updated' ? 'updated' : 'stars'
-      return ok(await this.registry.search(request.query, page, sort))
+      const sort = request.sort === 'updated' || request.sort === 'trending' ? request.sort : 'stars'
+      const category = request.category === 'all' ? 'all' : request.category as MarketplacePluginCategory
+      return ok(await this.registry.search(request.query, page, sort, category))
     } catch (error) {
       return toFailure(error)
     }

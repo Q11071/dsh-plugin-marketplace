@@ -27,6 +27,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:test
+      - run: pnpm discovery:test
       - run: pnpm profile:test
       - name: Discover and validate candidates
         run: pnpm registry:scan
@@ -39,7 +40,7 @@ jobs:
       - name: Commit Registry changes
         shell: bash
         run: |
-          git add registry/plugins.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json
+          git add registry/plugins.json registry/discovery.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json
           if git diff --cached --quiet; then
             echo "Registry is already current."
             exit 0
