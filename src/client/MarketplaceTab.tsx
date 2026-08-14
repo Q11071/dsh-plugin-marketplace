@@ -33,6 +33,7 @@ export interface MarketplaceTabInjected {
     category: MarketplacePluginCategory | 'all',
   ) => Promise<MarketplaceSearchPage>
   details: (repo: string, ref: string) => Promise<MarketplacePluginDetails>
+  guidedAgent: (repo: string, ref: string, operation: 'install' | 'update') => Promise<void>
   install: (repo: string, ref: string) => Promise<string>
   update: (repo: string, ref: string) => Promise<string>
   uninstall: (packageName: string) => Promise<string>
@@ -180,7 +181,7 @@ function categoryLabel(category: MarketplacePluginCategory, t: MarketplaceTabPro
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, install, update, uninstall, setEnabled, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, guidedAgent, install, update, uninstall, setEnabled, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
@@ -203,6 +204,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
   const [banner, setBanner] = useState<string | null>(null)
   const [toggleBusy, setToggleBusy] = useState<string | null>(null)
   const [restartState, setRestartState] = useState<RestartState>('idle')
+  const [agentBusy, setAgentBusy] = useState<string | null>(null)
 
   // Debounce the free-text query.
   useEffect(() => {
@@ -386,6 +388,16 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
     })
   }
 
+  const onGuidedAgent = (repo: string, ref: string, packageName: string, operation: 'install' | 'update'): void => {
+    setAgentBusy(repo)
+    setBanner(t('agentStarting'))
+    void guidedAgent(repo, ref, operation).then(() => {
+      setBanner(fmt(t, 'agentStarted', { package: packageName }))
+    }).catch((error: unknown) => {
+      setBanner(error instanceof Error ? error.message : String(error))
+    }).finally(() => { setAgentBusy(null) })
+  }
+
   const onSetEnabled = (entry: MarketplaceInstalledEntry): void => {
     const enabled = !entry.enabled
     setToggleBusy(entry.packageName)
@@ -499,6 +511,8 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
                     void loadDetails(item.fullName, item.verifiedCommit).catch(() => { /* the error renders in the card */ })
                   }}
                   onInstall={() => { onInstall(item) }}
+                  onGuidedAgent={() => { onGuidedAgent(item.fullName, item.verifiedCommit, item.packageName, 'install') }}
+                  agentBusy={agentBusy === item.fullName}
                 />
               ))}
             </ul>
@@ -514,6 +528,7 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
       ) : (
         <InstalledList
           entries={[...installedMap.values()].filter(entry => entry.isBundle)}
+          currentProfile={installedProfile}
           loading={installedLoading}
           error={installedError}
           t={t}
@@ -525,6 +540,11 @@ export function MarketplaceTab({ search, details, install, update, uninstall, se
           }}
           onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
           onSetEnabled={onSetEnabled}
+          onAgentUpdate={(entry) => {
+            if (entry.registryRepo === null || entry.verifiedCommit === null || entry.install === null) return
+            onGuidedAgent(entry.registryRepo, entry.verifiedCommit, entry.packageName, 'update')
+          }}
+          agentBusy={agentBusy}
           toggleBusy={toggleBusy}
         />
       )}
@@ -561,9 +581,11 @@ interface CardRowProps {
   detailError: string | undefined
   onToggle: () => void
   onInstall: () => void
+  onGuidedAgent: () => void
+  agentBusy: boolean
 }
 
-function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detailError, onToggle, onInstall }: CardRowProps): ReactNode {
+function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detailError, onToggle, onInstall, onGuidedAgent, agentBusy }: CardRowProps): ReactNode {
   const meta = [
     item.stars > 0 ? '★ ' + item.stars : null,
     item.starGrowth7d > 0 ? fmt(t, 'starGrowth7d', { stars: item.starGrowth7d }) : null,
@@ -575,6 +597,9 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
     && (item.install.source === 'github' || item.install.source === 'npm')
     && currentProfile !== ''
     && item.install.profiles.includes(currentProfile)
+  const canUseAgent = item.install.mode === 'guided'
+    && currentProfile !== ''
+    && (item.install.profiles.length === 0 || item.install.profiles.includes(currentProfile))
   return (
     <li style={s.card}>
       <div style={s.cardBody}>
@@ -593,6 +618,10 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
             <Button variant='outline' size='sm' disabled>{t('installedTag')}</Button>
           ) : canInstall ? (
             <Button variant='primary' size='sm' onClick={onInstall}>{t('install')}</Button>
+          ) : canUseAgent ? (
+            <Button variant='primary' size='sm' disabled={agentBusy} onClick={onGuidedAgent}>
+              {agentBusy ? t('agentStarting') : t('agentInstall')}
+            </Button>
           ) : (
             <a style={s.link} href={item.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
           )}
@@ -633,6 +662,7 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
 
 interface InstalledListProps {
   entries: MarketplaceInstalledEntry[]
+  currentProfile: string
   loading: boolean
   error: string | null
   t: MarketplaceTabProps['t']
@@ -640,10 +670,12 @@ interface InstalledListProps {
   onUpdate: (entry: MarketplaceInstalledEntry) => void
   onUninstall: (entry: MarketplaceInstalledEntry) => void
   onSetEnabled: (entry: MarketplaceInstalledEntry) => void
+  onAgentUpdate: (entry: MarketplaceInstalledEntry) => void
+  agentBusy: string | null
   toggleBusy: string | null
 }
 
-function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninstall, onSetEnabled, toggleBusy }: InstalledListProps): ReactNode {
+function InstalledList({ entries, currentProfile, loading, error, t, onRetry, onUpdate, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy }: InstalledListProps): ReactNode {
   if (loading) return <p style={s.muted}>{t('loadingInstalled')}</p>
   if (error !== null) {
     return (
@@ -680,6 +712,14 @@ function InstalledList({ entries, loading, error, t, onRetry, onUpdate, onUninst
               <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
                 {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}
               </Button>
+            ) : entry.updateAvailable
+              && entry.install?.mode === 'guided'
+              && entry.registryRepo !== null
+              && entry.verifiedCommit !== null
+              && (entry.install.profiles.length === 0 || entry.install.profiles.includes(currentProfile)) ? (
+                <Button variant='primary' size='sm' disabled={agentBusy === entry.registryRepo} onClick={() => { onAgentUpdate(entry) }}>
+                  {agentBusy === entry.registryRepo ? t('agentStarting') : t('agentUpdate')}
+                </Button>
             ) : entry.updateAvailable && entry.install !== null ? (
               <a style={s.link} href={entry.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
             ) : (

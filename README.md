@@ -22,7 +22,7 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
    只对当前 Profile 中满足自动安装条件的插件开放一键安装。
 7. 自动安装仍会在执行前读取 Registry 和仓库内容，并只允许执行 Registry 验证的
    精确 GitHub commit 或精确 npm 版本。目标 Profile 不明、需要构建授权或额外
-   步骤的插件只显示安装说明。
+   步骤的插件由引导安装 Agent 处理，不会降级为无条件执行 README 命令。
 
 `registry/state.json` 是增量扫描状态；其中保留最近 7 天的每日 Star 基线。
 `registry/discovery.json` 发布分类和 Star 增长元数据，又不改变旧客户端严格读取的
@@ -35,7 +35,7 @@ tarball 验证结果及保留引导安装的原因。公开 Registry 的格式�
 ## 安装市场插件
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.5.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.6.0
 ```
 
 本地开发安装：
@@ -56,6 +56,26 @@ DSH 后生效；更新其他插件也不会意外重新启用已停用 bundle。
 市场还提供扫描时生成的分类筛选，以及“近期热门”排序。热门程度按当前 Star 数与
 最近 7 天最早日快照之间的正增长计算；每天只保存一个基线，不会增加 GitHub API
 请求。刚加入 Registry、还没有历史基线的插件增长值为 0。
+
+### 引导安装 Agent
+
+仍处于“引导安装”的插件会显示“Agent 安装”，已安装插件有引导型更新时会显示
+“Agent 更新”。点击后，市场会在当前或最近工作区新建一个 `standard`（不可用时
+回退到 `code` 或默认预设）Agent 会话，并把以下内容固定在任务中：
+
+- Registry 验证过的仓库、包名、版本和唯一 commit；
+- 当前运行的 Profile、bundle patch 和扫描器的引导分类原因；
+- 不信任 README/Issue/脚本文字、禁止改用 `main`/`latest`、禁止执行远程管道脚本
+  的安全边界；
+- 安装后复查 Profile 依赖、bundle 层和启用状态的验收要求。
+
+Agent 会先只读检查精确 commit。需要执行安装、构建、`prepare`、`postinstall` 等
+第三方代码时，仍由 DSH 原生审批层逐项询问，市场不会替用户批准。无法证明安装源、
+Profile 兼容性或运行产物时，Agent 会停止而不是绕过 Registry。安装成功后的最终
+答复必须包含“启动方法”，说明使用哪个 Profile、是否需要重启、插件是否随 DSH
+自动加载、还需填写哪些配置以及 Web 入口或调用方式。启动 Agent 前必须至少有一个
+工作区；创建后关闭设置面板即可查看任务进度和处理审批。
+
 npm 包内自带构建后的 `lib/`
 和当次发布的 Registry 快照，因此远程 Registry 暂时不可用时仍可读取快照。
 
@@ -79,10 +99,12 @@ dsh web --profile web
 快照。`registryCacheMinutes` 和 `registryRequestTimeoutMs` 可调整缓存与超时。
 新版市场会在 Registry 同目录读取可选的 `discovery.json`；自建 Registry 未提供
 该文件时仍可正常搜索和安装，只会把分类暂时显示为“其他”并把 Star 增长记为 0。
+引导安装 Agent 还会读取同目录可选的 `guided-audit.json`；缺少它时仍会使用核心
+Registry 的精确 commit 启动只读核验，但不会获得扫描器提取的辅助审计信息。
 
 ## 自动扫描
 
-.github/workflows/daily-registry-scan.yml` 默认每两小时在第 17 分钟执行，也支持
+`.github/workflows/daily-registry-scan.yml` 默认每两小时在第 17 分钟执行，也支持
 在 Actions 页面手动运行。扫描和引导审计优先使用 Actions Secret
 `REGISTRY_GITHUB_TOKEN` 中的只读 PAT；未配置时回退到仓库自动提供的
 `GITHUB_TOKEN`。PAT 不参与 Registry 提交，写入仍由 Actions checkout 的内置
@@ -180,6 +202,7 @@ pnpm discovery:test
 pnpm profile:test
 pnpm restart:test
 pnpm self-update:test
+pnpm guided-agent:test
 pnpm build
 pnpm verify
 pnpm exec tsc --noEmit

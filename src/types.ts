@@ -195,6 +195,23 @@ export interface MarketplaceRestartResult {
   profile: string
 }
 
+export type MarketplaceGuidedAgentOperation = 'install' | 'update'
+
+/** Registry-bound task handed to a normal DSH Agent for a guided install. */
+export interface MarketplaceGuidedAgentTask {
+  repository: string
+  packageName: string
+  version: string
+  verifiedCommit: string
+  profile: string
+  title: string
+  prompt: string
+  instructionsUrl: string
+  assessment: string
+  requiresBuildApproval: boolean
+  lifecycleScripts: string[]
+}
+
 export interface MarketplaceSearchRequest {
   query: string
   page: number
@@ -212,6 +229,10 @@ export interface MarketplaceDetailsRequest {
 export interface MarketplaceInstallRequest {
   repo: string
   ref: string
+}
+
+export interface MarketplaceGuidedAgentRequest extends MarketplaceInstallRequest {
+  operation: MarketplaceGuidedAgentOperation
 }
 
 export interface MarketplaceJobStatusRequest {

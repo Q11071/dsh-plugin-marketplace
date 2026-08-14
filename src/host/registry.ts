@@ -8,6 +8,7 @@ import type {
   MarketplacePluginCategory,
   MarketplaceSearchPage,
 } from '../types.ts'
+import type { GuidedAuditEvidence } from './guided-agent.ts'
 
 const PAGE_SIZE = 30
 
@@ -34,6 +35,43 @@ const discoverySchema = z.object({
     starGrowth7d: z.number().int().nonnegative(),
   }).strict()),
 }).strict()
+
+const guidedCommandSchema = z.object({
+  raw: z.string(),
+  profile: z.string().nullable(),
+  spec: z.string(),
+  source: z.string(),
+}).passthrough()
+
+const guidedAuditSchema = z.object({
+  schemaVersion: z.literal(1),
+  generatedAt: z.iso.datetime(),
+  rows: z.array(z.object({
+    repository: z.string(),
+    packageName: z.string(),
+    version: z.string(),
+    verifiedCommit: z.string().regex(/^[0-9a-f]{40}$/i),
+    commands: z.array(guidedCommandSchema),
+    targetedCommands: z.array(guidedCommandSchema),
+    npmVerification: z.object({
+      verified: z.boolean(),
+      spec: z.string(),
+      reason: z.string(),
+    }).passthrough(),
+    assessment: z.object({
+      outcome: z.string(),
+      reason: z.string(),
+    }).passthrough(),
+    current: z.object({
+      profiles: z.array(z.string()),
+      requiresBuildApproval: z.boolean(),
+      manualSteps: z.boolean(),
+      lifecycleScripts: z.array(z.string()),
+      runtimeArtifactsCommitted: z.boolean(),
+      reviewReasons: z.array(z.string()),
+    }).passthrough(),
+  }).passthrough()),
+}).passthrough()
 
 const installSchema = z.object({
   mode: z.union([z.literal('automatic'), z.literal('guided')]),
@@ -183,6 +221,22 @@ export class RegistryClient {
     return (await this.load()).plugins.find(plugin => plugin.packageName === packageName)
   }
 
+  /** Read the scanner's evidence for one still-guided repository, when available. */
+  async guidedEvidence(repo: string): Promise<GuidedAuditEvidence | undefined> {
+    await this.load()
+    const source = this.cache?.source ?? this.source
+    try {
+      const raw = await this.readJson(companionSource(source, 'guided-audit.json'))
+      const audit = guidedAuditSchema.parse(raw)
+      const normalized = repo.trim().toLocaleLowerCase()
+      return audit.rows.find(row => row.repository.toLocaleLowerCase() === normalized) as GuidedAuditEvidence | undefined
+    } catch {
+      // A custom Registry may omit the optional audit sidecar. The Agent can
+      // still inspect the exact commit from the core Registry facts.
+      return undefined
+    }
+  }
+
   private async load(): Promise<MarketplaceRegistry> {
     if (this.cache !== undefined && Date.now() < this.cache.expiresAt) return this.cache.registry
     try {
@@ -247,24 +301,25 @@ export class RegistryClient {
   /** Discovery metadata is optional so custom and legacy registries still load. */
   private async loadDiscovery(source: string): Promise<z.output<typeof discoverySchema> | undefined> {
     try {
-      const url = discoverySource(source)
-      let raw: unknown
-      if (url.protocol === 'file:') {
-        raw = JSON.parse(await readFile(url, 'utf8')) as unknown
-      } else if (url.protocol === 'https:' || url.protocol === 'http:') {
-        const response = await fetch(url, {
-          headers: { accept: 'application/json' },
-          signal: AbortSignal.timeout(this.timeoutMs),
-        })
-        if (!response.ok) return undefined
-        raw = await response.json() as unknown
-      } else {
-        return undefined
-      }
+      const raw = await this.readJson(companionSource(source, 'discovery.json'))
       return discoverySchema.parse(raw)
     } catch {
       return undefined
     }
+  }
+
+  /** Read one Registry companion JSON document with the configured timeout. */
+  private async readJson(url: URL): Promise<unknown> {
+    if (url.protocol === 'file:') return JSON.parse(await readFile(url, 'utf8')) as unknown
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      throw new Error(`Unsupported Registry URL protocol ${JSON.stringify(url.protocol)}`)
+    }
+    const response = await fetch(url, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(this.timeoutMs),
+    })
+    if (!response.ok) throw new Error(`Registry companion returned HTTP ${String(response.status)}`)
+    return response.json() as Promise<unknown>
   }
 }
 
@@ -313,10 +368,10 @@ function applyDiscovery(
   }
 }
 
-function discoverySource(source: string): URL {
+function companionSource(source: string, filename: string): URL {
   const url = new URL(source)
   const slash = url.pathname.lastIndexOf('/')
-  url.pathname = url.pathname.slice(0, slash + 1) + 'discovery.json'
+  url.pathname = url.pathname.slice(0, slash + 1) + filename
   return url
 }
 

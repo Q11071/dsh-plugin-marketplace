@@ -9,6 +9,8 @@ import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type {
   MarketplaceDetailsRequest,
+  MarketplaceGuidedAgentRequest,
+  MarketplaceGuidedAgentTask,
   MarketplaceInstallRequest,
   MarketplaceInstalled,
   MarketplaceJobHandle,
@@ -30,6 +32,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$6d61726b6574706c616365 {
     search: (request: MarketplaceSearchRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceSearchPage>>>
     details: (request: MarketplaceDetailsRequest) => Promise<RemoteResult<MarketplaceResult<MarketplacePluginDetails>>>
+    guidedTask: (request: MarketplaceGuidedAgentRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceGuidedAgentTask>>>
     installPlugin: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     update: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     uninstall: (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
@@ -41,6 +44,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteMap {
     'marketplace/search': (request: MarketplaceSearchRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceSearchPage>>>
     'marketplace/details': (request: MarketplaceDetailsRequest) => Promise<RemoteResult<MarketplaceResult<MarketplacePluginDetails>>>
+    'marketplace/guidedTask': (request: MarketplaceGuidedAgentRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceGuidedAgentTask>>>
     'marketplace/installPlugin': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/update': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/uninstall': (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>

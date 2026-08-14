@@ -83,6 +83,20 @@ const detailsValueSchema = z.object({
   rate: rateSchema,
 })
 
+const guidedAgentTaskValueSchema = z.object({
+  repository: z.string(),
+  packageName: z.string(),
+  version: z.string(),
+  verifiedCommit: z.string(),
+  profile: z.string(),
+  title: z.string(),
+  prompt: z.string(),
+  instructionsUrl: z.string(),
+  assessment: z.string(),
+  requiresBuildApproval: z.boolean(),
+  lifecycleScripts: z.array(z.string()),
+})
+
 const searchValueSchema = z.object({
   totalCount: z.number(),
   items: z.array(repoSummarySchema),
@@ -144,6 +158,10 @@ const detailsRequestSchema = z.object({
 const installRequestSchema = z.object({
   repo: z.string(),
   ref: z.string(),
+})
+
+const guidedAgentRequestSchema = installRequestSchema.extend({
+  operation: z.union([z.literal('install'), z.literal('update')]),
 })
 
 const jobStatusRequestSchema = z.object({
@@ -225,6 +243,7 @@ export const TYPERT = {
   invocations: [
     invocation('search', [param('request', searchRequestSchema, `${REQUEST_TYPES}MarketplaceSearchRequest`)], result(resultSchema(searchValueSchema), `${REQUEST_TYPES}MarketplaceSearchOutcome`)),
     invocation('details', [param('request', detailsRequestSchema, `${REQUEST_TYPES}MarketplaceDetailsRequest`)], result(resultSchema(detailsValueSchema), `${REQUEST_TYPES}MarketplaceDetailsOutcome`)),
+    invocation('guidedTask', [param('request', guidedAgentRequestSchema, `${REQUEST_TYPES}MarketplaceGuidedAgentRequest`)], result(resultSchema(guidedAgentTaskValueSchema), `${REQUEST_TYPES}MarketplaceGuidedAgentOutcome`)),
     invocation('installPlugin', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('update', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('uninstall', [param('request', uninstallRequestSchema, `${REQUEST_TYPES}MarketplaceUninstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),

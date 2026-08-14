@@ -11,6 +11,8 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type {
   MarketplaceDetailsRequest,
+  MarketplaceGuidedAgentRequest,
+  MarketplaceGuidedAgentTask,
   MarketplaceInstallRequest,
   MarketplaceInstalled,
   MarketplaceJobStatus,
@@ -28,6 +30,7 @@ import type {
 } from '../types.ts'
 import { readProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
+import { buildGuidedAgentTask } from './guided-agent.ts'
 import { JobTable, runPnpmJob, type JobRecord } from './installer.ts'
 import { scheduleProcessRestart } from './restart.ts'
 import {
@@ -122,6 +125,44 @@ export class MarketplaceService extends TypertRemoteService {
   async details(request: MarketplaceDetailsRequest): Promise<MarketplaceResult<MarketplacePluginDetails>> {
     try {
       return ok(await this.github.details(request.repo, request.ref ?? ''))
+    } catch (error) {
+      return toFailure(error)
+    }
+  }
+
+  @Remote('guidedTask')
+  async guidedTask(request: MarketplaceGuidedAgentRequest): Promise<MarketplaceResult<MarketplaceGuidedAgentTask>> {
+    try {
+      const registered = await this.registry.find(request.repo)
+      if (registered === undefined) {
+        return fail('not-in-registry', request.repo + ' is not present in the verified DSH plugin Registry.')
+      }
+      if (request.ref.trim().toLocaleLowerCase() !== registered.verifiedCommit.toLocaleLowerCase()) {
+        return fail('unverified-ref', 'The guided Agent task must use the exact commit approved by the Registry.', {
+          requestedRef: request.ref,
+          verifiedCommit: registered.verifiedCommit,
+        })
+      }
+      if (registered.install.mode !== 'guided') {
+        return fail('agent-not-required', 'This plugin already has a verified automatic install path.')
+      }
+      const profile = profileLocation(this.ctx)
+      ensureProfile(profile.dir, profile.name)
+      if (registered.install.profiles.length > 0 && !registered.install.profiles.includes(profile.name)) {
+        return fail('profile-unsupported', 'This plugin is not verified for the current Profile.', {
+          profile: profile.name,
+          supportedProfiles: registered.install.profiles,
+        })
+      }
+      const evidence = await this.registry.guidedEvidence(registered.fullName)
+      if (evidence !== undefined && (
+        evidence.packageName !== registered.packageName
+        || evidence.version !== registered.version
+        || evidence.verifiedCommit.toLocaleLowerCase() !== registered.verifiedCommit.toLocaleLowerCase()
+      )) {
+        return fail('audit-stale', 'The guided-install audit does not match the current Registry entry. Wait for the next scan before starting an Agent.')
+      }
+      return ok(buildGuidedAgentTask(registered, profile.name, request.operation, evidence))
     } catch (error) {
       return toFailure(error)
     }
