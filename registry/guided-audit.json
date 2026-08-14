@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-14T22:19:33.570Z",
-  "total": 286,
+  "generatedAt": "2026-08-14T23:06:07.271Z",
+  "total": 289,
   "groups": {
-    "local-or-unparsed-command-only": 144,
-    "remote-command-found": 100,
-    "no-install-command-found": 42
+    "local-or-unparsed-command-only": 143,
+    "remote-command-found": 101,
+    "no-install-command-found": 45
   },
   "rows": [
     {
@@ -1778,8 +1778,8 @@
     {
       "repository": "CH4ACKO3/dsh-harmony",
       "packageName": "dsh-harmony",
-      "version": "0.1.0",
-      "verifiedCommit": "18faf63813bbe40a6d5b81a8bc8e0cac2801749b",
+      "version": "0.1.1",
+      "verifiedCommit": "e7a89c3ecbc5fd38b9304e5469d169859b948940",
       "readmePath": null,
       "commands": [
         {
@@ -1787,19 +1787,39 @@
           "profile": "web",
           "spec": "./my-plugin",
           "source": "local"
+        },
+        {
+          "raw": "dsh plugin --profile web add dsh-harmony",
+          "profile": "web",
+          "spec": "dsh-harmony",
+          "source": "npm"
         }
       ],
-      "targetedCommands": [],
-      "remoteCommands": [],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-harmony",
+          "profile": "web",
+          "spec": "dsh-harmony",
+          "source": "npm"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-harmony",
+          "profile": "web",
+          "spec": "dsh-harmony",
+          "source": "npm"
+        }
+      ],
       "npmVerification": {
         "verified": false,
-        "spec": "dsh-harmony@0.1.0",
+        "spec": "dsh-harmony@0.1.1",
         "reason": "npm-hard-lifecycle-scripts",
         "detail": "postinstall"
       },
       "assessment": {
-        "outcome": "guided-no-matching-remote-command",
-        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-hard-lifecycle-scripts"
       },
       "current": {
         "profiles": [
@@ -2215,7 +2235,7 @@
       "repository": "chnjames/dsh-plugin-market",
       "packageName": "dsh-plugin-market",
       "version": "0.3.0",
-      "verifiedCommit": "9f987fb0f1e3d654e0de10ebfd0280e74d97b64b",
+      "verifiedCommit": "0196860993be88b30520ceaa92138a3fa5071b28",
       "readmePath": null,
       "commands": [
         {
@@ -4556,6 +4576,95 @@
       }
     },
     {
+      "repository": "Hyna-hla/dsh-interrupt-send",
+      "packageName": "dsh-interrupt-send",
+      "version": "1.0.0",
+      "verifiedCommit": "a8aa80064a9bd4f909323920cf6a2474f452e51b",
+      "readmePath": null,
+      "commands": [],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-interrupt-send@1.0.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "Hyna-hla/dsh-md-table-formatter",
+      "packageName": "dsh-md-table-formatter",
+      "version": "1.0.0",
+      "verifiedCommit": "161c668f51f7b20ed6ab20e6dfff31115364793a",
+      "readmePath": null,
+      "commands": [],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-md-table-formatter@1.0.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "current": {
+        "profiles": [
+          "headless",
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "Hyna-hla/dsh-vscode",
+      "packageName": "dsh-vscode",
+      "version": "1.0.0",
+      "verifiedCommit": "f587a7a1482b028acf85e22c003fbfa09f9a2f0f",
+      "readmePath": null,
+      "commands": [],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-vscode@1.0.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "current": {
+        "profiles": [
+          "headless",
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
       "repository": "ihuajiu/dsh-plugin-finder",
       "packageName": "dsh-plugin-finder",
       "version": "0.1.2",
@@ -5507,42 +5616,42 @@
     {
       "repository": "labmimors/dsh-mcp-lens",
       "packageName": "dsh-mcp-lens",
-      "version": "0.1.0-rc.4",
-      "verifiedCommit": "aaf8b915061f96a61c5a90a8e1944860a0b8e7a0",
+      "version": "0.1.0-rc.6",
+      "verifiedCommit": "c121ed9a6febac6da8e202fea11f6fc5c15d585b",
       "readmePath": null,
       "commands": [
         {
-          "raw": "dsh plugin --profile web add https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.4/dsh-mcp-lens-0.1.0-rc.4.tgz",
+          "raw": "dsh plugin --profile web add https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.6/dsh-mcp-lens-0.1.0-rc.6.tgz",
           "profile": "web",
-          "spec": "https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.4/dsh-mcp-lens-0.1.0-rc.4.tgz",
+          "spec": "https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.6/dsh-mcp-lens-0.1.0-rc.6.tgz",
           "source": "tarball"
         },
         {
-          "raw": "dsh plugin --profile web add github:labmimors/dsh-mcp-lens#v0.1.0-rc.4",
+          "raw": "dsh plugin --profile web add github:labmimors/dsh-mcp-lens#v0.1.0-rc.6",
           "profile": "web",
-          "spec": "github:labmimors/dsh-mcp-lens#v0.1.0-rc.4",
+          "spec": "github:labmimors/dsh-mcp-lens#v0.1.0-rc.6",
           "source": "unknown"
         }
       ],
       "targetedCommands": [
         {
-          "raw": "dsh plugin --profile web add https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.4/dsh-mcp-lens-0.1.0-rc.4.tgz",
+          "raw": "dsh plugin --profile web add https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.6/dsh-mcp-lens-0.1.0-rc.6.tgz",
           "profile": "web",
-          "spec": "https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.4/dsh-mcp-lens-0.1.0-rc.4.tgz",
+          "spec": "https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.6/dsh-mcp-lens-0.1.0-rc.6.tgz",
           "source": "tarball"
         }
       ],
       "remoteCommands": [
         {
-          "raw": "dsh plugin --profile web add https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.4/dsh-mcp-lens-0.1.0-rc.4.tgz",
+          "raw": "dsh plugin --profile web add https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.6/dsh-mcp-lens-0.1.0-rc.6.tgz",
           "profile": "web",
-          "spec": "https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.4/dsh-mcp-lens-0.1.0-rc.4.tgz",
+          "spec": "https://github.com/labmimors/dsh-mcp-lens/releases/download/v0.1.0-rc.6/dsh-mcp-lens-0.1.0-rc.6.tgz",
           "source": "tarball"
         }
       ],
       "npmVerification": {
         "verified": false,
-        "spec": "dsh-mcp-lens@0.1.0-rc.4",
+        "spec": "dsh-mcp-lens@0.1.0-rc.6",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -11426,7 +11535,7 @@
       "repository": "Vim0x3c/dsh-session-manager",
       "packageName": "dsh-session-manager",
       "version": "0.1.0",
-      "verifiedCommit": "d722ff62dd8ce0018b5ca5fd314b1e51ae8f7c5d",
+      "verifiedCommit": "53dee809eed7e1173f25d2b32a73bae1e18be598",
       "readmePath": null,
       "commands": [
         {
@@ -11464,7 +11573,7 @@
       "repository": "Vim0x3c/dsh-skin-appearance",
       "packageName": "dsh-skin-appearance",
       "version": "0.1.0",
-      "verifiedCommit": "6ecedd41c33ac2900261116e2fb77271e918c16a",
+      "verifiedCommit": "be7b05776c1dee9e3d387e122c42005edf400837",
       "readmePath": null,
       "commands": [
         {
@@ -12333,7 +12442,7 @@
       "repository": "yjh051108/dsh-super-injector",
       "packageName": "@dsh-external/dsh-super-injector",
       "version": "0.3.1",
-      "verifiedCommit": "cd66ba8f6dee198025dd887d3341e4e9843b9e04",
+      "verifiedCommit": "31a556aca4a5ebc572e3b1fcd7addbe8d589ea08",
       "readmePath": null,
       "commands": [
         {
@@ -13272,7 +13381,7 @@
       "repository": "zcx369658780/governed-workflow-for-dsh",
       "packageName": "dsh-governed-workflow",
       "version": "0.1.0",
-      "verifiedCommit": "925c2c4c27fbbc3b7ea67af94ebb77156fa714f3",
+      "verifiedCommit": "f3866974951aedec10c44da01eca3b111c7e3001",
       "readmePath": null,
       "commands": [
         {
@@ -13593,7 +13702,7 @@
       "repository": "ZK-Andy/dsh-continual-evolve",
       "packageName": "dsh-continual-evolve",
       "version": "0.1.0",
-      "verifiedCommit": "100e056c95282b1ffb895318f4bd1c045efabff5",
+      "verifiedCommit": "9ff642c9b498a28d8f43b428794e9fdc3d98d972",
       "readmePath": null,
       "commands": [
         {
