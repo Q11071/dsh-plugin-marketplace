@@ -19,6 +19,7 @@ import {
   validateManifest,
   verifiedPlugin,
 } from './registry-core.mjs'
+import { verifyExactNpmRelease } from './npm-release.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 const token = process.env.GITHUB_TOKEN?.trim()
@@ -87,6 +88,8 @@ async function processCandidate(candidate) {
     && sameFingerprint(old.fingerprint, fingerprint)
     && old.status === 'verified'
     && plainObject(old.plugin)
+    && old.plugin.install?.mode === 'automatic'
+    && old.plugin.install?.source === 'github'
     && validInstallMetadata(old.plugin.install)
     && validInspection(old.inspection)) {
     next[key] = {
@@ -116,7 +119,22 @@ async function processCandidate(candidate) {
     if (error instanceof InvalidCandidateError) {
       next[key] = stateRow(candidate, fingerprint, 'invalid', error.message)
     } else if (error instanceof RetryCandidateError) {
-      next[key] = stateRow(candidate, fingerprint, 'retry', error.message)
+      // A temporary GitHub/npm failure must never unpublish a previously
+      // verified plugin. Keep its last known-good immutable commit and old
+      // fingerprint so the next daily run retries the new candidate state.
+      if (old !== undefined && old.status === 'verified' && plainObject(old.plugin)) {
+        next[key] = {
+          ...stateRow(candidate, old.fingerprint, 'verified', null),
+          checkedAt: old.checkedAt,
+          commit: old.commit,
+          plugin: refreshPluginMetadata(old.plugin, candidate),
+          inspection: old.inspection,
+          lastAttemptAt: now,
+          lastAttemptReason: error.message,
+        }
+      } else {
+        next[key] = stateRow(candidate, fingerprint, 'retry', error.message)
+      }
     } else {
       throw error
     }
@@ -153,7 +171,7 @@ console.log(
   'published ' + String(plugins.length) + ' verified plugins; '
   + String(rejected.length) + ' hidden; '
   + String(installReview.filter(row => row.status === 'needs-review').length) + ' install classifications need review; '
-  + String(installReview.filter(row => row.status === 'auto-resolved').length) + ' prepare false positives auto-resolved; '
+  + String(installReview.filter(row => row.status === 'auto-resolved').length) + ' guided-install false positives auto-resolved; '
   + 'reused ' + String(reused),
 )
 
@@ -249,11 +267,48 @@ async function validateCandidate(candidate, installOverride) {
     classification.identity.bundlePatch,
   )
   validateBundlePatch(patchText, classification.identity.packageName)
+  const githubPlugin = verifiedPlugin(candidate, commit, classification.identity, now)
+  let npmRelease = null
+  let discoveredNpmOverride
+  let npmReviewReasons = []
+  if (installOverride?.source === 'npm'
+    || (installOverride?.source !== 'manual' && githubPlugin.install.mode === 'guided')) {
+    npmRelease = await verifyExactNpmRelease(classification.identity)
+    if (npmRelease.verified) {
+      const profiles = classification.identity.installHints.profiles
+      npmReviewReasons = relevantNpmReviewReasons(classification.inspection.reviewReasons)
+      if (profiles.length === 0) npmReviewReasons.push('npm-release-verified-but-compatible-profile-is-unknown')
+      discoveredNpmOverride = {
+        source: 'npm',
+        spec: npmRelease.spec,
+        profiles,
+        requiresBuildApproval: false,
+        manualSteps: npmReviewReasons.length > 0,
+      }
+    }
+  }
+  const effectiveOverride = discoveredNpmOverride === undefined
+    ? installOverride
+    : { ...discoveredNpmOverride, ...installOverride }
+  const npmResolved = npmRelease?.verified === true
+    && npmReviewReasons.length === 0
   return {
     commit,
-    plugin: verifiedPlugin(candidate, commit, classification.identity, now, installOverride),
-    inspection: { ...classification.inspection, treeTruncated: treeResponse.truncated === true },
+    plugin: verifiedPlugin(candidate, commit, classification.identity, now, effectiveOverride),
+    inspection: {
+      ...classification.inspection,
+      reviewReasons: npmRelease?.verified === true ? npmReviewReasons : classification.inspection.reviewReasons,
+      resolvedReasons: npmResolved
+        ? [...classification.inspection.resolvedReasons, 'exact-npm-tarball-verified-for-automatic-install']
+        : classification.inspection.resolvedReasons,
+      npmRelease,
+      treeTruncated: treeResponse.truncated === true,
+    },
   }
+}
+
+function relevantNpmReviewReasons(reasons) {
+  return reasons.filter(reason => reason === 'readme-profiles-conflict-with-dsh-marketplace-profiles')
 }
 
 async function apiJson(url, candidateRequest = false) {

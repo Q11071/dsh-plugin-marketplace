@@ -183,9 +183,13 @@ export class RegistryClient {
       if (names.has(key)) throw new Error(`Registry repeats repository ${JSON.stringify(plugin.fullName)}`)
       names.add(key)
       if (plugin.install.mode === 'automatic') {
-        const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
-        if (plugin.install.source !== 'github' || plugin.install.spec.toLocaleLowerCase() !== expected.toLocaleLowerCase()) {
-          throw new Error(`Registry automatic install is not pinned to ${JSON.stringify(expected)}`)
+        const github = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
+        const npm = plugin.packageName + '@' + plugin.version
+        const exact = (plugin.install.source === 'github'
+          && plugin.install.spec.toLocaleLowerCase() === github.toLocaleLowerCase())
+          || (plugin.install.source === 'npm' && plugin.install.spec === npm)
+        if (!exact) {
+          throw new Error(`Registry automatic install is not pinned to an exact verified source for ${JSON.stringify(plugin.fullName)}`)
         }
       }
     }

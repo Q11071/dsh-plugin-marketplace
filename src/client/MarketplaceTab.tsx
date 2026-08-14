@@ -446,7 +446,7 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
     item.updatedAt !== '' ? t('updated') + ' ' + new Date(item.updatedAt).toLocaleDateString() : null,
   ].filter((value): value is string => value !== null)
   const canInstall = item.install.mode === 'automatic'
-    && item.install.source === 'github'
+    && (item.install.source === 'github' || item.install.source === 'npm')
     && currentProfile !== ''
     && item.install.profiles.includes(currentProfile)
   return (

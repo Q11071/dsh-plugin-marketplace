@@ -9,26 +9,31 @@ GitHub `dsh-plugin` topic 的所有结果，只展示经过本仓库扫描器验
 1. GitHub Action 每天搜索一次 `topic:dsh-plugin archived:false`。
 2. 扫描器读取候选仓库默认分支当前 commit，并将其解析为不可变的 40 位 SHA。
 3. 扫描器在该 SHA 下静态读取并验证 `package.json`、`dsh.bundle.patch`
-   指向的 YAML 文件及 loader entry；不会安装依赖，也不会执行第三方代码或
-   YAML 中的 `!!js` 内容。
+   指向的 YAML 文件及 loader entry；若同一精确版本已发布到 npm，还会下载
+   SHA-512 完整性固定的 tarball，只读检查其中的 manifest、patch 和运行入口。
+   整个过程不会安装依赖，也不会执行第三方代码或 YAML 中的 `!!js` 内容。
 4. 验证成功的仓库进入 `registry/plugins.json`；失败原因写入
    `registry/rejected.json`，不会出现在市场中。安装证据有冲突或不足时，插件仍
    可展示，但只提供引导安装，并写入 `registry/install-review.json` 等待复核。
-5. 未变化且已经验证/拒绝的仓库复用上次结果；有新提交、首次发现或上次网络
-   失败的仓库会重新验证。被移除 topic、归档或删除的仓库会退出公开列表。
+5. 未变化且已确认可从精确 GitHub commit 自动安装的仓库复用上次结果；引导安装
+   和 npm 来源每天重新核验，以便新发布的 npm 版本自动解除错误的引导分类。
+   临时网络失败保留上一次有效结果，不会造成市场条目批量下架。
 6. Registry 同时记录安装来源、兼容 Profile、构建授权、重启和人工步骤；客户端
    只对当前 Profile 中满足自动安装条件的插件开放一键安装。
 7. 自动安装仍会在执行前读取 Registry 和仓库内容，并只允许执行 Registry 验证的
-   精确来源。目标 Profile 不明、需要构建授权或额外步骤的插件只显示安装说明。
+   精确 GitHub commit 或精确 npm 版本。目标 Profile 不明、需要构建授权或额外
+   步骤的插件只显示安装说明。
 
 `registry/state.json` 是增量扫描状态。`registry/install-review.json` 记录安装
-分类所依据的 README 命令、Profile、生命周期脚本和已提交运行产物，便于定位
-不同仓库造成的潜在假阳性。公开 Registry 的格式由 `registry/schema.json` 描述。
+分类所依据的 README 命令、Profile、生命周期脚本和运行产物；
+`registry/guided-audit.json` 每天逐项记录所有引导安装条目的 README 命令、npm
+tarball 验证结果及保留引导安装的原因。公开 Registry 的格式由
+`registry/schema.json` 描述。
 
 ## 安装市场插件
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.3.1
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.3.2
 ```
 
 本地开发安装：
@@ -67,7 +72,7 @@ dsh web --profile web
 
 `.github/workflows/daily-registry-scan.yml` 默认每天 UTC 02:17 执行，也支持
 在 Actions 页面手动运行。工作流使用仓库自动提供的 `GITHUB_TOKEN`，验证后只
-提交四个 Registry JSON 文件。按 GitHub 当前计费规则，公开仓库使用标准
+提交五个 Registry JSON 文件。按 GitHub 当前计费规则，公开仓库使用标准
 GitHub-hosted runner 免费；私有仓库会消耗账户套餐包含的分钟数，超额后计费。
 参见 [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)。
 
@@ -79,10 +84,12 @@ pnpm install
 $env:GITHUB_TOKEN = gh auth token
 pnpm registry:test
 pnpm registry:scan
+pnpm registry:audit
 ```
 
 不要把 token 写入仓库。扫描器处理 GitHub Search 的 1,000 条结果上限，会按
-仓库创建日期自动分区；文件大小上限为 `package.json` 256 KiB、补丁 64 KiB。
+仓库创建日期自动分区；文件大小上限为 `package.json` 256 KiB、补丁 64 KiB、
+npm 压缩包 50 MiB、解包内容 150 MiB。
 
 ## 验证规则
 
@@ -108,10 +115,15 @@ Registry v2 的每个插件还包含 `install` 字段。安装分类不是只看
   官方 CLI 必需的 `--profile`，省略 Profile 的示例不会成为自动安装证据；
 - `preinstall` / `install` / `postinstall` / `prepare` 生命周期脚本；
 - README Profile 与 manifest 声明是否冲突。
+- 与 GitHub manifest 同名同版本的 npm 发行版是否存在；扫描器会验证官方 Registry
+  URL、SHA-512 完整性、tarball 内 package identity、bundle patch、全部运行入口，
+  并拒绝包含 `preinstall` / `install` / `postinstall` 或根级 `binding.gyp` 的发行包。
 
 `preinstall`、`install`、`postinstall` 或缺少运行产物时始终要求构建授权。
-`prepare` 本身不再直接判为引导安装：只有运行产物已提交、且作者 README 明确
-记录 GitHub 安装命令、也没有声明 `allowBuilds` / build approval 时才可自动安装。
+`prepare` 本身不再直接判为引导安装：GitHub 源只有在运行产物已提交、作者 README
+明确记录 GitHub 安装命令且未声明 `allowBuilds` / build approval 时才可自动安装；
+正常 npm 发行包不会在安装依赖时执行 `prepare`，因此只要 tarball 已包含全部运行
+产物并通过上述静态验证，就可以使用精确 npm 版本自动安装。
 证据缺失或互相矛盾的仓库保持引导安装，
 并进入 `registry/install-review.json`，不会靠猜测放开一键安装。插件作者也可以在
 `package.json` 中声明更明确的信息：
@@ -130,8 +142,9 @@ Registry v2 的每个插件还包含 `install` 字段。安装分类不是只看
 ```
 
 中心 Registry 可通过 `policy/install-overrides.json` 为已核对官方 README 的仓库
-补充 npm、专用 Profile 或人工安装信息。npm、tarball 和 manual 来源默认只提供
-引导说明；当前自动执行限定为与验证 commit 完全一致的 GitHub spec。
+补充专用 Profile 或人工安装信息。当前自动执行只接受与验证 commit 完全一致的
+GitHub spec，或内容已通过 tarball 级复验的精确 npm `包名@版本`；可变 tarball URL
+和 manual 来源仍只提供引导说明。
 
 这能挡住错误 topic、普通仓库和结构不完整的伪插件，但不能证明插件代码本身
 无恶意。安装仍意味着插件在下一次启动后拥有本机进程权限，因此 UI 保留风险确认。

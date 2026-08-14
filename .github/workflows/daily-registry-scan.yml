@@ -32,10 +32,14 @@ jobs:
         run: pnpm registry:scan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Audit every guided install classification
+        run: pnpm registry:audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Commit Registry changes
         shell: bash
         run: |
-          git add registry/plugins.json registry/rejected.json registry/state.json registry/install-review.json
+          git add registry/plugins.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json
           if git diff --cached --quiet; then
             echo "Registry is already current."
             exit 0

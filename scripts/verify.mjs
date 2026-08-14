@@ -98,9 +98,12 @@ for (const plugin of registry.plugins) {
   if (!['automatic', 'guided'].includes(plugin.install.mode)) throw new Error('Registry install mode invalid')
   if (!Array.isArray(plugin.install.profiles)) throw new Error('Registry install profiles invalid')
   if (plugin.install.mode === 'automatic') {
-    const expected = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
-    if (plugin.install.source !== 'github' || plugin.install.spec.toLowerCase() !== expected.toLowerCase()) {
-      throw new Error('automatic Registry install is not pinned to the verified GitHub commit: ' + plugin.fullName)
+    const github = 'github:' + plugin.fullName + '#' + plugin.verifiedCommit
+    const npm = plugin.packageName + '@' + plugin.version
+    const exact = (plugin.install.source === 'github' && plugin.install.spec.toLowerCase() === github.toLowerCase())
+      || (plugin.install.source === 'npm' && plugin.install.spec === npm)
+    if (!exact) {
+      throw new Error('automatic Registry install is not pinned to an exact verified source: ' + plugin.fullName)
     }
   }
 }
@@ -137,5 +140,36 @@ for (const row of installReview.repositories) {
   }
 }
 console.log('install review contract valid: ' + installReview.repositories.length + ' audited classifications')
+
+// Every remaining guided row must have a fresh, inspectable audit outcome.
+const guidedAudit = JSON.parse(readFileSync(path.join(root, 'registry', 'guided-audit.json'), 'utf8'))
+if (
+  guidedAudit.schemaVersion !== 1 ||
+  Number.isNaN(Date.parse(guidedAudit.generatedAt)) ||
+  !Array.isArray(guidedAudit.rows) ||
+  guidedAudit.total !== guidedAudit.rows.length
+) {
+  throw new Error('guided audit root contract invalid')
+}
+const guidedNames = new Set(
+  registry.plugins.filter(plugin => plugin.install.mode === 'guided').map(plugin => plugin.fullName.toLowerCase()),
+)
+const auditedGuidedNames = new Set()
+for (const row of guidedAudit.rows) {
+  const key = typeof row?.repository === 'string' ? row.repository.toLowerCase() : ''
+  if (!guidedNames.has(key)) throw new Error('guided audit references a non-guided repository: ' + row?.repository)
+  if (auditedGuidedNames.has(key)) throw new Error('guided audit repeats repository ' + row.repository)
+  auditedGuidedNames.add(key)
+  if (typeof row?.npmVerification?.verified !== 'boolean' || typeof row?.npmVerification?.reason !== 'string') {
+    throw new Error('guided audit npm evidence missing: ' + row.repository)
+  }
+  if (typeof row?.assessment?.outcome !== 'string' || row.assessment.outcome.startsWith('automatic-')) {
+    throw new Error('guided audit still contains an automatic-install candidate: ' + row.repository)
+  }
+}
+if (auditedGuidedNames.size !== guidedNames.size) throw new Error('guided audit does not cover every guided Registry row')
+const groupedTotal = Object.values(guidedAudit.groups ?? {}).reduce((sum, value) => sum + value, 0)
+if (groupedTotal !== guidedAudit.total) throw new Error('guided audit group totals do not match')
+console.log('guided audit contract valid: ' + guidedAudit.total + ' remaining guided classifications; zero automatic candidates')
 
 console.log('VERIFY OK')

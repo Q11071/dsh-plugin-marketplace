@@ -5,7 +5,7 @@ import { parseDocument } from 'yaml'
 export const MAX_MANIFEST_BYTES = 256 * 1024
 export const MAX_PATCH_BYTES = 64 * 1024
 export const MAX_README_BYTES = 256 * 1024
-export const INSTALL_CLASSIFIER_VERSION = 6
+export const INSTALL_CLASSIFIER_VERSION = 10
 
 /** Candidate is structurally not a DSH bundle. */
 export class InvalidCandidateError extends Error {
@@ -127,7 +127,10 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
   })
   const runtimeArtifactsCommitted = artifactGroups.length > 0 && artifactGroups.every(group => group.found !== null)
   const readme = readmeInstallEvidence(readmeText ?? '', identity.packageName, verifiedGitHubRepositories)
-  const fallbackProfiles = identity.hasClient ? ['web'] : []
+  // DSH's --profile value selects a target directory; it is not a package
+  // compatibility declaration. A host-only bundle can therefore target both
+  // built-in templates even when its README omits an example profile name.
+  const fallbackProfiles = identity.hasClient ? ['web'] : ['headless', 'web']
   // A README placeholder means the author supports a caller-selected profile.
   // Registry v2 cannot express a wildcard without breaking older strict
   // clients, so publish the two DSH-owned profile templates. A Web client is
@@ -174,7 +177,11 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
     reviewReasons.push('readme-profiles-conflict-with-dsh-marketplace-profiles')
   }
   if (readme.unverifiedGitHubRepositories.length > 0) {
-    reviewReasons.push('readme-github-repository-owner-does-not-resolve-to-this-candidate')
+    if (!requiresBuildApproval && profiles.length > 0) {
+      resolvedReasons.push('readme-alias-is-unverified-but-exact-current-repository-install-is-self-contained')
+    } else {
+      reviewReasons.push('readme-github-repository-owner-does-not-resolve-to-this-candidate')
+    }
   }
   const requiresManualReview = reviewReasons.length > 0
   return {
@@ -198,6 +205,7 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
         found: readmeText !== null,
         directRemote: readme.directRemote,
         directGitHub: readme.directGitHub,
+        directNpm: readme.directNpm,
         anyProfile: readme.anyProfile,
         requiresBuildApproval: readme.requiresBuildApproval,
         profiles: readme.profiles,
@@ -272,8 +280,9 @@ export function verifiedPlugin(candidate, commit, identity, verifiedAt, installO
   const manualSteps = installOverride?.manualSteps ?? installHints.manualSteps
   const requiresRestart = installOverride?.requiresRestart ?? installHints.requiresRestart
   const spec = installOverride?.spec ?? (source === 'github' ? githubSpec : '')
-  const automatic = source === 'github'
-    && spec.toLocaleLowerCase() === githubSpec.toLocaleLowerCase()
+  const exactSource = (source === 'github' && spec.toLocaleLowerCase() === githubSpec.toLocaleLowerCase())
+    || (source === 'npm' && spec === publicIdentity.packageName + '@' + publicIdentity.version)
+  const automatic = exactSource
     && profiles.length > 0
     && !requiresBuildApproval
     && !manualSteps
@@ -400,6 +409,7 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
   const unverifiedGitHubRepositories = new Set()
   let directRemote = false
   let directGitHub = false
+  let directNpm = false
   let anyProfile = false
   const allowedRepositories = new Set(verifiedGitHubRepositories.map(value => value.toLocaleLowerCase()))
   const expectedRepositoryNames = new Set(
@@ -408,6 +418,7 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
   for (const { profile, anyProfile: commandAnyProfile, spec } of readmeInstallCommands(text)) {
     const github = githubRepositoryFromSpec(spec)
     if (github !== null
+      && !placeholderGitHubRepository(github)
       && expectedRepositoryNames.has(github.split('/')[1]?.toLocaleLowerCase())
       && !allowedRepositories.has(github.toLocaleLowerCase())) {
       unverifiedGitHubRepositories.add(github)
@@ -418,6 +429,7 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
     else profiles.add(profile)
     directRemote = directRemote || kind === 'github' || kind === 'npm' || kind === 'tarball'
     directGitHub = directGitHub || kind === 'github'
+    directNpm = directNpm || kind === 'npm'
     if (specs.length < 8 && !specs.includes(spec)) specs.push(spec)
   }
   return {
@@ -425,6 +437,7 @@ function readmeInstallEvidence(text, packageName, verifiedGitHubRepositories) {
     specs,
     directRemote,
     directGitHub,
+    directNpm,
     anyProfile,
     requiresBuildApproval: /\ballowBuilds\b|\bapprove[- ]builds?\b|\bbuild approval\b/iu.test(text),
     unverifiedGitHubRepositories: [...unverifiedGitHubRepositories].sort(),
@@ -447,12 +460,13 @@ function readmeInstallCommands(text) {
 }
 
 function normalizeReadmeProfile(value) {
-  if (/^[a-z0-9][a-z0-9._-]{0,63}$/.test(value)) return { profile: value, anyProfile: false }
-  if (/^<(?:profile|profile-name|name)>$/i.test(value)
+  if (/^<(?:your-?|my-?)?(?:profile|profile-name|name)>$/i.test(value)
+    || /^(?:your-|my-)?profile(?:-name)?$/i.test(value)
     || /^\$(?:DSH_)?PROFILE$/i.test(value)
     || /^\$\{(?:DSH_)?PROFILE\}$/i.test(value)) {
     return { profile: null, anyProfile: true }
   }
+  if (/^[a-z0-9][a-z0-9._-]{0,63}$/.test(value)) return { profile: value, anyProfile: false }
   return null
 }
 
@@ -476,6 +490,13 @@ function githubRepositoryFromSpec(spec) {
   const github = /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)([^/#]+)\/([^/#&]+)(?:[&#].*)?$/i.exec(spec)
   if (github === null) return null
   return github[1] + '/' + github[2].replace(/\.git$/i, '')
+}
+
+function placeholderGitHubRepository(repository) {
+  const owner = repository.split('/')[0] ?? ''
+  return /[<>{}$]/.test(owner)
+    || /^(?:you|owner|username|github-username|your(?:-github)?-(?:name|username)|my-(?:name|username))$/i.test(owner)
+    || /(?:你的|您的).*(?:用户名|账号)/u.test(owner)
 }
 
 function normalizeRepoPath(value) {

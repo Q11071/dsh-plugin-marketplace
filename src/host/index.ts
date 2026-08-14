@@ -201,7 +201,7 @@ export class MarketplaceService extends TypertRemoteService {
             && isGitHubSpec(entry.currentSpec)
             && !entry.currentSpec.toLocaleLowerCase().includes(registered.verifiedCommit.toLocaleLowerCase()))
         entry.canUpdate = registered.install.mode === 'automatic'
-          && registered.install.source === 'github'
+          && (registered.install.source === 'github' || registered.install.source === 'npm')
           && registered.install.profiles.includes(profile.name)
           && registered.install.spec !== ''
       }))
@@ -312,7 +312,16 @@ function executableSpec(plugin: MarketplaceRegistryPlugin): string {
     }
     return expected
   }
-  throw new RegistryError('Only Registry entries pinned to an exact GitHub commit can be installed automatically.')
+  if (plugin.install.source === 'npm') {
+    const expected = plugin.packageName + '@' + plugin.version
+    if (plugin.install.spec !== expected) {
+      throw new RegistryError('Registry npm install spec does not match the verified package version.', {
+        repository: plugin.fullName,
+      })
+    }
+    return expected
+  }
+  throw new RegistryError('Only Registry entries pinned to an exact GitHub commit or verified npm release can be installed automatically.')
 }
 
 function isGitHubSpec(value: string): boolean {

@@ -57,6 +57,30 @@ assert.equal(row.install.mode, 'automatic')
 assert.equal(row.install.spec, 'github:owner/repo#' + 'a'.repeat(40))
 assert.deepEqual(row.install.profiles, ['web'])
 
+const npmClassification = classifyInstall(
+  identity,
+  'owner/repo',
+  ['lib/index.js', 'lib/client.js'],
+  'dsh plugin --profile web add dsh-plugin-marketplace',
+)
+assert.equal(npmClassification.inspection.readme.directNpm, true)
+const npmRow = verifiedPlugin({
+  full_name: 'owner/repo',
+  name: 'repo',
+  default_branch: 'main',
+  html_url: 'https://github.com/owner/repo',
+  updated_at: '2026-08-13T00:00:00Z',
+  owner: { login: 'owner' },
+}, 'b'.repeat(40), npmClassification.identity, '2026-08-13T00:00:00Z', {
+  source: 'npm',
+  spec: 'dsh-plugin-marketplace@' + identity.version,
+  profiles: ['web'],
+  requiresBuildApproval: false,
+  manualSteps: false,
+})
+assert.equal(npmRow.install.mode, 'automatic')
+assert.equal(npmRow.install.source, 'npm')
+
 const prepareManifest = validateManifest(JSON.stringify({
   name: '@dsh-external/dsh-side-panel',
   version: '0.2.0',
@@ -102,7 +126,10 @@ const unverifiedOwnerOnly = classifyInstall(
   'dsh plugin --profile web add github:unverified-owner/repo',
 )
 assert.equal(unverifiedOwnerOnly.identity.installHints.requiresBuildApproval, false)
-assert.equal(unverifiedOwnerOnly.identity.installHints.manualSteps, true)
+assert.equal(unverifiedOwnerOnly.identity.installHints.manualSteps, false)
+assert.deepEqual(unverifiedOwnerOnly.inspection.resolvedReasons, [
+  'readme-alias-is-unverified-but-exact-current-repository-install-is-self-contained',
+])
 
 const anyProfile = classifyInstall(
   validateManifest(JSON.stringify({
@@ -118,6 +145,34 @@ const anyProfile = classifyInstall(
 assert.equal(anyProfile.inspection.readme.anyProfile, true)
 assert.deepEqual(anyProfile.identity.installHints.profiles, ['headless', 'web'])
 assert.equal(anyProfile.identity.installHints.manualSteps, false)
+
+const prosePlaceholder = classifyInstall(
+  validateManifest(JSON.stringify({
+    name: 'prose-placeholder-plugin',
+    version: '1.0.0',
+    main: './index.js',
+    dsh: { bundle: { patch: './cordis.patch.yml' } },
+  })),
+  'owner/prose-placeholder-plugin',
+  ['index.js'],
+  'dsh plugin --profile your-profile add prose-placeholder-plugin',
+)
+assert.equal(prosePlaceholder.inspection.readme.anyProfile, true)
+assert.deepEqual(prosePlaceholder.identity.installHints.profiles, ['headless', 'web'])
+
+const hostWithoutProfileDocs = classifyInstall(
+  validateManifest(JSON.stringify({
+    name: 'host-without-profile-docs',
+    version: '1.0.0',
+    main: './index.js',
+    dsh: { bundle: { patch: './cordis.patch.yml' } },
+  })),
+  'owner/host-without-profile-docs',
+  ['index.js'],
+  null,
+)
+assert.deepEqual(hostWithoutProfileDocs.identity.installHints.profiles, ['headless', 'web'])
+assert.equal(hostWithoutProfileDocs.identity.installHints.manualSteps, false)
 
 const workspaceRootOption = classifyInstall(
   identity,
@@ -146,8 +201,8 @@ const placeholderOwner = classifyInstall(
   'dsh plugin --profile <profile> add github:you/repo',
 )
 assert.equal(placeholderOwner.inspection.readme.directGitHub, false)
-assert.equal(placeholderOwner.identity.installHints.manualSteps, true)
-assert.deepEqual(placeholderOwner.inspection.readme.unverifiedGitHubRepositories, ['you/repo'])
+assert.equal(placeholderOwner.identity.installHints.manualSteps, false)
+assert.deepEqual(placeholderOwner.inspection.readme.unverifiedGitHubRepositories, [])
 
 const documentedBuildApproval = classifyInstall(
   prepareManifest,
