@@ -1,0 +1,188 @@
+# 更新日志
+
+[English](./CHANGELOG.en.md) · **简体中文**
+
+这里记录 DSH Plugin Marketplace 自首次发布以来值得关注的功能、行为变化和修复。
+内容依据 Git 标签和提交历史整理；定时任务产生的纯 Registry 快照更新不逐条展开。
+
+## [未发布]
+
+### 文档
+
+- 建立从 `v0.1.0` 到当前版本的完整中英文更新日志，并在 README 中增加入口。
+
+## [0.7.0] - 2026-08-15
+
+### 新增
+
+- 增加自定义插件安装位置，可通过 DSH 原生目录选择器选择目录；外置插件使用
+  `file:` 依赖关联当前 Profile，并将运行入口链接回 Profile 的 `node_modules`。
+- 增加插件冲突诊断，检查重复 Bundle ID 和常见 Cordis 服务注册形式；安装、更新、
+  启用前只阻止本次操作新引入的冲突。
+- 在插件卡片中显示安装、更新和卸载进度及可折叠日志；失败信息改为固定位置通知。
+- 识别自定义目录中存在但尚未关联当前 Profile 的插件，并以只读状态展示。
+- 新增 Pull Request CI：构建真实 DSH 类型契约，执行 TypeScript 检查、完整测试、
+  插件构建、manifest 验证及生成物一致性检查。
+- 新增真实 pnpm 自定义目录集成测试，覆盖生命周期脚本隔离、Host peer 链接、
+  `file:` 规格和 pnpm store 复用。
+
+### 改进
+
+- 安装、更新和卸载统一复用当前 Profile 已绑定的 pnpm store，减少
+  `ERR_PNPM_UNEXPECTED_STORE`。
+- 切换自定义安装目录只影响后续安装；已有插件继续在原位置更新或卸载，不再被迁移。
+- 保留 scoped npm 包的 `@scope/name` 目录层级，避免不同包名被压平后发生冲突。
+- 外置安装会将缺失 peer 链接到 DSH Host，并替换错误自动安装出的独立 peer，避免加载
+  第二份 Cordis；安装依赖时关闭生命周期脚本和 peer 自动安装。
+- README 增加宣传截图，并补充安装位置、冲突诊断和安全边界说明。
+
+### 修复
+
+- GitHub 来源只要声明 `preinstall`、`install`、`postinstall` 或 `prepare` 就保持引导安装；
+  已验证且包含完整运行产物的精确 npm tarball 仍可一键安装。
+- 修复更改安装目录后，既有外置插件无法正确更新或卸载的问题。
+- 修复相对 pnpm store 路径解析到了错误工作目录的问题。
+- 修复 Windows 跨盘符路径生成无效 `file:` 规格，以及 Linux CI 错误改写 Windows
+  绝对路径的问题。
+- 修复目录选择器和任务标签的 TypeScript 可空类型错误。
+- 固定浏览器 bundle 的严格模式配置，使 Windows 与 Linux 生成完全一致的产物。
+- Registry 分类器升级时复用未受影响的缓存，只重新验证生命周期策略相关条目，避免
+  一次扫描耗尽 API 配额。
+
+## [0.6.1] - 2026-08-15
+
+### 改进
+
+- 重写中英文 README，增加能力概览、安装模式、Registry 流程图、安全规则和开发说明。
+- 简化市场插件卡片的信息层级、操作区和视觉密度，改善长描述及元数据的可读性。
+
+## [0.6.0] - 2026-08-15
+
+### 新增
+
+- 为不能安全一键安装或更新的条目增加受约束的引导安装 Agent。
+- Agent 任务固定精确仓库 commit、包名、Profile、扫描原因和验收条件，并要求成功后
+  给出 Profile、重启、配置和入口等启动说明。
+- 发布 `registry/guided-audit.json`，为每个引导条目提供逐轮复验结果。
+
+### 改进
+
+- Registry 扫描从每日一次调整为每两小时一次。
+- 支持通过 Actions Secret `REGISTRY_GITHUB_TOKEN` 使用只读 PAT；未配置时继续使用
+  `GITHUB_TOKEN`，Registry 写回仍使用 Actions 内置凭据。
+- 每轮重新核验引导条目和 npm 来源，使后来发布合格 npm 包的插件能够自动转为一键安装。
+
+## [0.5.0] - 2026-08-14
+
+### 新增
+
+- 增加插件市场自更新：直接读取仓库主分支的版本和 commit，不必等待 Registry 刷新。
+- 执行更新时把来源固定为已解析的精确 commit，不把可变的 `main` 直接交给 pnpm。
+- 增加自更新回归测试。
+
+## [0.4.0] - 2026-08-14
+
+### 新增
+
+- 发布 `registry/discovery.json`，在不改变核心 Registry v2 格式的前提下提供插件分类。
+- 增加分类筛选、“近期热门”排序和最近 7 天 Star 增长数据。
+- 在增量状态中保存每日 Star 基线；没有历史基线的新插件增长值为 0。
+
+### 修复
+
+- GitHub Search 结果过大时按创建时间细分到秒，绕过单次搜索 1,000 条上限。
+- 扫描器会等待 Search API 配额恢复后继续，减少大规模扫描中断。
+- README 审计遇到临时 GitHub 错误时自动重试。
+- Registry CI 可以脱离本机 DSH checkout 验证生成的 Registry 文件。
+- 移除已经过时的人工安装覆盖规则。
+
+## [0.3.3] - 2026-08-14
+
+### 新增
+
+- 在“已安装插件”页面和“重启后生效”提示中增加受控的“重启 DSH”操作。
+- 重启会等待正在运行的插件任务结束，沿用相同启动参数和 Profile，并在服务恢复后刷新页面。
+- 增加重启流程回归测试。
+
+## [0.3.2] - 2026-08-14
+
+### 改进
+
+- 对全部引导安装条目进行系统复验，并自动消除可以由仓库或 npm 证据证明安全的假阳性。
+- 增加精确 npm tarball 验证：检查 Registry URL、SHA-512、包身份、bundle patch、
+  运行入口、生命周期脚本和根级 `binding.gyp`。
+- `<profile>`、`your-profile`、`my-profile` 等值按占位符处理；README 中的示例 owner
+  也不再误判为真实仓库身份。
+- Web client 默认只匹配 `web`；host-only 插件默认匹配 `headless` 和 `web`。
+- README 中过期的迁移地址保留为审计信息，不再阻断当前精确 commit 的完整安装证据。
+- 临时 GitHub 或 npm 请求失败时保留上一次已验证结果，避免插件批量消失。
+- 增加 `registry/guided-audit.json` 和 npm 来源的周期复验。
+
+> `v0.3.2` 曾允许部分包含 `prepare` 的 GitHub 来源自动安装；该规则已在 `v0.7.0`
+> 收紧为一律引导安装。
+
+## [0.3.1] - 2026-08-14
+
+### 修复
+
+- 撤回 `v0.3.0` 的 packagePath/monorepo 展开方式，恢复一个 GitHub 仓库对应一个市场条目。
+- Registry 公共格式恢复为 v2，消除聚合仓库中大量子包被重复展示的问题。
+- 保留 `v0.3.0` 已加入的已安装插件启用/停用能力。
+
+## [0.3.0] - 2026-08-14
+
+### 新增
+
+- 增加已安装插件启用/停用，直接维护当前 Profile 的 `dsh.profile.bundles`，不删除依赖。
+- 增加基于仓库 manifest、README、运行产物、Profile 和生命周期脚本的安装证据分类。
+- 增加 `registry/install-review.json`，保存分类理由和待人工核对的证据。
+- 短期引入 `owner/repo&path:/子目录` 身份和 monorepo 多插件扫描。
+
+### 修复
+
+- Registry 远程读取增加临时错误重试。
+- 识别更多官方 DSH 安装命令写法、Profile 占位符和 pnpm workspace 参数。
+
+> packagePath/monorepo 展开功能因会把聚合仓库中的大量内部包作为独立插件展示，已在
+> `v0.3.1` 撤回；它不是当前 Registry 的行为。
+
+## [0.2.0] - 2026-08-14
+
+### 新增
+
+- Registry v2 增加安装来源、兼容 Profile、构建授权、重启需求和人工步骤元数据。
+- 市场增加“已安装插件”子页面，支持检查更新、执行更新和卸载当前 Profile 的插件。
+- 自动安装只对 Profile 兼容且满足安全条件的精确来源开放；其他条目显示安装说明。
+- 支持插件通过 `dsh.marketplace` 声明市场元数据，并支持中心安装策略覆盖。
+
+### 改进
+
+- 远程 Registry 使用内存缓存和 ETag；失败时先使用最近有效内容，再回退到内置快照。
+- 简化 Registry 维护文档，移除不再使用的维护流程。
+
+## [0.1.0] - 2026-08-13
+
+### 首次发布
+
+- 建立中心化、自主维护的 DSH 插件 Registry。
+- GitHub Action 自动发现带有 `dsh-plugin` topic 且未归档的仓库。
+- 静态验证 `package.json`、`dsh.bundle.patch`、YAML loader entry 和精确 commit，
+  不安装依赖、不执行第三方代码。
+- 通过 `registry/plugins.json` 发布已验证插件，通过 `registry/rejected.json` 记录
+  未通过候选及原因，并以 `registry/state.json` 支持增量扫描。
+- 增加 DSH Web 插件市场页面、搜索、Star/更新时间排序、详情展示和精确 commit 安装。
+- npm 包内置构建产物和 Registry 快照；远程 Registry 不可用时仍可使用。
+- 提供 Registry Schema、扫描测试、构建及真实 DSH loader 验证脚本。
+
+[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.1...v0.7.0
+[0.6.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.3.3...v0.4.0
+[0.3.3]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/tree/v0.1.0

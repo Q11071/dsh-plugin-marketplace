@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/github/license/YELEBAI/dsh-plugin-marketplace?style=flat-square)](./LICENSE)
 ![DSH Web](https://img.shields.io/badge/DSH-Web-4f46e5?style=flat-square)
 
-**简体中文** · [English](./README.en.md)
+**简体中文** · [English](./README.en.md) · [更新日志](./CHANGELOG.md)
 
 </div>
 
