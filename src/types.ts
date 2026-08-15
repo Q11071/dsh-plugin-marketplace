@@ -232,9 +232,22 @@ export interface MarketplaceJobHandle {
   jobId: string
 }
 
+/** Restricted command-line install request; the Host parses it without a shell. */
+export interface MarketplaceManualInstallRequest {
+  command: string
+}
+
+/** Resolved identity returned when a manual GitHub install job starts. */
+export interface MarketplaceManualInstallResult extends MarketplaceJobHandle {
+  packageName: string
+  repository: string
+  verifiedCommit: string
+}
+
 export type MarketplaceSearchOutcome = MarketplaceResult<MarketplaceSearchPage>
 export type MarketplaceDetailsOutcome = MarketplaceResult<MarketplacePluginDetails>
 export type MarketplaceInstallOutcome = MarketplaceResult<MarketplaceJobHandle>
+export type MarketplaceManualInstallOutcome = MarketplaceResult<MarketplaceManualInstallResult>
 export type MarketplaceJobStatusOutcome = MarketplaceResult<MarketplaceJobStatus>
 export type MarketplaceInstalledOutcome = MarketplaceResult<MarketplaceInstalled>
 export type MarketplaceToggleOutcome = MarketplaceResult<MarketplaceToggleResult>

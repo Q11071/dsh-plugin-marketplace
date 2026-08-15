@@ -24,6 +24,7 @@
 | ✅ Registry 验证 | 检查 manifest、bundle patch、loader entry、运行产物和精确安装来源 |
 | ⚡ 一键安装 | 仅对全部自动安装条件均通过的插件开放 |
 | 🤖 Agent 安装 | 为需要构建、生命周期脚本或人工判断的插件创建受约束的安装 Agent |
+| ⌨️ 手动命令安装 | 安全解析官方 DSH GitHub 安装命令，验证后加入当前 Profile |
 | 🧰 安装管理 | 在当前 Profile 中更新、卸载、启用或停用插件，并可安全重启 DSH |
 | 📈 插件发现 | 支持分类、搜索、Star 排序和最近 7 天增长趋势 |
 | 🔄 市场自更新 | 直接检查本仓库版本，并将更新来源固定到解析后的精确 commit |
@@ -33,7 +34,7 @@
 ### 1. 安装
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.7.3
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.8.0
 ```
 
 本地开发安装：
@@ -52,20 +53,35 @@ dsh --profile web
 
 进入 **设置 → 插件 → 插件市场**。
 
-市场包含两个子页面：
+市场包含三个子页面：
 
 - **插件市场**：搜索、分类、排序、查看验证信息并安装插件。
-- **已安装插件**：检查更新、更新、卸载、启用或停用当前 Profile 的插件。
+- **已安装插件**：过滤、检查更新、更新、卸载、启用或停用当前 Profile 的插件。
+- **管理与诊断**：手动命令安装、选择插件安装位置并执行冲突诊断。
 
 ## 安装模式
 
 | 模式 | 触发条件 | 市场行为 |
 | --- | --- | --- |
 | **一键安装** | 精确 GitHub commit 或 npm 版本已通过全部检查 | 直接交给 DSH 官方插件命令安装 |
+| **手动命令安装** | 用户提供官方 DSH GitHub 安装命令 | 解析命令、锁定 commit、验证 Bundle 和冲突后安全安装 |
 | **Agent 安装** | 需要构建授权、生命周期脚本、额外配置或进一步核验 | 创建绑定 Registry 证据的 DSH Agent 会话 |
 | **查看说明** | 当前 Profile 不兼容、身份无法确认或缺少可安全执行的路径 | 不执行命令，只打开作者的安装说明 |
 
 自动安装始终使用 Registry 验证过的精确 GitHub commit 或精确 npm 版本，不会把可变的 `main`、`latest` 或 Release 下载地址直接交给包管理器。
+
+### 手动命令安装
+
+在 **管理与诊断 → 手动命令安装** 中可以粘贴：
+
+```sh
+dsh plugin --profile web add github:owner/repo#ref
+```
+
+也可以只填写 `github:owner/repo#ref`。输入内容不会交给 Shell；市场只接受当前 Profile 的
+单条 GitHub 安装命令，并拒绝额外参数、管道、多命令和危险 ref。tag、分支或省略的 ref
+会先解析为精确 commit，随后验证 `package.json`、bundle patch 和冲突。安装过程禁用生命周期
+脚本；安装成功后自动加入 Profile 的 bundle 层，并显示在 **已安装插件** 页面。
 
 ### 引导安装 Agent
 

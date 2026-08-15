@@ -10,6 +10,28 @@ Registry refresh commits are grouped instead of listed individually.
 
 No unreleased changes yet.
 
+## [0.8.0] - 2026-08-15
+
+### Added
+
+- Added manual command installation under Management & diagnostics. It accepts the official
+  `dsh plugin --profile <active-profile> add github:owner/repo[#ref]` form and the shorter
+  `github:owner/repo[#ref]` form.
+- Manual installs resolve tags, branches, and default sources to an exact commit, validate the DSH
+  bundle, check conflicts, attach successful installs to the Profile, and list them under Installed
+  plugins.
+
+### Security
+
+- Manual commands are parsed as structured data and never passed to a shell. Cross-Profile commands,
+  extra arguments, multiple lines or commands, shell operators, and unsafe Git refs are rejected;
+  lifecycle scripts remain disabled during installation.
+
+### Tests
+
+- Added parser regressions for valid formats, Profile isolation, and command injection. Typert Host
+  callability coverage now includes all 14 Remote methods.
+
 ## [0.7.3] - 2026-08-15
 
 ### Changed
@@ -250,7 +272,8 @@ No unreleased changes yet.
   Registry failures.
 - Added the Registry Schema, scanner tests, build scripts, and validation against real DSH loaders.
 
-[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...v0.7.1

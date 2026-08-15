@@ -18,6 +18,7 @@ import type {
   MarketplaceInstallLocation,
   MarketplaceJobKind,
   MarketplaceJobStatus,
+  MarketplaceManualInstallResult,
   MarketplacePluginDetails,
   MarketplacePluginCategory,
   MarketplaceRegistryPlugin,
@@ -38,6 +39,7 @@ export interface MarketplaceTabInjected {
   details: (repo: string, ref: string) => Promise<MarketplacePluginDetails>
   guidedAgent: (repo: string, ref: string, operation: 'install' | 'update') => Promise<void>
   install: (repo: string, ref: string) => Promise<string>
+  manualInstall: (command: string) => Promise<MarketplaceManualInstallResult>
   update: (repo: string, ref: string) => Promise<string>
   uninstall: (packageName: string) => Promise<string>
   setEnabled: (packageName: string, enabled: boolean) => Promise<MarketplaceToggleResult>
@@ -62,10 +64,11 @@ type ViewState =
   | { status: 'ready'; page: MarketplaceSearchPage }
 
 type ConfirmRequest = {
-  mode: 'install' | 'update' | 'uninstall' | 'restart'
+  mode: 'install' | 'manual-install' | 'update' | 'uninstall' | 'restart'
   repo: string
   ref: string
   packageName: string
+  command: string
 }
 
 type Subpage = 'catalog' | 'installed' | 'management'
@@ -181,6 +184,7 @@ const s = {
   field: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: 10 } as React.CSSProperties,
   fieldLabel: { color: 'var(--dsw-alias-label-secondary)', fontSize: 13, lineHeight: '20px' } as React.CSSProperties,
   fieldMeta: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 12, lineHeight: '18px', margin: 0 } as React.CSSProperties,
+  manualCommandRow: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'end', gap: 10 } as React.CSSProperties,
   conflictList: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
   conflictItem: { border: '1px solid var(--dsw-alias-state-error-primary)', background: 'color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent)', borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 } as React.CSSProperties,
   conflictTitle: { color: 'var(--dsw-alias-state-error-primary)', fontSize: 13, fontWeight: 600, lineHeight: '20px' } as React.CSSProperties,
@@ -265,12 +269,15 @@ function friendlyPackageName(packageName: string): string {
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, guidedAgent, install, update, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, guidedAgent, install, manualInstall, update, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
   const [query, setQuery] = useState('')
   const [installedQuery, setInstalledQuery] = useState('')
+  const [manualCommand, setManualCommand] = useState('')
+  const [manualBusy, setManualBusy] = useState(false)
+  const [manualJobId, setManualJobId] = useState<string | null>(null)
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [sort, setSort] = useState<'stars' | 'updated' | 'trending'>('stars')
   const [category, setCategory] = useState<MarketplacePluginCategory | 'all'>('all')
@@ -471,9 +478,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
     }
   }, [restartState])
 
-  const openConfirm = (mode: ConfirmRequest['mode'], repo: string, ref: string, packageName: string): void => {
+  const openConfirm = (mode: ConfirmRequest['mode'], repo: string, ref: string, packageName: string, command = ''): void => {
     setAcknowledged(false)
-    setConfirm({ mode, repo, ref, packageName })
+    setConfirm({ mode, repo, ref, packageName, command })
   }
 
   const runConfirm = (): void => {
@@ -490,6 +497,17 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
         setRestartState('idle')
         notify(error instanceof Error ? error.message : String(error))
       })
+      return
+    }
+    if (request.mode === 'manual-install') {
+      setManualBusy(true)
+      void manualInstall(request.command).then((result) => {
+        setManualJobId(result.jobId)
+        setManualCommand('')
+        trackJob(result.jobId, 'install', result.packageName)
+      }).catch((error: unknown) => {
+        notify(error instanceof Error ? error.message : String(error))
+      }).finally(() => { setManualBusy(false) })
       return
     }
     const jobKind = request.mode
@@ -615,6 +633,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
   const hasActiveJobs = [...jobs.values()].some((job) => job.finishedAt === null)
   const restartDisabled = restartState !== 'idle' || hasActiveJobs
   const isSelfUpdate = confirm?.mode === 'update' && confirm.packageName === SELF_PACKAGE
+  const isManualInstall = confirm?.mode === 'manual-install'
+  const manualJob = manualJobId === null ? undefined : jobs.get(manualJobId)
   const installedEntries = [...installedMap.values()].filter(entry => entry.isBundle)
   const installedNeedle = installedQuery.trim().toLocaleLowerCase()
   const visibleInstalledEntries = installedNeedle === ''
@@ -775,6 +795,15 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
       ) : (
         <>
           <p style={s.muted}>{t('managementHint')}</p>
+          <ManualInstallPanel
+            command={manualCommand}
+            profile={installedProfile}
+            busy={manualBusy || (manualJob !== undefined && manualJob.finishedAt === null)}
+            job={manualJob}
+            onCommandChange={setManualCommand}
+            onInstall={() => { openConfirm('manual-install', '', '', '', manualCommand.trim()) }}
+            t={t}
+          />
           <InstallDirField
             installDir={installDir}
             installDirCustom={installDirCustom}
@@ -794,11 +823,11 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
       )}
       <RiskConfirmation
         open={confirm !== null}
-        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : isSelfUpdate ? t('confirmSelfUpdateTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
-        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : isSelfUpdate ? t('confirmSelfUpdateDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
-        acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : t('acknowledge')}
+        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : isManualInstall ? t('confirmManualInstallTitle') : isSelfUpdate ? t('confirmSelfUpdateTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
+        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : isManualInstall ? t('confirmManualInstallDescription') : isSelfUpdate ? t('confirmSelfUpdateDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
+        acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : isManualInstall ? t('acknowledgeManualInstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
-        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : isSelfUpdate ? t('selfUpdate') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
+        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : isManualInstall ? t('confirmManualInstall') : isSelfUpdate ? t('selfUpdate') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
         onCancel={() => { setConfirm(null); setAcknowledged(false) }}
@@ -1031,6 +1060,39 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
         )
       })}
     </ul>
+  )
+}
+
+function ManualInstallPanel({ command, profile, busy, job, onCommandChange, onInstall, t }: {
+  command: string
+  profile: string
+  busy: boolean
+  job: MarketplaceJobStatus | undefined
+  onCommandChange: (value: string) => void
+  onInstall: () => void
+  t: MarketplaceTabProps['t']
+}): ReactNode {
+  const currentProfile = profile === '' ? 'web' : profile
+  return (
+    <div style={s.panel}>
+      <strong style={s.fieldLabel}>{t('manualInstallTitle')}</strong>
+      <p style={s.fieldMeta}>{t('manualInstallDescription')}</p>
+      <div style={s.manualCommandRow}>
+        <Input
+          type='text'
+          value={command}
+          placeholder={fmt(t, 'manualInstallPlaceholder', { profile: currentProfile })}
+          aria-label={t('manualInstallCommandLabel')}
+          disabled={busy}
+          onChange={(event) => { onCommandChange(event.currentTarget.value) }}
+        />
+        <Button variant='primary' size='sm' disabled={busy || profile === '' || command.trim() === ''} onClick={onInstall}>
+          {busy ? t('manualInstallStarting') : t('manualInstallAction')}
+        </Button>
+      </div>
+      <p style={s.fieldMeta}>{t('manualInstallHint')}</p>
+      {job !== undefined ? <JobPanel job={job} t={t} /> : null}
+    </div>
   )
 }
 

@@ -84,6 +84,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
         scope.sessions.open(created.result.value.sessionId)
       },
       install: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.installPlugin({ repo, ref })).jobId,
+      manualInstall: async (command) => unwrapMarketplace(await scope.remote.marketplace.manualInstall({ command })),
       update: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.update({ repo, ref })).jobId,
       uninstall: async (packageName) => unwrapMarketplace(await scope.remote.marketplace.uninstall({ packageName })).jobId,
       setEnabled: async (packageName, enabled) => unwrapMarketplace(await scope.remote.marketplace.setEnabled({ packageName, enabled })),

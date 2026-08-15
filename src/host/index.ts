@@ -28,6 +28,8 @@ import type {
   MarketplaceGuidedAgentTask,
   MarketplaceInstallLocation,
   MarketplaceInstallRequest,
+  MarketplaceManualInstallRequest,
+  MarketplaceManualInstallResult,
   MarketplaceInstalled,
   MarketplaceJobStatus,
   MarketplaceJobStatusRequest,
@@ -46,6 +48,7 @@ import { readProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
 import { buildGuidedAgentTask } from './guided-agent.ts'
 import { JobTable, runPnpmJob, type JobRecord } from './installer.ts'
+import { parseManualInstall } from './manual-install.ts'
 import { scheduleProcessRestart } from './restart.ts'
 import {
   SELF_BRANCH,
@@ -213,6 +216,67 @@ export class MarketplaceService extends TypertRemoteService {
   @Remote('installPlugin')
   async installPlugin(request: MarketplaceInstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
     return this.startJob('install', request.repo, request.ref ?? '')
+  }
+
+  @Remote('manualInstall')
+  async manualInstall(request: MarketplaceManualInstallRequest): Promise<MarketplaceResult<MarketplaceManualInstallResult>> {
+    if (this.restartPending) {
+      return fail('restart-pending', 'DSH is already preparing to restart.')
+    }
+    if (this.profileMutationBusy()) {
+      return fail('job-running', 'Another Profile plugin operation is already in progress.')
+    }
+    this.pendingInstallResolution += 1
+    try {
+      const profile = installLocation(this.ctx, this.config)
+      ensureProfile(profile.dir, profile.name)
+      let parsed: ReturnType<typeof parseManualInstall>
+      try {
+        parsed = parseManualInstall(request.command, profile.name)
+      } catch (error) {
+        return fail('manual-command-invalid', error instanceof Error ? error.message : String(error))
+      }
+
+      let details = await this.github.details(parsed.repo, parsed.ref)
+      if (!/^[0-9a-f]{40}$/i.test(details.resolvedRef)) {
+        details = await this.github.details(parsed.repo, details.resolvedRef)
+      }
+      if (!/^[0-9a-f]{40}$/i.test(details.resolvedRef)) {
+        return fail('manual-ref-unresolved', 'The GitHub source could not be frozen to an exact commit.')
+      }
+      const manifest = details.manifest
+      if (manifest === null || manifest.bundlePatch === null || details.patch === null) {
+        return fail('not-a-dsh-plugin', details.repo + ' does not provide a readable DSH bundle manifest and patch.')
+      }
+      const packageName = manifest.name.trim()
+      if (!validPackageName(packageName)) {
+        return fail('bad-package', 'The repository declares an invalid package name: ' + manifest.name)
+      }
+      const before = readProfileManifest(NAME, profile.dir)
+      if (before.dependencies?.[packageName] !== undefined) {
+        return fail('already-installed', packageName + ' is already installed — uninstall it or use its update action.')
+      }
+      const target = profile.custom ? pluginTarget(profile, packageName) : profilePackagePath(profile.dir, packageName)
+      if (existsSync(target)) {
+        return fail('plugin-dir-exists', 'Install blocked: target directory already exists: ' + target, { target })
+      }
+      const conflict = this.installConflict(details, before, profile.dir)
+      if (conflict !== null) return conflict
+
+      const job = this.jobs.create('install', packageName)
+      const spec = 'github:' + details.repo + '#' + details.resolvedRef
+      void this.driveInstall(job, profile, spec, before, false, true, profile.custom ? target : null)
+      return ok({
+        jobId: job.jobId,
+        packageName,
+        repository: details.repo,
+        verifiedCommit: details.resolvedRef,
+      })
+    } catch (error) {
+      return toFailure(error)
+    } finally {
+      this.pendingInstallResolution -= 1
+    }
   }
 
   @Remote('update')
@@ -817,6 +881,10 @@ function executableSpec(plugin: MarketplaceRegistryPlugin | SelfUpdateTarget): s
 
 function isGitHubSpec(value: string): boolean {
   return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
+}
+
+function validPackageName(value: string): boolean {
+  return /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(value)
 }
 
 export default MarketplaceService

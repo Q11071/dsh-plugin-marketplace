@@ -15,6 +15,8 @@ import type {
   MarketplaceInstallDirRequest,
   MarketplaceInstallLocation,
   MarketplaceInstallRequest,
+  MarketplaceManualInstallRequest,
+  MarketplaceManualInstallResult,
   MarketplaceInstalled,
   MarketplaceJobHandle,
   MarketplaceJobStatus,
@@ -37,6 +39,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     details: (request: MarketplaceDetailsRequest) => Promise<RemoteResult<MarketplaceResult<MarketplacePluginDetails>>>
     guidedTask: (request: MarketplaceGuidedAgentRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceGuidedAgentTask>>>
     installPlugin: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    manualInstall: (request: MarketplaceManualInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceManualInstallResult>>>
     update: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     uninstall: (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     setEnabled: (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
@@ -52,6 +55,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/details': (request: MarketplaceDetailsRequest) => Promise<RemoteResult<MarketplaceResult<MarketplacePluginDetails>>>
     'marketplace/guidedTask': (request: MarketplaceGuidedAgentRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceGuidedAgentTask>>>
     'marketplace/installPlugin': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    'marketplace/manualInstall': (request: MarketplaceManualInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceManualInstallResult>>>
     'marketplace/update': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/uninstall': (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/setEnabled': (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>

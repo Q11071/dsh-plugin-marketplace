@@ -24,6 +24,7 @@
 | ✅ Registry validation | Checks manifests, bundle patches, loader entries, runtime artifacts, and exact install sources |
 | ⚡ One-click install | Available only when every automatic-install requirement passes |
 | 🤖 Agent-assisted install | Creates a constrained installation Agent when builds, lifecycle scripts, or human judgment are required |
+| ⌨️ Manual command install | Safely parses an official DSH GitHub install command and attaches the verified plugin to the active Profile |
 | 🧰 Installed plugin management | Update, uninstall, enable, disable, and safely restart DSH for the active Profile |
 | 📈 Discovery | Search by category, sort by Stars, and view seven-day Star growth |
 | 🔄 Marketplace self-update | Checks this repository directly and pins updates to a resolved commit |
@@ -33,7 +34,7 @@
 ### 1. Install
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.7.3
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.8.0
 ```
 
 For local development:
@@ -52,20 +53,36 @@ dsh --profile web
 
 Go to **Settings → Plugins → Plugin Marketplace**.
 
-The marketplace has two pages:
+The marketplace has three pages:
 
 - **Plugin Marketplace** — search, filter, sort, inspect validation details, and install plugins.
-- **Installed Plugins** — check for updates, update, uninstall, enable, or disable plugins in the active Profile.
+- **Installed Plugins** — filter, check for updates, update, uninstall, enable, or disable plugins in the active Profile.
+- **Management & diagnostics** — manually install a command, choose plugin storage, and diagnose conflicts.
 
 ## Installation modes
 
 | Mode | When it is used | Marketplace behavior |
 | --- | --- | --- |
 | **One-click install** | An exact GitHub commit or npm version passes every check | Installs through the official DSH plugin command |
+| **Manual command install** | The user supplies an official DSH GitHub install command | Parses it, pins a commit, validates the bundle and conflicts, then installs safely |
 | **Agent install** | A build approval, lifecycle script, extra configuration, or further verification is required | Creates a DSH Agent session bound to Registry evidence |
 | **Installation guide** | The active Profile is incompatible, identity is uncertain, or no safe executable path exists | Runs nothing and opens the author's instructions |
 
 Automatic installs always use an exact GitHub commit or npm version verified by the Registry. Mutable `main`, `latest`, and Release download URLs are never passed directly to the package manager.
+
+### Manual command install
+
+Under **Management & diagnostics → Manual command install**, paste:
+
+```sh
+dsh plugin --profile web add github:owner/repo#ref
+```
+
+You may also enter only `github:owner/repo#ref`. The input is never passed to a shell. The
+marketplace accepts one GitHub command for the active Profile and rejects extra arguments, pipes,
+multiple commands, and unsafe refs. A tag, branch, or omitted ref is first resolved to an exact
+commit, after which the manifest, bundle patch, and conflicts are validated. Lifecycle scripts stay
+disabled. A successful install joins the Profile bundle stack and appears under **Installed Plugins**.
 
 ### Guided-install Agent
 

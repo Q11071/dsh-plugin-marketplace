@@ -47,22 +47,23 @@ try {
   })
 
   // ── installedEntries: linked rows ─────────────────────────────────────
+  const manualGitHubSpec = `github:owner/linked-plugin#${'a'.repeat(40)}`
   const manifest = {
     name: 'test-profile',
     private: true,
     dsh: { profile: { bundles: ['linked-plugin'] } },
-    dependencies: { 'linked-plugin': 'file:./node_modules/linked-plugin' },
+    dependencies: { 'linked-plugin': manualGitHubSpec },
   } as unknown as ProfileManifest
   const entries = installedEntries(manifest, profileDir, join(profileDir, 'node_modules'))
   const linked = entries.find(entry => entry.packageName === 'linked-plugin')
-  ok('linked entries carry location, description, and bundle state', () => {
+  ok('manual GitHub installs are listed with location, description, and bundle state', () => {
     assert.ok(linked !== undefined)
     assert.equal(linked?.linked, true)
     assert.equal(linked?.isBundle, true)
     assert.equal(linked?.enabled, true)
     assert.equal(linked?.location, join(profileDir, 'node_modules', 'linked-plugin'))
     assert.equal(linked?.description, 'linked-plugin does things')
-    assert.equal(linked?.currentSpec, 'file:./node_modules/linked-plugin')
+    assert.equal(linked?.currentSpec, manualGitHubSpec)
   })
 
   // ── installedEntries: unlinked directory scan ─────────────────────────

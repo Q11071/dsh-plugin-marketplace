@@ -188,6 +188,15 @@ const installRequestSchema = z.object({
   ref: z.string(),
 })
 
+const manualInstallRequestSchema = z.object({ command: z.string() })
+
+const manualInstallValueSchema = z.object({
+  jobId: z.string(),
+  packageName: z.string(),
+  repository: z.string(),
+  verifiedCommit: z.string(),
+})
+
 const guidedAgentRequestSchema = installRequestSchema.extend({
   operation: z.union([z.literal('install'), z.literal('update')]),
 })
@@ -285,6 +294,7 @@ export const TYPERT = {
     invocation('details', [param('request', detailsRequestSchema, `${REQUEST_TYPES}MarketplaceDetailsRequest`)], result(resultSchema(detailsValueSchema), `${REQUEST_TYPES}MarketplaceDetailsOutcome`)),
     invocation('guidedTask', [param('request', guidedAgentRequestSchema, `${REQUEST_TYPES}MarketplaceGuidedAgentRequest`)], result(resultSchema(guidedAgentTaskValueSchema), `${REQUEST_TYPES}MarketplaceGuidedAgentOutcome`)),
     invocation('installPlugin', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
+    invocation('manualInstall', [param('request', manualInstallRequestSchema, `${REQUEST_TYPES}MarketplaceManualInstallRequest`)], result(resultSchema(manualInstallValueSchema), `${REQUEST_TYPES}MarketplaceManualInstallOutcome`)),
     invocation('update', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('uninstall', [param('request', uninstallRequestSchema, `${REQUEST_TYPES}MarketplaceUninstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('setEnabled', [param('request', toggleRequestSchema, `${REQUEST_TYPES}MarketplaceToggleRequest`)], result(resultSchema(toggleValueSchema), `${REQUEST_TYPES}MarketplaceToggleOutcome`)),
