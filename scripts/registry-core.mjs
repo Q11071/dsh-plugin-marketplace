@@ -5,7 +5,7 @@ import { parseDocument } from 'yaml'
 export const MAX_MANIFEST_BYTES = 256 * 1024
 export const MAX_PATCH_BYTES = 64 * 1024
 export const MAX_README_BYTES = 256 * 1024
-export const INSTALL_CLASSIFIER_VERSION = 10
+export const INSTALL_CLASSIFIER_VERSION = 11
 
 /** Candidate is structurally not a DSH bundle. */
 export class InvalidCandidateError extends Error {
@@ -113,11 +113,7 @@ export function validateManifest(text) {
   }
 }
 
-/**
- * Classify installability from independent static evidence. A prepare script
- * is not sufficient to require a build when the runtime files are committed
- * and the author explicitly documents GitHub installation for this plugin.
- */
+/** Classify installability from independent static evidence. */
 export function classifyInstall(identity, repository, treePaths, readmeText, verifiedGitHubRepositories = [repository]) {
   const hints = identity.installHints
   const files = new Set(treePaths.map(normalizeRepoPath))
@@ -149,23 +145,18 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
       : identity.hasClient
         ? 'client'
         : 'unknown'
-  const hardLifecycleScripts = hints.lifecycleScripts.filter(name => name !== 'prepare')
   const hasPrepare = hints.lifecycleScripts.includes('prepare')
-  const prepareNeedsApproval = hasPrepare
-    && runtimeArtifactsCommitted
-    && (!readme.directGitHub || readme.requiresBuildApproval)
-    && hints.declaredRequiresBuildApproval !== false
-  const requiresBuildApproval = hardLifecycleScripts.length > 0
+  // Git dependencies may execute prepare while pnpm is materializing the
+  // package. Every lifecycle script therefore keeps the GitHub source guided;
+  // a separately verified npm tarball may still override this classification
+  // because dependency installs do not execute its prepare script.
+  const requiresBuildApproval = hints.lifecycleScripts.length > 0
     || !runtimeArtifactsCommitted
     || hints.declaredRequiresBuildApproval === true
-    || prepareNeedsApproval
   const manualSteps = requiresBuildApproval
     || (hints.declaredManualSteps ?? profiles.length === 0)
   const reviewReasons = []
   const resolvedReasons = []
-  if (hasPrepare && runtimeArtifactsCommitted && readme.directGitHub && !requiresBuildApproval) {
-    resolvedReasons.push('prepare-present-but-author-documented-github-install-and-runtime-artifacts-are-committed')
-  }
   if (readme.directGitHub && !runtimeArtifactsCommitted) {
     reviewReasons.push('readme-documents-github-install-but-runtime-entry-artifacts-are-missing')
   }

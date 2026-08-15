@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-marketplace",
   "description": "Verified DSH plugin marketplace with guided-install Agents, direct self-update, discovery and install management",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "packageManager": "pnpm@11.1.2",
   "license": "MIT",
   "repository": {
@@ -72,7 +72,9 @@
     "profile:test": "node --experimental-strip-types scripts/profile-test.ts",
     "restart:test": "node --experimental-strip-types scripts/restart-test.ts",
     "self-update:test": "node --experimental-strip-types scripts/self-update-test.ts",
-    "guided-agent:test": "node --experimental-strip-types scripts/guided-agent-test.ts"
+    "guided-agent:test": "node --experimental-strip-types scripts/guided-agent-test.ts",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test": "node --experimental-strip-types scripts/store-test.ts && node --experimental-strip-types scripts/conflicts-test.ts && node --experimental-strip-types scripts/install-location-test.ts && node --experimental-strip-types scripts/install-location-integration-test.ts && node --experimental-strip-types scripts/profile-entries-test.ts && node --experimental-strip-types scripts/typert-test.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"
@@ -83,6 +85,7 @@
     "@deepseek-ai/dsh-typert-protocol": "^0.1.0-rc.5"
   },
   "devDependencies": {
+    "@types/node": "^22.20.0",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
     "@types/tar-stream": "^3.1.4",

@@ -88,20 +88,26 @@ async function processCandidate(candidate) {
     next[key] = stateRow(candidate, fingerprint, 'blocked', blockedReason, old)
     return
   }
+  const exactReusableInspection = old !== undefined && validInspection(old.inspection)
+  const migratedReusableInspection = old !== undefined
+    && sameRepositoryFingerprint(old.fingerprint, fingerprint)
+    && migratableAutomaticInspection(old.inspection)
   if (old !== undefined
-    && sameFingerprint(old.fingerprint, fingerprint)
+    && (sameFingerprint(old.fingerprint, fingerprint) || migratedReusableInspection)
     && old.status === 'verified'
     && plainObject(old.plugin)
     && old.plugin.install?.mode === 'automatic'
     && old.plugin.install?.source === 'github'
     && validInstallMetadata(old.plugin.install)
-    && validInspection(old.inspection)) {
+    && (exactReusableInspection || migratedReusableInspection)) {
     next[key] = {
       ...stateRow(candidate, fingerprint, 'verified', null, old),
       checkedAt: old.checkedAt,
       commit: old.commit,
       plugin: refreshPluginMetadata(old.plugin, candidate),
-      inspection: old.inspection,
+      inspection: migratedReusableInspection
+        ? { ...old.inspection, classifierVersion: INSTALL_CLASSIFIER_VERSION }
+        : old.inspection,
     }
     reused += 1
     return
@@ -573,6 +579,23 @@ function validInstallMetadata(value) {
 function validInspection(value) {
   return plainObject(value)
     && value.classifierVersion === INSTALL_CLASSIFIER_VERSION
+    && Array.isArray(value.profiles)
+    && Array.isArray(value.artifactGroups)
+    && Array.isArray(value.reviewReasons)
+    && Array.isArray(value.resolvedReasons)
+    && plainObject(value.readme)
+}
+
+/**
+ * Classifier v11 only changes lifecycle handling. An unchanged automatic
+ * GitHub row with no lifecycle scripts can be upgraded in place, avoiding a
+ * full Registry re-fetch; rows containing prepare/install hooks are rechecked.
+ */
+function migratableAutomaticInspection(value) {
+  return plainObject(value)
+    && value.classifierVersion === 10
+    && Array.isArray(value.lifecycleScripts)
+    && value.lifecycleScripts.length === 0
     && Array.isArray(value.profiles)
     && Array.isArray(value.artifactGroups)
     && Array.isArray(value.reviewReasons)

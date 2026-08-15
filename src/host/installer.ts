@@ -4,6 +4,8 @@
  */
 
 import { spawn } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { isAbsolute, join, resolve } from 'node:path'
 import type {
   MarketplaceJobKind,
   MarketplaceJobPhase,
@@ -12,6 +14,13 @@ import type {
 
 const MAX_LOG_CHARS = 65536
 const MAX_JOBS = 8
+const WINDOWS_ABSOLUTE_PATH = /^(?:[A-Za-z]:[\\/]|\\\\)/
+
+function resolveStoreDir(dir: string, storeDir: string): string {
+  return isAbsolute(storeDir) || WINDOWS_ABSOLUTE_PATH.test(storeDir)
+    ? storeDir
+    : resolve(dir, storeDir)
+}
 
 export interface JobOutcome {
   packageName: string
@@ -123,14 +132,67 @@ export class JobTable {
 }
 
 /**
- * Run one pnpm invocation in the profile directory, streaming stdout and
- * stderr into the job log. Mirrors the CLI's Windows shell forwarding
+ * Reuse the pnpm store the working directory's node_modules is already bound
+ * to (read from node_modules/.modules.yaml). Passing the same store to every
+ * pnpm invocation prevents ERR_PNPM_UNEXPECTED_STORE when the Profile and the
+ * staging/plugin directories would otherwise resolve different stores.
+ */
+export function linkedPnpmStore(dir: string): string | null {
+  try {
+    const metadata = readFileSync(join(dir, 'node_modules', '.modules.yaml'), 'utf8')
+    try {
+      const parsed = JSON.parse(metadata) as { storeDir?: unknown }
+      if (typeof parsed?.storeDir === 'string' && parsed.storeDir.trim() !== '') {
+        const storeDir = parsed.storeDir.trim()
+        return resolveStoreDir(dir, storeDir)
+      }
+    } catch {
+      // Fall through to the YAML scan below.
+    }
+    const match = /^\s*["']?storeDir["']?\s*:\s*["']?([^"'\r\n]+)["']?\s*,?\s*$/m.exec(metadata)
+    const storeDir = match?.[1]?.trim()
+    if (storeDir === undefined || storeDir === '') return null
+    return resolveStoreDir(dir, storeDir)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Build the pnpm argument list for one job, forwarding the store the working
+ * directory is bound to (or the caller-supplied Profile-linked fallback).
+ * Exposed separately so the store-selection logic is unit-testable without
+ * spawning a process.
+ */
+export function pnpmArgsFor(
+  args: string[],
+  dir: string,
+  fallbackStoreDir: string | null,
+): { args: string[]; storeDir: string | null } {
+  const storeDir = linkedPnpmStore(dir) ?? fallbackStoreDir
+  return { args: storeDir === null ? args : [...args, '--config.store-dir=' + storeDir], storeDir }
+}
+
+/**
+ * Run one pnpm invocation in the working directory, streaming stdout and
+ * stderr into the job log. When the directory is bound to a pnpm store (or
+ * the caller supplies a Profile-linked store as fallback), the same store is
+ * forwarded through --config.store-dir so staging, plugin and Profile jobs
+ * never drift onto another store. Mirrors the CLI's Windows shell forwarding
  * (pnpm resolves through its .cmd shim).
  */
-export function runPnpmJob(job: JobRecord, args: string[], dir: string, table: JobTable): Promise<number | null> {
+export function runPnpmJob(
+  job: JobRecord,
+  args: string[],
+  dir: string,
+  table: JobTable,
+  fallbackStoreDir: string | null = null,
+): Promise<number | null> {
   return new Promise((resolve) => {
-    table.append(job, '$ pnpm ' + args.join(' ') + '\n')
-    const child = spawn('pnpm', args, {
+    const { args: pnpmArgs, storeDir } = pnpmArgsFor(args, dir, fallbackStoreDir)
+    table.append(job, '$ pnpm ' + pnpmArgs.map((arg) => /\s/.test(arg) ? JSON.stringify(arg) : arg).join(' ') + '\n')
+    if (storeDir !== null) table.append(job, 'Using profile-linked pnpm store: ' + storeDir + '\n')
+    const child = spawn('pnpm', pnpmArgs, {
       cwd: dir,
       shell: process.platform === 'win32',
       stdio: ['ignore', 'pipe', 'pipe'],

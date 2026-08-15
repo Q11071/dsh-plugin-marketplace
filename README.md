@@ -33,7 +33,7 @@
 ### 1. 安装
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.6.1
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.7.0
 ```
 
 本地开发安装：
@@ -102,6 +102,19 @@ Agent 会先只读检查精确 commit。执行安装、构建、`prepare`、`pos
 | 市场自更新 | 直接读取本仓库主分支版本，再将安装来源固定为精确 commit |
 
 npm 包内附带构建后的 `lib/` 和发布时的 Registry 快照。因此远程 Registry 暂时不可用时，市场仍可使用包内快照。
+
+## 安装位置与冲突诊断
+
+默认情况下，插件实体由 pnpm 直接安装在当前 Profile 的 `node_modules` 中，所有 pnpm 任务都复用该 Profile 已绑定的 store，避免出现 `ERR_PNPM_UNEXPECTED_STORE`。
+
+安装位置面板允许把后续安装切换到自定义目录（通过 DSH 的目录选择器）：
+
+- 自定义目录中的插件以 `file:` 依赖关联到 Profile，并把运行入口链接回 Profile 的 `node_modules`；
+- 外置插件缺失的 Host peer 依赖（例如 `cordis` → `@deepseek-ai/cordis`）会自动链接；
+- 切换目录只影响之后新安装的插件，已有插件保留在原位置并仍可更新或卸载；
+- 目录中存在但未关联 Profile 的插件会单独标记，不提供 Profile 操作。
+
+冲突面板对已启用插件做启发式静态诊断：重复的 Bundle ID，以及常见的 Cordis 服务注册形式（`ctx.provide(...)`、`super(ctx, ...)`、`ctx['x'] = ...`、`ctx.x = ...`）。诊断结果是启动崩溃的前置防线，不执行 JavaScript，也可能出现误报（例如入口 bundle 内联了其他插件的代码）；安装、更新或启用前只阻止**新引入**的冲突。
 
 ## Registry 如何工作
 
@@ -212,7 +225,7 @@ Registry 不会只根据某一个关键词决定能否自动安装，而会交�
 - 同名同版本 npm 发行版的 Registry URL、SHA-512 完整性、package identity、bundle patch 和全部运行入口；
 - npm 包是否包含 `preinstall` / `install` / `postinstall` 或根级 `binding.gyp`。
 
-`preinstall`、`install`、`postinstall` 或缺少运行产物时始终要求构建授权。`prepare` 不会单独触发引导安装：如果 GitHub 源已经提交运行产物、README 明确提供安装命令且未要求 build approval，仍可自动安装；npm tarball 包含完整运行产物并通过静态验证时同样可以自动安装。
+GitHub 来源只要包含 `preinstall`、`install`、`postinstall` 或 `prepare`，就始终要求构建授权并保持引导安装；已经提交运行产物也不会取消生命周期脚本的风险提示。精确 npm tarball 不会在作为依赖安装时执行 `prepare`，因此包含完整运行产物且通过静态验证的 npm 版本仍可自动安装。
 
 README 中错误的迁移地址只作为审计信息。如果当前仓库的精确 commit 自身完整且可安装，不会因此被阻断。证据缺失或互相矛盾时，插件保持引导安装，不会靠猜测开放一键安装。
 

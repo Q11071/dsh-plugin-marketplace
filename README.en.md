@@ -33,7 +33,7 @@
 ### 1. Install
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.6.1
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.7.0
 ```
 
 For local development:
@@ -102,6 +102,19 @@ After a successful install, the Agent's final response must include **How to sta
 | Marketplace self-update | Reads the version from this repository, then pins the install source to an exact commit |
 
 The package includes the built `lib/` files and a Registry snapshot from the release. If the remote Registry is temporarily unavailable, the marketplace can continue using the bundled snapshot.
+
+## Install location and conflict diagnostics
+
+By default, plugin entities are installed by pnpm directly into the current Profile's `node_modules`, and every pnpm job reuses the store the Profile is bound to, avoiding `ERR_PNPM_UNEXPECTED_STORE`.
+
+The install-location panel can switch subsequent installs to a custom directory through DSH's directory picker:
+
+- plugins in a custom directory are linked to the Profile with a `file:` dependency, and their runtime entry is linked back into the Profile's `node_modules`;
+- missing Host peer dependencies (e.g. `cordis` → `@deepseek-ai/cordis`) are linked automatically;
+- switching directories only affects future installs; existing plugins stay in place and remain updateable and removable;
+- directories that contain a plugin not linked to the Profile are marked separately and get no Profile operations.
+
+The conflict panel runs heuristic static diagnostics over enabled bundles: duplicate bundle ids and common Cordis service registration forms (`ctx.provide(...)`, `super(ctx, ...)`, `ctx['x'] = ...`, `ctx.x = ...`). Results are a pre-flight guard against startup crashes — JavaScript is not executed and false positives are possible (for example when an entry bundle inlines another plugin's code); install, update, and enable operations only block conflicts that are **newly introduced**.
 
 ## How the Registry works
 
@@ -212,7 +225,7 @@ The Registry never decides automatic installation from a single keyword. It cros
 - the Registry URL, SHA-512 integrity, package identity, bundle patch, and runtime entries of same-name, same-version npm releases;
 - whether an npm package contains `preinstall` / `install` / `postinstall` or a root-level `binding.gyp`.
 
-`preinstall`, `install`, `postinstall`, or missing runtime artifacts always require build approval. `prepare` alone no longer forces guided installation: a GitHub source can remain automatic when runtime artifacts are committed, the README documents the GitHub install command, and build approval is not requested. An npm tarball can likewise be automatic when it contains all runtime artifacts and passes static validation.
+Any GitHub source containing `preinstall`, `install`, `postinstall`, or `prepare` always requires build approval and remains guided; committed runtime artifacts do not suppress that lifecycle warning. An exact npm tarball does not execute `prepare` when installed as a dependency, so a release that contains all runtime artifacts and passes static validation may still be automatic.
 
 An incorrect migration URL in a README is retained as audit information but does not block a complete, installable exact commit in the current repository. Missing or contradictory evidence keeps the plugin guided; the scanner never guesses its way to one-click installation.
 

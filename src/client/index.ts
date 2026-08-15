@@ -87,6 +87,16 @@ export async function apply(ctx: ClientContext): Promise<void> {
       update: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.update({ repo, ref })).jobId,
       uninstall: async (packageName) => unwrapMarketplace(await scope.remote.marketplace.uninstall({ packageName })).jobId,
       setEnabled: async (packageName, enabled) => unwrapMarketplace(await scope.remote.marketplace.setEnabled({ packageName, enabled })),
+      installLocation: async () => unwrapMarketplace(await scope.remote.marketplace.installLocation()),
+      setInstallDir: async (installDir) => unwrapMarketplace(await scope.remote.marketplace.setInstallDir({ installDir })),
+      chooseInstallDir: async () => {
+        try {
+          return await scope.workspaces.pickDirectory()
+        } catch (error) {
+          throw new Error(t('installDirPickerFailed') + ': ' + (error instanceof Error ? error.message : String(error)))
+        }
+      },
+      diagnoseConflicts: async () => unwrapMarketplace(await scope.remote.marketplace.diagnoseConflicts()),
       jobStatus: async (jobId) => unwrapMarketplace(await scope.remote.marketplace.jobStatus({ jobId })),
       installed: async () => unwrapMarketplace(await scope.remote.marketplace.installed()),
       restart: async () => unwrapMarketplace(await scope.remote.marketplace.restart()),

@@ -1,0 +1,60 @@
+name: Pull request validation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: deepseek-ai/deepseek-harness
+          path: deepseek-harness
+          fetch-depth: 1
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install and build DSH type contracts
+        run: |
+          pnpm --dir deepseek-harness install --frozen-lockfile --ignore-scripts
+          pnpm --dir deepseek-harness run build:lib
+      - run: pnpm install --frozen-lockfile
+      - name: TypeScript
+        run: pnpm typecheck
+        env:
+          DSH_CHECKOUT: ${{ github.workspace }}/deepseek-harness
+      - name: Unit and pnpm integration tests
+        run: pnpm test
+        env:
+          TYPERT_LOADER: ${{ github.workspace }}/deepseek-harness/packages/typert/loader/lib/index.js
+      - run: pnpm registry:test
+      - run: pnpm discovery:test
+      - run: pnpm profile:test
+      - run: pnpm restart:test
+      - run: pnpm self-update:test
+      - run: pnpm guided-agent:test
+      - name: Build plugin
+        run: pnpm build
+        env:
+          DSH_CHECKOUT: ${{ github.workspace }}/deepseek-harness
+      - name: Verify plugin and generated artifacts
+        run: |
+          pnpm verify
+          git diff --exit-code -- lib
+        env:
+          DSH_CHECKOUT: ${{ github.workspace }}/deepseek-harness

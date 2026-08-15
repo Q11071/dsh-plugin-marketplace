@@ -42,6 +42,9 @@ const probePath = path.join(root, 'lib', 'verify.probe.mjs')
 await esbuild.build({
   stdin: { contents: entry, resolveDir: path.join(checkout, 'packages', 'typert', 'loader', 'src'), sourcefile: 'verify-probe.ts' },
   bundle: true,
+  // The probe is standalone and must not inherit this repository's local,
+  // machine-specific tsconfig path when verification runs in CI.
+  tsconfigRaw: { compilerOptions: {} },
   external: [manifestUrl],
   platform: 'node',
   format: 'esm',

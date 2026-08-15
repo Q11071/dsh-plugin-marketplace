@@ -5,7 +5,7 @@
  */
 
 import { createRequire } from 'node:module'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
@@ -61,7 +61,7 @@ export function ensureProfile(dir: string, name: string): void {
 }
 
 /** Resolve an installed dependency's package.json from the profile directory. */
-function packageManifestPath(packageName: string, dir: string): string | null {
+export function packageManifestPath(packageName: string, dir: string): string | null {
   try {
     const require = createRequire(join(dir, 'package.json'))
     return require.resolve(packageName + '/package.json')
@@ -93,6 +93,30 @@ export function installedVersion(packageName: string, dir: string): string | nul
     return typeof manifest.version === 'string' ? manifest.version : null
   } catch {
     return null
+  }
+}
+
+/** Local description/repository facts of one installed package. */
+export function installedPackageSummary(packageName: string, dir: string): { description: string | null; repositoryUrl: string | null } {
+  const path = packageManifestPath(packageName, dir)
+  if (path === null) return { description: null, repositoryUrl: null }
+  try {
+    const manifest = JSON.parse(readFileSync(path, 'utf8')) as {
+      description?: unknown
+      homepage?: unknown
+      repository?: unknown
+    }
+    const repository = typeof manifest.repository === 'string' ? manifest.repository : (manifest.repository as { url?: unknown } | undefined)?.url
+    return {
+      description: typeof manifest.description === 'string' && manifest.description.trim() !== '' ? manifest.description.trim() : null,
+      repositoryUrl: typeof manifest.homepage === 'string' && manifest.homepage.trim() !== ''
+        ? manifest.homepage.trim()
+        : typeof repository === 'string' && repository.trim() !== ''
+          ? repository.replace(/^git\+/, '').replace(/\.git$/, '')
+          : null,
+    }
+  } catch {
+    return { description: null, repositoryUrl: null }
   }
 }
 
@@ -134,21 +158,33 @@ function sameNames(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index])
 }
 
-/** Installed dependency rows with versions and bundle-layer membership. */
-export function installedEntries(manifest: ProfileManifest, dir: string): MarketplaceInstalledEntry[] {
+/**
+ * Installed dependency rows with versions and bundle-layer membership, plus
+ * bundle-declaring directories that exist in the plugin directory but are not
+ * linked to the Profile. Scoped folders (@scope/pkg) are scanned one level
+ * deeper so marketplace-managed scoped packages are still discovered.
+ */
+export function installedEntries(manifest: ProfileManifest, dir: string, pluginDir: string): MarketplaceInstalledEntry[] {
   const bundles = new Set(manifest.dsh?.profile?.bundles ?? [])
   const entries: MarketplaceInstalledEntry[] = []
+  const linkedPackages = new Set(Object.keys(manifest.dependencies ?? {}))
   for (const packageName of Object.keys(manifest.dependencies ?? {})) {
     const version = installedVersion(packageName, dir)
     if (version === null) continue
+    const manifestPath = packageManifestPath(packageName, dir)
+    const summary = installedPackageSummary(packageName, dir)
     const declared = manifest.dependencies?.[packageName]
     const isBundle = exportsPatch(packageName, dir)
     entries.push({
       packageName,
       version,
       isBundle,
+      linked: true,
+      location: manifestPath === null ? '' : dirname(manifestPath),
       enabled: isBundle && bundles.has(packageName),
       currentSpec: typeof declared === 'string' ? declared : '',
+      description: summary.description,
+      repositoryUrl: summary.repositoryUrl,
       registryRepo: null,
       availableVersion: null,
       availableVersionSource: null,
@@ -157,6 +193,64 @@ export function installedEntries(manifest: ProfileManifest, dir: string): Market
       canUpdate: false,
       install: null,
     })
+  }
+  const scanLocation = (location: string): void => {
+    try {
+      const pluginManifest = JSON.parse(readFileSync(join(location, 'package.json'), 'utf8')) as {
+        name?: unknown
+        version?: unknown
+        description?: unknown
+        homepage?: unknown
+        repository?: unknown
+        dsh?: { bundle?: { patch?: unknown } }
+      }
+      const packageName = typeof pluginManifest.name === 'string' ? pluginManifest.name.trim() : ''
+      if (packageName === '' || linkedPackages.has(packageName) || typeof pluginManifest.dsh?.bundle?.patch !== 'string') return
+      const repository = typeof pluginManifest.repository === 'string' ? pluginManifest.repository : (pluginManifest.repository as { url?: unknown } | undefined)?.url
+      entries.push({
+        packageName,
+        version: typeof pluginManifest.version === 'string' ? pluginManifest.version : 'unknown',
+        isBundle: true,
+        linked: false,
+        location,
+        enabled: false,
+        currentSpec: '',
+        description: typeof pluginManifest.description === 'string' ? pluginManifest.description : null,
+        repositoryUrl: typeof pluginManifest.homepage === 'string'
+          ? pluginManifest.homepage
+          : typeof repository === 'string'
+            ? repository.replace(/^git\+/, '').replace(/\.git$/, '')
+            : null,
+        registryRepo: null,
+        availableVersion: null,
+        availableVersionSource: null,
+        verifiedCommit: null,
+        updateAvailable: false,
+        canUpdate: false,
+        install: null,
+      })
+    } catch {
+      // Not a readable plugin entity — ignore.
+    }
+  }
+  try {
+    for (const item of readdirSync(pluginDir, { withFileTypes: true })) {
+      if (!item.isDirectory()) continue
+      const location = join(pluginDir, item.name)
+      scanLocation(location)
+      if (item.name.startsWith('@')) {
+        try {
+          for (const child of readdirSync(location, { withFileTypes: true })) {
+            if (!child.isDirectory()) continue
+            scanLocation(join(location, child.name))
+          }
+        } catch {
+          // Ignore unreadable scoped folders.
+        }
+      }
+    }
+  } catch {
+    // The plugin directory may not exist yet (e.g. a custom location).
   }
   return entries.sort((a, b) => a.packageName.localeCompare(b.packageName))
 }

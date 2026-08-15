@@ -9,8 +9,11 @@ import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type {
   MarketplaceDetailsRequest,
+  MarketplaceDiagnoseConflictsResult,
   MarketplaceGuidedAgentRequest,
   MarketplaceGuidedAgentTask,
+  MarketplaceInstallDirRequest,
+  MarketplaceInstallLocation,
   MarketplaceInstallRequest,
   MarketplaceInstalled,
   MarketplaceJobHandle,
@@ -39,6 +42,9 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     setEnabled: (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     jobStatus: (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     installed: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
+    installLocation: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
+    setInstallDir: (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
+    diagnoseConflicts: () => Promise<RemoteResult<MarketplaceResult<MarketplaceDiagnoseConflictsResult>>>
     restart: () => Promise<RemoteResult<MarketplaceResult<MarketplaceRestartResult>>>
   }
   interface TypertRemoteMap {
@@ -51,6 +57,9 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/setEnabled': (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     'marketplace/jobStatus': (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     'marketplace/installed': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
+    'marketplace/installLocation': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
+    'marketplace/setInstallDir': (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
+    'marketplace/diagnoseConflicts': () => Promise<RemoteResult<MarketplaceResult<MarketplaceDiagnoseConflictsResult>>>
     'marketplace/restart': () => Promise<RemoteResult<MarketplaceResult<MarketplaceRestartResult>>>
   }
   interface TypertRemoteNamespaceMap {

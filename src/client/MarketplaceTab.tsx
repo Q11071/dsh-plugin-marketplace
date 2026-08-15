@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   Button,
   IconChevronDownOutline14,
@@ -11,8 +11,11 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
+  MarketplaceConflict,
+  MarketplaceDiagnoseConflictsResult,
   MarketplaceInstalled,
   MarketplaceInstalledEntry,
+  MarketplaceInstallLocation,
   MarketplaceJobKind,
   MarketplaceJobStatus,
   MarketplacePluginDetails,
@@ -38,6 +41,10 @@ export interface MarketplaceTabInjected {
   update: (repo: string, ref: string) => Promise<string>
   uninstall: (packageName: string) => Promise<string>
   setEnabled: (packageName: string, enabled: boolean) => Promise<MarketplaceToggleResult>
+  installLocation: () => Promise<MarketplaceInstallLocation>
+  setInstallDir: (installDir: string) => Promise<MarketplaceInstallLocation>
+  chooseInstallDir: () => Promise<string | null>
+  diagnoseConflicts: () => Promise<MarketplaceDiagnoseConflictsResult>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
   installed: () => Promise<MarketplaceInstalled>
   restart: () => Promise<MarketplaceRestartResult>
@@ -63,6 +70,10 @@ type ConfirmRequest = {
 
 type Subpage = 'catalog' | 'installed'
 type RestartState = 'idle' | 'requesting' | 'restarting'
+
+type StartingAction = { packageName: string; kind: MarketplaceJobKind }
+
+type Notice = { id: number; message: string; tone: 'error' | 'info' }
 
 const POLL_MS = 700
 const DEBOUNCE_MS = 400
@@ -157,7 +168,23 @@ const s = {
   installedList: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
   installedCard: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: 16, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '14px 16px' } as React.CSSProperties,
   installedInfo: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 } as React.CSSProperties,
+  installedDescription: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', margin: 0, overflowWrap: 'anywhere' } as React.CSSProperties,
   installedActions: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' } as React.CSSProperties,
+  directoryPath: { width: '100%', boxSizing: 'border-box', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', borderRadius: 8, padding: '9px 11px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: 13 } as React.CSSProperties,
+  toast: { position: 'fixed', top: 16, right: 16, zIndex: 99999, maxWidth: 460, minWidth: 260, display: 'flex', alignItems: 'flex-start', gap: 10, borderRadius: 10, padding: '12px 14px', fontSize: 13, lineHeight: '20px', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.28)', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', color: 'var(--dsw-alias-label-primary)' } as React.CSSProperties,
+  toastError: { borderColor: 'var(--dsw-alias-state-error-primary)' } as React.CSSProperties,
+  toastInfo: { borderColor: 'var(--dsw-alias-state-success-primary)' } as React.CSSProperties,
+  toastText: { flex: 1, minWidth: 0, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' } as React.CSSProperties,
+  toastClose: { background: 'none', border: 0, color: 'var(--dsw-alias-label-tertiary)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 } as React.CSSProperties,
+  panel: { border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 } as React.CSSProperties,
+  field: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: 10 } as React.CSSProperties,
+  fieldLabel: { color: 'var(--dsw-alias-label-secondary)', fontSize: 13, lineHeight: '20px' } as React.CSSProperties,
+  fieldMeta: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 12, lineHeight: '18px', margin: 0 } as React.CSSProperties,
+  conflictList: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
+  conflictItem: { border: '1px solid var(--dsw-alias-state-error-primary)', background: 'color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent)', borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 } as React.CSSProperties,
+  conflictTitle: { color: 'var(--dsw-alias-state-error-primary)', fontSize: 13, fontWeight: 600, lineHeight: '20px' } as React.CSSProperties,
+  conflictBody: { color: 'var(--dsw-alias-label-secondary)', fontSize: 12, lineHeight: '18px', margin: 0, overflowWrap: 'anywhere' } as React.CSSProperties,
+  conflictHealthy: { color: 'var(--dsw-alias-state-success-primary)', fontSize: 13, fontWeight: 600, lineHeight: '20px' } as React.CSSProperties,
 }
 
 /** Interpolate the {placeholders} used by a few locale keys. */
@@ -211,8 +238,33 @@ function compactDate(value: string): string {
   return date.toLocaleDateString(undefined, options)
 }
 
+/** Failure notice: job headline plus the most relevant diagnostic log line. */
+function jobFailureNotice(job: MarketplaceJobStatus, t: MarketplaceTabProps['t']): string {
+  const heading = jobKindLabel(job.kind, t) + ' — ' + t('jobFailed') + ': ' + (job.failure?.message ?? t('error'))
+  const lines = job.log.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '')
+  const diagnostic = [...lines].reverse().find(line => /\b(ERR_|ERROR|Error:|failed|conflict|blocked)\b/i.test(line))
+  return diagnostic === undefined || heading.includes(diagnostic) ? heading : heading + '\n' + diagnostic
+}
+
+function latestJobForPackage(jobs: Map<string, MarketplaceJobStatus>, packageName: string): MarketplaceJobStatus | undefined {
+  return [...jobs.values()]
+    .filter(job => job.packageName === packageName)
+    .sort((left, right) => right.startedAt - left.startedAt)[0]
+}
+
+function activeJobLabel(job: { kind: string }, t: MarketplaceTabProps['t']): string {
+  if (job.kind === 'uninstall') return t('uninstallingAction')
+  if (job.kind === 'update') return t('updatingAction')
+  return t('installingAction')
+}
+
+function friendlyPackageName(packageName: string): string {
+  const slash = packageName.lastIndexOf('/')
+  return slash >= 0 ? packageName.slice(slash + 1) : packageName
+}
+
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, guidedAgent, install, update, uninstall, setEnabled, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, guidedAgent, install, update, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
@@ -227,15 +279,36 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
   const [installedLoading, setInstalledLoading] = useState(true)
   const [installedError, setInstalledError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Map<string, MarketplaceJobStatus>>(new Map())
+  const [startingAction, setStartingAction] = useState<StartingAction | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [detailsMap, setDetailsMap] = useState<Map<string, MarketplacePluginDetails>>(new Map())
   const [detailErrors, setDetailErrors] = useState<Map<string, string>>(new Map())
   const [confirm, setConfirm] = useState<ConfirmRequest | null>(null)
   const [acknowledged, setAcknowledged] = useState(false)
   const [banner, setBanner] = useState<string | null>(null)
+  const [notice, setNotice] = useState<Notice | null>(null)
+  const [installDir, setInstallDirState] = useState('')
+  const [installDirCustom, setInstallDirCustom] = useState(false)
+  const [conflicts, setConflicts] = useState<MarketplaceConflict[]>([])
+  const [installDirBusy, setInstallDirBusy] = useState(false)
+  const [diagnosisBusy, setDiagnosisBusy] = useState(false)
+  const [diagnosedAt, setDiagnosedAt] = useState<number | null>(null)
   const [toggleBusy, setToggleBusy] = useState<string | null>(null)
   const [restartState, setRestartState] = useState<RestartState>('idle')
   const [agentBusy, setAgentBusy] = useState<string | null>(null)
+  const notifiedJobs = useRef<Set<string>>(new Set())
+
+  const notify = useCallback((message: string, tone: 'error' | 'info' = 'error') => {
+    setNotice({ id: Date.now(), message, tone })
+  }, [])
+
+  // Info notices auto-dismiss; errors stay until dismissed manually.
+  useEffect(() => {
+    if (notice === null) return undefined
+    if (notice.tone === 'error') return undefined
+    const handle = window.setTimeout(() => { setNotice(null) }, 8_000)
+    return () => { window.clearTimeout(handle) }
+  }, [notice])
 
   // Debounce the free-text query.
   useEffect(() => {
@@ -266,6 +339,11 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
       (result) => {
         setInstalledMap(new Map(result.entries.map((entry) => [entry.packageName, entry])))
         setInstalledProfile(result.profile)
+        if (typeof result.installDir === 'string' && result.installDir !== '') {
+          setInstallDirState(result.installDir)
+          setInstallDirCustom(Boolean(result.installDirCustom))
+        }
+        setConflicts(result.conflicts ?? [])
         setInstalledError(null)
         setInstalledLoading(false)
       },
@@ -277,6 +355,19 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
   }, [installed])
 
   useEffect(() => { refreshInstalled() }, [refreshInstalled])
+
+  // Keep the install directory in sync even before the first installed() call.
+  useEffect(() => {
+    let current = true
+    void installLocation().then((result) => {
+      if (!current) return
+      setInstallDirState(result.installDir)
+      setInstallDirCustom(Boolean(result.installDirCustom))
+    }, (error: unknown) => {
+      if (current) notify(error instanceof Error ? error.message : String(error))
+    })
+    return () => { current = false }
+  }, [installLocation, notify])
 
   const loadDetails = useCallback((repo: string, verifiedCommit: string): Promise<MarketplacePluginDetails> => {
     const cached = detailsMap.get(repo)
@@ -326,6 +417,10 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
             setJobs((current) => new Map(current).set(status.jobId, status))
             if (status.finishedAt !== null) {
               refreshInstalled()
+              if (status.failure !== null && !notifiedJobs.current.has(status.jobId)) {
+                notifiedJobs.current.add(status.jobId)
+                notify(jobFailureNotice(status, t))
+              }
               if (status.outcome !== null && status.outcome.requiresRestart) {
                 setBanner(t('restartBanner'))
               }
@@ -336,7 +431,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
       }
     }, POLL_MS)
     return () => { window.clearInterval(handle) }
-  }, [jobs, jobStatus, refreshInstalled, t])
+  }, [jobs, jobStatus, notify, refreshInstalled, t])
 
   // Once the host accepts a restart, wait for it to go offline and come back.
   // The elapsed-time fallback covers a restart that is faster than one probe.
@@ -351,7 +446,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
         url.searchParams.set('_dsh_restart_probe', String(Date.now()))
         await window.fetch(url, { cache: 'no-store', credentials: 'same-origin' })
         if (!disposed && (sawOffline || Date.now() - startedAt >= 8_000)) {
-          window.location.reload()
+          const reloadUrl = new URL(window.location.href)
+          reloadUrl.searchParams.set('_dsh_restarted', String(Date.now()))
+          window.location.replace(reloadUrl.toString())
         }
       } catch {
         if (!disposed) sawOffline = true
@@ -359,7 +456,11 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
     }
     const first = window.setTimeout(() => { void probe() }, 750)
     const interval = window.setInterval(() => { void probe() }, 500)
-    const fallback = window.setTimeout(() => { window.location.reload() }, 30_000)
+    const fallback = window.setTimeout(() => {
+      const reloadUrl = new URL(window.location.href)
+      reloadUrl.searchParams.set('_dsh_restarted', String(Date.now()))
+      window.location.replace(reloadUrl.toString())
+    }, 30_000)
     return () => {
       disposed = true
       window.clearTimeout(first)
@@ -385,7 +486,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
         setRestartState('restarting')
       }).catch((error: unknown) => {
         setRestartState('idle')
-        setBanner(error instanceof Error ? error.message : String(error))
+        notify(error instanceof Error ? error.message : String(error))
       })
       return
     }
@@ -395,8 +496,13 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
       : jobKind === 'update'
         ? update(request.repo, request.ref)
         : install(request.repo, request.ref)
-    void start.then((jobId) => { trackJob(jobId, jobKind, request.packageName) }).catch((error: unknown) => {
-      setBanner(error instanceof Error ? error.message : String(error))
+    setStartingAction({ packageName: request.packageName, kind: jobKind })
+    void start.then((jobId) => {
+      setStartingAction(null)
+      trackJob(jobId, jobKind, request.packageName)
+    }).catch((error: unknown) => {
+      setStartingAction(null)
+      notify(error instanceof Error ? error.message : String(error))
     })
   }
 
@@ -406,16 +512,16 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
       item.verifiedCommit,
     ).then((result) => {
       if (result.manifest === null || result.manifest.bundlePatch === null) {
-        setBanner(t('notAPlugin'))
+        notify(t('notAPlugin'), 'info')
         return
       }
       if (installedMap.has(result.manifest.name)) {
-        setBanner(t('alreadyInstalled'))
+        notify(t('alreadyInstalled'), 'info')
         return
       }
       openConfirm('install', result.repo, result.resolvedRef, result.manifest.name)
     }).catch((error: unknown) => {
-      setBanner(error instanceof Error ? error.message : String(error))
+      notify(error instanceof Error ? error.message : String(error))
     })
   }
 
@@ -425,7 +531,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
     void guidedAgent(repo, ref, operation).then(() => {
       setBanner(fmt(t, 'agentStarted', { package: packageName }))
     }).catch((error: unknown) => {
-      setBanner(error instanceof Error ? error.message : String(error))
+      notify(error instanceof Error ? error.message : String(error))
     }).finally(() => { setAgentBusy(null) })
   }
 
@@ -440,13 +546,67 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
         return next
       })
       if (result.requiresRestart) setBanner(t('restartBanner'))
+      refreshInstalled()
     }).catch((error: unknown) => {
-      setBanner(error instanceof Error ? error.message : String(error))
+      notify(error instanceof Error ? error.message : String(error))
     }).finally(() => { setToggleBusy(null) })
   }
 
   const retry = (): void => { setSeq((value) => value + 1) }
   const openRestartConfirm = (): void => { openConfirm('restart', '', '', '') }
+
+  const applyInstallDir = (value: string, noticeKey: PluginMarketplaceLocaleKey): void => {
+    setInstallDirBusy(true)
+    setInstallDir(value).then((result) => {
+      setInstallDirState(result.installDir)
+      setInstallDirCustom(Boolean(result.installDirCustom))
+      notify(t(noticeKey), 'info')
+      refreshInstalled()
+    }).catch((error: unknown) => {
+      notify(error instanceof Error ? error.message : String(error))
+    }).finally(() => {
+      setInstallDirBusy(false)
+    })
+  }
+
+  const chooseInstallLocation = (): void => {
+    setInstallDirBusy(true)
+    void chooseInstallDir().then((value) => {
+      if (value === null || value.trim() === '') {
+        setInstallDirBusy(false)
+        return
+      }
+      if (value === installDir) {
+        notify(t('installDirUnchanged'), 'info')
+        setInstallDirBusy(false)
+        return
+      }
+      applyInstallDir(value, 'installDirSaved')
+    }).catch((error: unknown) => {
+      notify(error instanceof Error ? error.message : String(error))
+      setInstallDirBusy(false)
+    })
+  }
+
+  const resetInstallLocation = (): void => {
+    applyInstallDir('', 'installDirReset')
+  }
+
+  const runDiagnosis = (): void => {
+    setDiagnosisBusy(true)
+    void diagnoseConflicts().then((result) => {
+      setConflicts(result.conflicts)
+      setDiagnosedAt(result.scannedAt)
+      notify(
+        result.conflicts.length === 0 ? t('diagnosisClean') : fmt(t, 'diagnosisFound', { count: result.conflicts.length }),
+        result.conflicts.length === 0 ? 'info' : 'error',
+      )
+    }).catch((error: unknown) => {
+      notify(error instanceof Error ? error.message : String(error))
+    }).finally(() => {
+      setDiagnosisBusy(false)
+    })
+  }
 
   const ready = view.status === 'ready' ? view.page : null
   const rate = ready?.rate ?? null
@@ -532,7 +692,11 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
                   item={item}
                   t={t}
                   currentProfile={installedProfile}
+                  profileLoading={installedLoading}
+                  profileAvailable={installedError === null && installedProfile !== ''}
                   isInstalled={installedMap.has(item.packageName)}
+                  job={latestJobForPackage(jobs, item.packageName)}
+                  startingKind={startingAction?.packageName === item.packageName ? startingAction.kind : null}
                   expanded={expanded === item.fullName}
                   detail={detailsMap.get(item.fullName)}
                   detailError={detailErrors.get(item.fullName)}
@@ -557,35 +721,47 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
           ) : null}
         </>
       ) : (
-        <InstalledList
-          entries={[...installedMap.values()].filter(entry => entry.isBundle)}
-          currentProfile={installedProfile}
-          loading={installedLoading}
-          error={installedError}
-          t={t}
-          onRetry={refreshInstalled}
-          onUpdate={(entry) => {
-            if (entry.registryRepo !== null && entry.verifiedCommit !== null) {
-              openConfirm('update', entry.registryRepo, entry.verifiedCommit, entry.packageName)
-            }
-          }}
-          onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
-          onSetEnabled={onSetEnabled}
-          onAgentUpdate={(entry) => {
-            if (entry.registryRepo === null || entry.verifiedCommit === null || entry.install === null) return
-            onGuidedAgent(entry.registryRepo, entry.verifiedCommit, entry.packageName, 'update')
-          }}
-          agentBusy={agentBusy}
-          toggleBusy={toggleBusy}
-        />
+        <>
+          <InstallDirField
+            installDir={installDir}
+            installDirCustom={installDirCustom}
+            onChoose={chooseInstallLocation}
+            onReset={resetInstallLocation}
+            busy={installDirBusy}
+            t={t}
+          />
+          <ConflictPanel
+            conflicts={conflicts}
+            diagnosedAt={diagnosedAt}
+            busy={diagnosisBusy}
+            onDiagnose={runDiagnosis}
+            t={t}
+          />
+          <InstalledList
+            entries={[...installedMap.values()].filter(entry => entry.isBundle)}
+            currentProfile={installedProfile}
+            loading={installedLoading}
+            error={installedError}
+            t={t}
+            onRetry={refreshInstalled}
+            onUpdate={(entry) => {
+              if (entry.registryRepo !== null && entry.verifiedCommit !== null) {
+                openConfirm('update', entry.registryRepo, entry.verifiedCommit, entry.packageName)
+              }
+            }}
+            onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
+            onSetEnabled={onSetEnabled}
+            onAgentUpdate={(entry) => {
+              if (entry.registryRepo === null || entry.verifiedCommit === null || entry.install === null) return
+              onGuidedAgent(entry.registryRepo, entry.verifiedCommit, entry.packageName, 'update')
+            }}
+            agentBusy={agentBusy}
+            toggleBusy={toggleBusy}
+            jobs={jobs}
+            startingAction={startingAction}
+          />
+        </>
       )}
-      {jobs.size > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[...jobs.values()].map((job) => (
-            <JobPanel key={job.jobId} job={job} t={t} />
-          ))}
-        </div>
-      ) : null}
       <RiskConfirmation
         open={confirm !== null}
         title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : isSelfUpdate ? t('confirmSelfUpdateTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
@@ -598,6 +774,15 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
         onCancel={() => { setConfirm(null); setAcknowledged(false) }}
         onConfirm={runConfirm}
       />
+      {notice !== null ? (
+        <div
+          style={notice.tone === 'error' ? { ...s.toast, ...s.toastError } : { ...s.toast, ...s.toastInfo }}
+          role='alert'
+        >
+          <span style={s.toastText}>{notice.message}</span>
+          <button type='button' style={s.toastClose} aria-label={t('dismiss')} onClick={() => { setNotice(null) }}>×</button>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -606,7 +791,11 @@ interface CardRowProps {
   item: MarketplaceRegistryPlugin
   t: MarketplaceTabProps['t']
   currentProfile: string
+  profileLoading: boolean
+  profileAvailable: boolean
   isInstalled: boolean
+  job: MarketplaceJobStatus | undefined
+  startingKind: MarketplaceJobKind | null
   expanded: boolean
   detail: MarketplacePluginDetails | undefined
   detailError: string | undefined
@@ -616,7 +805,7 @@ interface CardRowProps {
   agentBusy: boolean
 }
 
-function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detailError, onToggle, onInstall, onGuidedAgent, agentBusy }: CardRowProps): ReactNode {
+function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, isInstalled, job, startingKind, expanded, detail, detailError, onToggle, onInstall, onGuidedAgent, agentBusy }: CardRowProps): ReactNode {
   const canInstall = item.install.mode === 'automatic'
     && (item.install.source === 'github' || item.install.source === 'npm')
     && currentProfile !== ''
@@ -624,6 +813,8 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
   const canUseAgent = item.install.mode === 'guided'
     && currentProfile !== ''
     && (item.install.profiles.length === 0 || item.install.profiles.includes(currentProfile))
+  const jobActive = job !== undefined && job.finishedAt === null
+  const operationActive = startingKind !== null || jobActive
   return (
     <li style={s.card}>
       <div style={s.cardBody}>
@@ -645,8 +836,14 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
           {item.categories.slice(0, 2).map((category) => <span key={category} style={s.chip}>{categoryLabel(category, t)}</span>)}
         </div>
         <div style={s.actions}>
-          {isInstalled ? (
+          {operationActive ? (
+            <Button variant='primary' size='sm' disabled>{activeJobLabel({ kind: job?.kind ?? startingKind ?? 'install' }, t)}</Button>
+          ) : isInstalled ? (
             <Button variant='outline' size='sm' disabled>{t('installedTag')}</Button>
+          ) : profileLoading ? (
+            <Button variant='outline' size='sm' disabled>{t('checkingInstall')}</Button>
+          ) : !profileAvailable ? (
+            <Button variant='outline' size='sm' disabled>{t('installUnavailable')}</Button>
           ) : canInstall ? (
             <Button variant='primary' size='sm' onClick={onInstall}>{t('install')}</Button>
           ) : canUseAgent ? (
@@ -701,6 +898,7 @@ function CardRow({ item, t, currentProfile, isInstalled, expanded, detail, detai
           ) : null}
         </div>
       ) : null}
+      {job !== undefined ? <JobPanel job={job} t={t} /> : null}
     </li>
   )
 }
@@ -718,9 +916,11 @@ interface InstalledListProps {
   onAgentUpdate: (entry: MarketplaceInstalledEntry) => void
   agentBusy: string | null
   toggleBusy: string | null
+  jobs: Map<string, MarketplaceJobStatus>
+  startingAction: StartingAction | null
 }
 
-function InstalledList({ entries, currentProfile, loading, error, t, onRetry, onUpdate, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy }: InstalledListProps): ReactNode {
+function InstalledList({ entries, currentProfile, loading, error, t, onRetry, onUpdate, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy, jobs, startingAction }: InstalledListProps): ReactNode {
   if (loading) return <p style={s.muted}>{t('loadingInstalled')}</p>
   if (error !== null) {
     return (
@@ -733,51 +933,151 @@ function InstalledList({ entries, currentProfile, loading, error, t, onRetry, on
   if (entries.length === 0) return <p style={s.muted}>{t('emptyInstalled')}</p>
   return (
     <ul style={s.installedList}>
-      {entries.map((entry) => (
-        <li key={entry.packageName} style={s.installedCard}>
-          <div style={s.installedInfo}>
-            <strong style={s.title} title={entry.packageName}>{entry.packageName}</strong>
-            <span style={s.muted} title={entry.currentSpec}>
-              {fmt(t, 'installedVersion', { version: entry.version })}
-              {entry.availableVersion !== null
-                ? ' · ' + fmt(t, entry.availableVersionSource === 'repository' ? 'repositoryVersion' : 'registryVersion', { version: entry.availableVersion })
-                : ''}
-            </span>
-            <span style={entry.updateAvailable ? s.tag : s.meta}>
-              {entry.registryRepo === null
-                ? t('notInRegistry')
-                : entry.updateAvailable
-                  ? t('updateAvailable')
-                  : t('upToDate')}
-            </span>
-            <span style={entry.enabled ? s.tag : s.meta}>{entry.enabled ? t('enabled') : t('disabled')}</span>
-          </div>
-          <div style={s.installedActions}>
-            {entry.updateAvailable && entry.canUpdate ? (
-              <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
-                {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}
-              </Button>
-            ) : entry.updateAvailable
-              && entry.install?.mode === 'guided'
-              && entry.registryRepo !== null
-              && entry.verifiedCommit !== null
-              && (entry.install.profiles.length === 0 || entry.install.profiles.includes(currentProfile)) ? (
-                <Button variant='primary' size='sm' disabled={agentBusy === entry.registryRepo} onClick={() => { onAgentUpdate(entry) }}>
-                  {agentBusy === entry.registryRepo ? t('agentStarting') : t('agentUpdate')}
+      {entries.map((entry) => {
+        const job = latestJobForPackage(jobs, entry.packageName)
+        const jobActive = job !== undefined && job.finishedAt === null
+        const startingKind = startingAction?.packageName === entry.packageName ? startingAction.kind : null
+        const operationActive = startingKind !== null || jobActive
+        return (
+          <li key={entry.packageName} style={s.installedCard}>
+            <div style={s.installedInfo}>
+              <strong style={s.title} title={entry.packageName}>{friendlyPackageName(entry.packageName)}</strong>
+              <span style={s.meta}>{entry.packageName}</span>
+              {entry.description ? <p style={s.installedDescription}>{entry.description}</p> : null}
+              <span style={s.muted} title={entry.currentSpec}>
+                {fmt(t, 'installedVersion', { version: entry.version })}
+                {entry.availableVersion !== null
+                  ? ' · ' + fmt(t, entry.availableVersionSource === 'repository' ? 'repositoryVersion' : 'registryVersion', { version: entry.availableVersion })
+                  : ''}
+              </span>
+              {!entry.linked ? (
+                <span style={s.meta} title={entry.location}>{t('directoryOnly')}</span>
+              ) : (
+                <span style={entry.updateAvailable ? s.tag : s.meta}>
+                  {entry.registryRepo === null
+                    ? t('notInRegistry')
+                    : entry.updateAvailable
+                      ? t('updateAvailable')
+                      : t('upToDate')}
+                </span>
+              )}
+              {entry.linked ? <span style={entry.enabled ? s.tag : s.meta}>{entry.enabled ? t('enabled') : t('disabled')}</span> : null}
+            </div>
+            <div style={s.installedActions}>
+              {!entry.linked ? (
+                <Button variant='outline' size='sm' disabled>{t('profileActionsUnavailable')}</Button>
+              ) : operationActive ? (
+                <Button variant='primary' size='sm' disabled>{activeJobLabel({ kind: job?.kind ?? startingKind ?? 'install' }, t)}</Button>
+              ) : entry.updateAvailable && entry.canUpdate ? (
+                <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
+                  {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}
                 </Button>
-            ) : entry.updateAvailable && entry.install !== null ? (
-              <a style={s.link} href={entry.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
-            ) : (
-              <Button variant='outline' size='sm' disabled>{t('upToDate')}</Button>
-            )}
-            <Button variant='outline' size='sm' disabled={toggleBusy === entry.packageName} onClick={() => { onSetEnabled(entry) }}>
-              {entry.enabled ? t('disable') : t('enable')}
-            </Button>
-            <Button variant='outline' size='sm' onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
-          </div>
-        </li>
-      ))}
+              ) : entry.updateAvailable
+                && entry.install?.mode === 'guided'
+                && entry.registryRepo !== null
+                && entry.verifiedCommit !== null
+                && (entry.install.profiles.length === 0 || entry.install.profiles.includes(currentProfile)) ? (
+                  <Button variant='primary' size='sm' disabled={agentBusy === entry.registryRepo} onClick={() => { onAgentUpdate(entry) }}>
+                    {agentBusy === entry.registryRepo ? t('agentStarting') : t('agentUpdate')}
+                  </Button>
+              ) : entry.updateAvailable && entry.install !== null ? (
+                <a style={s.link} href={entry.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
+              ) : (
+                <Button variant='outline' size='sm' disabled>{t('upToDate')}</Button>
+              )}
+              <Button variant='outline' size='sm' disabled={!entry.linked || operationActive || toggleBusy === entry.packageName} onClick={() => { onSetEnabled(entry) }}>
+                {entry.enabled ? t('disable') : t('enable')}
+              </Button>
+              <Button variant='outline' size='sm' disabled={!entry.linked || operationActive} onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
+            </div>
+            {job !== undefined ? (
+              <div style={{ gridColumn: '1 / -1', width: '100%' }}>
+                <JobPanel job={job} t={t} />
+              </div>
+            ) : null}
+          </li>
+        )
+      })}
     </ul>
+  )
+}
+
+function InstallDirField({ installDir, installDirCustom, onChoose, onReset, busy, t }: {
+  installDir: string
+  installDirCustom: boolean
+  onChoose: () => void
+  onReset: () => void
+  busy: boolean
+  t: MarketplaceTabProps['t']
+}): ReactNode {
+  const displayDir = installDir || t('installDirUnavailable')
+  return (
+    <div style={s.panel}>
+      <strong style={s.fieldLabel}>{t('installDirTitle')}</strong>
+      {installDirCustom
+        ? <p style={s.fieldMeta}>{fmt(t, 'installDirCustomHint', { dir: displayDir })}</p>
+        : <p style={s.fieldMeta}>{fmt(t, 'installDirDefaultHint', { dir: displayDir })}</p>}
+      <input style={s.directoryPath} value={displayDir} readOnly title={displayDir} aria-label={t('installDirPathLabel')} />
+      <div style={s.installedActions}>
+        <Button variant='primary' size='sm' disabled={busy} onClick={onChoose}>
+          {busy ? t('installDirChoosing') : t('installDirChoose')}
+        </Button>
+        {installDirCustom ? (
+          <Button variant='outline' size='sm' disabled={busy} onClick={onReset}>{t('installDirResetAction')}</Button>
+        ) : null}
+      </div>
+      <p style={s.fieldMeta}>{t('installDirResetHint')}</p>
+    </div>
+  )
+}
+
+function ConflictPanel({ conflicts, diagnosedAt, busy, onDiagnose, t }: {
+  conflicts: MarketplaceConflict[]
+  diagnosedAt: number | null
+  busy: boolean
+  onDiagnose: () => void
+  t: MarketplaceTabProps['t']
+}): ReactNode {
+  const header = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', width: '100%' }}>
+      <strong style={conflicts.length === 0 ? s.conflictHealthy : s.conflictTitle}>
+        {conflicts.length === 0 ? t('conflictNone') : fmt(t, 'conflictTitle', { count: conflicts.length })}
+      </strong>
+      <Button variant='outline' size='sm' disabled={busy} onClick={onDiagnose}>
+        {busy ? t('diagnosing') : t('diagnoseNow')}
+      </Button>
+    </div>
+  )
+  if (conflicts.length === 0) {
+    return (
+      <div style={s.panel}>
+        {header}
+        <p style={s.conflictBody}>{t('conflictHint')}</p>
+        {diagnosedAt !== null ? <p style={s.fieldMeta}>{fmt(t, 'diagnosedAt', { time: new Date(diagnosedAt).toLocaleString() })}</p> : null}
+      </div>
+    )
+  }
+  return (
+    <div style={s.panel}>
+      {header}
+      <ul style={s.conflictList}>
+        {conflicts.map((conflict) => (
+          <li
+            key={conflict.kind === 'service' ? 'svc:' + conflict.service : 'id:' + conflict.id}
+            style={s.conflictItem}
+          >
+            <span style={s.conflictTitle}>
+              {conflict.kind === 'service'
+                ? fmt(t, 'conflictService', { service: conflict.service })
+                : fmt(t, 'conflictDuplicateId', { id: conflict.id })}
+            </span>
+            <p style={s.conflictBody}>{conflict.packages.join(', ')}</p>
+          </li>
+        ))}
+      </ul>
+      <p style={s.conflictBody}>{t('conflictHint')}</p>
+      {diagnosedAt !== null ? <p style={s.fieldMeta}>{fmt(t, 'diagnosedAt', { time: new Date(diagnosedAt).toLocaleString() })}</p> : null}
+    </div>
   )
 }
 
@@ -794,7 +1094,12 @@ function JobPanel({ job, t }: { job: MarketplaceJobStatus; t: MarketplaceTabProp
         <StateDot state={phaseDot(job.phase)} aria-hidden='true' />
         <span style={s.muted}>{label}</span>
       </div>
-      {job.log !== '' ? <pre style={s.jobLog}>{job.log}</pre> : null}
+      {job.log !== '' ? (
+        <details open={settled && job.failure !== null}>
+          <summary style={s.detailToggle}>{t('jobLog')}</summary>
+          <pre style={s.jobLog}>{job.log}</pre>
+        </details>
+      ) : null}
     </div>
   )
 }

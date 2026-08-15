@@ -10,17 +10,6 @@ import { fileURLToPath } from 'node:url'
 const require = createRequire(import.meta.url)
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 const checkout = process.env.DSH_CHECKOUT ?? 'D:/DSH/deepseek-harness'
-/** Resolve one package under the checkout's pnpm store (newest wins). */
-function resolvePnpmPackage(checkout, name) {
-  const pnpmDir = path.join(checkout, 'node_modules', '.pnpm')
-  const candidates = readdirSync(pnpmDir).filter((entry) => entry.startsWith(name + '@')).sort().reverse()
-  for (const entry of candidates) {
-    const pkg = path.join(pnpmDir, entry, 'node_modules', name)
-    if (existsSync(path.join(pkg, 'package.json'))) return pkg
-  }
-  throw new Error(name + ' not found under ' + pnpmDir)
-}
-
 /** Resolve esbuild from the checkout's pnpm store (newest version wins). */
 function resolveEsbuild(checkout) {
   const pnpmDir = path.join(checkout, 'node_modules', '.pnpm')
@@ -33,6 +22,7 @@ function resolveEsbuild(checkout) {
 }
 
 const esbuild = require(resolveEsbuild(checkout))
+const zod = path.dirname(require.resolve('zod/package.json'))
 
 // The loader module table: every entry the browser require can answer
 // (platform seed + the documented runtime-store exemption).
@@ -76,7 +66,7 @@ await esbuild.build({
   format: 'esm',
   target: 'es2024',
   outfile: 'lib/typert.js',
-  alias: { zod: resolvePnpmPackage(checkout, 'zod') },
+  alias: { zod },
 })
 
 await esbuild.build({
@@ -87,7 +77,7 @@ await esbuild.build({
   format: 'esm',
   target: 'es2024',
   outfile: 'lib/remote.js',
-  alias: { zod: resolvePnpmPackage(checkout, 'zod') },
+  alias: { zod },
 })
 
 await esbuild.build({
@@ -96,10 +86,14 @@ await esbuild.build({
   bundle: true,
   platform: 'browser',
   format: 'cjs',
+  // Do not inherit the maintainer checkout's absolute tsconfig path. Besides
+  // being non-portable, that made Windows and Linux disagree about whether
+  // the generated CommonJS bundle should contain the strict-mode directive.
+  tsconfigRaw: { compilerOptions: { alwaysStrict: true } },
   jsx: 'automatic',
   outfile: 'lib/client.js',
   external: PLATFORM_EXTERNALS,
-  alias: { zod: resolvePnpmPackage(checkout, 'zod') },
+  alias: { zod },
   banner: { js: BANNER },
   footer: { js: FOOTER },
   define: { 'process.env.NODE_ENV': JSON.stringify('production') },
