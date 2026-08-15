@@ -9,6 +9,15 @@
 
 暂无。
 
+## [0.7.3] - 2026-08-15
+
+### 改进
+
+- 插件页调整为“插件市场 / 已安装插件 / 管理与诊断”三个子页面；插件安装位置和冲突诊断
+  移至独立管理页，减少已安装列表中的视觉干扰。
+- 已安装插件页新增按包名、说明、仓库和版本过滤的搜索框。
+- 市场卡片将仓库名作为主标题，仓库作者移动到独立信息行，不再与仓库名挤在同行。
+
 ## [0.7.2] - 2026-08-15
 
 ### 修复
@@ -207,7 +216,8 @@
 - npm 包内置构建产物和 Registry 快照；远程 Registry 不可用时仍可使用。
 - 提供 Registry Schema、扫描测试、构建及真实 DSH loader 验证脚本。
 
-[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...HEAD
+[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.1...v0.7.0

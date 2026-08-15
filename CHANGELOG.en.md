@@ -10,6 +10,17 @@ Registry refresh commits are grouped instead of listed individually.
 
 No unreleased changes yet.
 
+## [0.7.3] - 2026-08-15
+
+### Changed
+
+- Split the plugin area into Marketplace, Installed plugins, and Management & diagnostics pages.
+  Plugin storage and conflict diagnosis now live on the dedicated management page, keeping the
+  installed list focused.
+- Added installed-plugin filtering by package name, description, repository, and version.
+- Marketplace cards now use the repository name as the heading and show its author on a separate
+  metadata line instead of combining both on one line.
+
 ## [0.7.2] - 2026-08-15
 
 ### Fixed
@@ -239,7 +250,8 @@ No unreleased changes yet.
   Registry failures.
 - Added the Registry Schema, scanner tests, build scripts, and validation against real DSH loaders.
 
-[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.1...v0.7.0

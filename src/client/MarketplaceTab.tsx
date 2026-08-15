@@ -68,7 +68,7 @@ type ConfirmRequest = {
   packageName: string
 }
 
-type Subpage = 'catalog' | 'installed'
+type Subpage = 'catalog' | 'installed' | 'management'
 type RestartState = 'idle' | 'requesting' | 'restarting'
 
 type StartingAction = { packageName: string; kind: MarketplaceJobKind }
@@ -124,10 +124,10 @@ const s = {
   bannerText: { minWidth: 0, flex: 1 } as React.CSSProperties,
   cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 270px), 1fr))', gap: 12, margin: 0, padding: 0, listStyle: 'none', alignItems: 'start' } as React.CSSProperties,
   card: { border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 12, minWidth: 0, overflow: 'hidden' } as React.CSSProperties,
-  cardBody: { minHeight: 214, boxSizing: 'border-box', padding: '16px 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 } as React.CSSProperties,
+  cardBody: { minHeight: 232, boxSizing: 'border-box', padding: '16px 16px 12px', display: 'flex', flexDirection: 'column', gap: 8 } as React.CSSProperties,
   titleRow: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, minHeight: 22 } as React.CSSProperties,
   title: { fontSize: 14, fontWeight: 600, lineHeight: '22px', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', minWidth: 0 } as React.CSSProperties,
-  owner: { color: 'var(--dsw-alias-label-tertiary)', fontWeight: 400 } as React.CSSProperties,
+  authorLine: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 11, lineHeight: '17px', margin: '-4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as React.CSSProperties,
   verifiedBadge: {
     display: 'inline-flex', alignItems: 'center', gap: 5, flex: 'none',
     color: 'var(--dsw-alias-state-success-primary)',
@@ -166,6 +166,7 @@ const s = {
   chevron: { flex: 'none' } as React.CSSProperties,
   tag: { color: 'var(--dsw-alias-state-success-primary)', fontSize: 11, lineHeight: '16px', flex: 'none' } as React.CSSProperties,
   installedList: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
+  installedToolbar: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } as React.CSSProperties,
   installedCard: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: 16, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '14px 16px' } as React.CSSProperties,
   installedInfo: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 } as React.CSSProperties,
   installedDescription: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', margin: 0, overflowWrap: 'anywhere' } as React.CSSProperties,
@@ -269,6 +270,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
   const [query, setQuery] = useState('')
+  const [installedQuery, setInstalledQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [sort, setSort] = useState<'stars' | 'updated' | 'trending'>('stars')
   const [category, setCategory] = useState<MarketplacePluginCategory | 'all'>('all')
@@ -613,6 +615,16 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
   const hasActiveJobs = [...jobs.values()].some((job) => job.finishedAt === null)
   const restartDisabled = restartState !== 'idle' || hasActiveJobs
   const isSelfUpdate = confirm?.mode === 'update' && confirm.packageName === SELF_PACKAGE
+  const installedEntries = [...installedMap.values()].filter(entry => entry.isBundle)
+  const installedNeedle = installedQuery.trim().toLocaleLowerCase()
+  const visibleInstalledEntries = installedNeedle === ''
+    ? installedEntries
+    : installedEntries.filter((entry) => [
+      entry.packageName,
+      entry.description ?? '',
+      entry.registryRepo ?? '',
+      entry.version,
+    ].some(value => value.toLocaleLowerCase().includes(installedNeedle)))
 
   return (
     <div style={s.section} aria-busy={view.status === 'loading' || restartState !== 'idle'}>
@@ -628,10 +640,11 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
         <div style={s.subnavGroup}>
           <Pill active={subpage === 'catalog'} onClick={() => { setSubpage('catalog') }}>{t('catalog')}</Pill>
           <Pill active={subpage === 'installed'} onClick={() => { setSubpage('installed'); refreshInstalled() }}>{t('installedPage')}</Pill>
+          <Pill active={subpage === 'management'} onClick={() => { setSubpage('management'); refreshInstalled() }}>{t('managementPage')}</Pill>
         </div>
         <div style={s.subnavMeta}>
           {installedProfile !== '' ? <span style={s.muted}>{fmt(t, 'currentProfile', { profile: installedProfile })}</span> : null}
-          {subpage === 'installed' ? (
+          {subpage !== 'catalog' ? (
             <Button variant='outline' size='sm' disabled={restartDisabled} onClick={openRestartConfirm}>
               {restartState === 'idle' ? t('restart') : t('restarting')}
             </Button>
@@ -720,28 +733,26 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
             </div>
           ) : null}
         </>
-      ) : (
+      ) : subpage === 'installed' ? (
         <>
-          <InstallDirField
-            installDir={installDir}
-            installDirCustom={installDirCustom}
-            onChoose={chooseInstallLocation}
-            onReset={resetInstallLocation}
-            busy={installDirBusy}
-            t={t}
-          />
-          <ConflictPanel
-            conflicts={conflicts}
-            diagnosedAt={diagnosedAt}
-            busy={diagnosisBusy}
-            onDiagnose={runDiagnosis}
-            t={t}
-          />
+          <div style={s.installedToolbar}>
+            <div style={s.search}>
+              <Input
+                type='search'
+                icon={<IconSearchOutline16 aria-hidden='true' />}
+                value={installedQuery}
+                placeholder={t('installedSearchPlaceholder')}
+                aria-label={t('installedSearchPlaceholder')}
+                onChange={(event) => { setInstalledQuery(event.currentTarget.value) }}
+              />
+            </div>
+          </div>
           <InstalledList
-            entries={[...installedMap.values()].filter(entry => entry.isBundle)}
+            entries={visibleInstalledEntries}
             currentProfile={installedProfile}
             loading={installedLoading}
             error={installedError}
+            emptyMessage={installedNeedle === '' ? t('emptyInstalled') : t('emptyInstalledSearch')}
             t={t}
             onRetry={refreshInstalled}
             onUpdate={(entry) => {
@@ -759,6 +770,25 @@ export function MarketplaceTab({ search, details, guidedAgent, install, update, 
             toggleBusy={toggleBusy}
             jobs={jobs}
             startingAction={startingAction}
+          />
+        </>
+      ) : (
+        <>
+          <p style={s.muted}>{t('managementHint')}</p>
+          <InstallDirField
+            installDir={installDir}
+            installDirCustom={installDirCustom}
+            onChoose={chooseInstallLocation}
+            onReset={resetInstallLocation}
+            busy={installDirBusy}
+            t={t}
+          />
+          <ConflictPanel
+            conflicts={conflicts}
+            diagnosedAt={diagnosedAt}
+            busy={diagnosisBusy}
+            onDiagnose={runDiagnosis}
+            t={t}
           />
         </>
       )}
@@ -820,10 +850,11 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
       <div style={s.cardBody}>
         <div style={s.titleRow}>
           <strong style={s.title} title={item.fullName}>
-            <span style={s.owner}>{item.owner}/</span>{item.repo}
+            {item.repo}
           </strong>
           <span style={s.verifiedBadge}><span style={s.verifiedDot} aria-hidden='true' />{t('verified')}</span>
         </div>
+        <p style={s.authorLine} title={item.owner}>{fmt(t, 'repositoryAuthor', { author: item.owner })}</p>
         <p style={s.description} title={item.description ?? undefined}>{item.description === null || item.description === '' ? '\u00A0' : item.description}</p>
         <div style={s.statsRow}>
           <div style={s.statGroup}>
@@ -908,6 +939,7 @@ interface InstalledListProps {
   currentProfile: string
   loading: boolean
   error: string | null
+  emptyMessage: string
   t: MarketplaceTabProps['t']
   onRetry: () => void
   onUpdate: (entry: MarketplaceInstalledEntry) => void
@@ -920,7 +952,7 @@ interface InstalledListProps {
   startingAction: StartingAction | null
 }
 
-function InstalledList({ entries, currentProfile, loading, error, t, onRetry, onUpdate, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy, jobs, startingAction }: InstalledListProps): ReactNode {
+function InstalledList({ entries, currentProfile, loading, error, emptyMessage, t, onRetry, onUpdate, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy, jobs, startingAction }: InstalledListProps): ReactNode {
   if (loading) return <p style={s.muted}>{t('loadingInstalled')}</p>
   if (error !== null) {
     return (
@@ -930,7 +962,7 @@ function InstalledList({ entries, currentProfile, loading, error, t, onRetry, on
       </div>
     )
   }
-  if (entries.length === 0) return <p style={s.muted}>{t('emptyInstalled')}</p>
+  if (entries.length === 0) return <p style={s.muted}>{emptyMessage}</p>
   return (
     <ul style={s.installedList}>
       {entries.map((entry) => {
