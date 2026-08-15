@@ -8,6 +8,8 @@
  */
 
 import {
+  accessSync,
+  constants,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -15,6 +17,7 @@ import {
   readFileSync,
   renameSync,
   rmSync,
+  statSync,
   symlinkSync,
   unlinkSync,
   writeFileSync,
@@ -49,19 +52,21 @@ export function marketplaceSettingsPath(): string {
 interface MarketplaceSettings {
   installDir: string
   pluginRoots: string[]
+  agentWorkspaceDir: string
 }
 
 export function readMarketplaceSettings(): MarketplaceSettings {
   try {
     const parsed = JSON.parse(readFileSync(marketplaceSettingsPath(), 'utf8')) as Record<string, unknown>
-    if (parsed === null || typeof parsed !== 'object') return { installDir: '', pluginRoots: [] }
+    if (parsed === null || typeof parsed !== 'object') return { installDir: '', pluginRoots: [], agentWorkspaceDir: '' }
     const installDir = typeof parsed.installDir === 'string' ? parsed.installDir.trim() : ''
+    const agentWorkspaceDir = typeof parsed.agentWorkspaceDir === 'string' ? parsed.agentWorkspaceDir.trim() : ''
     const pluginRoots = Array.isArray(parsed.pluginRoots)
       ? (parsed.pluginRoots as unknown[]).filter((value): value is string => typeof value === 'string' && value.trim() !== '').map(value => resolve(value))
       : []
-    return { installDir, pluginRoots }
+    return { installDir, pluginRoots, agentWorkspaceDir }
   } catch {
-    return { installDir: '', pluginRoots: [] }
+    return { installDir: '', pluginRoots: [], agentWorkspaceDir: '' }
   }
 }
 
@@ -74,6 +79,47 @@ export function writeMarketplaceSettings(patch: Partial<MarketplaceSettings>): v
 
 export function defaultPluginRoot(profileDir: string): string {
   return join(resolve(profileDir), 'node_modules')
+}
+
+/** Default workspace used only by marketplace-created install/update Agents. */
+export function defaultAgentWorkspaceDir(): string {
+  return join(dirname(marketplaceSettingsPath()), 'agent-workspace')
+}
+
+/** Resolve and prepare the dedicated Agent workspace without touching user workspaces. */
+export function agentWorkspaceLocation(): { workspaceDir: string; workspaceDirCustom: boolean } {
+  const configured = readMarketplaceSettings().agentWorkspaceDir
+  const defaultDir = resolve(defaultAgentWorkspaceDir())
+  const workspaceDir = configured === '' ? defaultDir : resolve(configured)
+  const custom = workspaceDir.toLocaleLowerCase() !== defaultDir.toLocaleLowerCase()
+  if (custom) {
+    if (!existsSync(workspaceDir) || !statSync(workspaceDir).isDirectory()) {
+      throw new Error('Configured Agent workspace is not an existing directory: ' + workspaceDir)
+    }
+  } else {
+    mkdirSync(workspaceDir, { recursive: true })
+  }
+  accessSync(workspaceDir, constants.R_OK | constants.W_OK)
+  return { workspaceDir: realpathSync(workspaceDir), workspaceDirCustom: custom }
+}
+
+/** Persist an existing custom Agent workspace; empty restores the isolated default. */
+export function persistAgentWorkspace(requestedDir: string): { workspaceDir: string; workspaceDirCustom: boolean } {
+  const value = requestedDir.trim()
+  if (value !== '' && !isAbsolute(value)) throw new Error('Agent workspace must be an absolute path.')
+  if (value !== '') {
+    const requested = resolve(value)
+    if (!existsSync(requested) || !statSync(requested).isDirectory()) {
+      throw new Error('Agent workspace must be an existing directory: ' + requested)
+    }
+    accessSync(requested, constants.R_OK | constants.W_OK)
+  }
+  const defaultDir = resolve(defaultAgentWorkspaceDir())
+  const resolved = value === '' ? defaultDir : realpathSync(resolve(value))
+  writeMarketplaceSettings({
+    agentWorkspaceDir: resolved.toLocaleLowerCase() === defaultDir.toLocaleLowerCase() ? '' : resolved,
+  })
+  return agentWorkspaceLocation()
 }
 
 /** Resolve the running Profile and the directory that holds plugin entities. */

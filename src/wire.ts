@@ -89,6 +89,7 @@ const guidedAgentTaskValueSchema = z.object({
   version: z.string(),
   verifiedCommit: z.string(),
   profile: z.string(),
+  workspaceDir: z.string(),
   title: z.string(),
   prompt: z.string(),
   instructionsUrl: z.string(),
@@ -232,6 +233,13 @@ const installDirValueSchema = z.object({
   installDirCustom: z.boolean(),
 })
 
+const agentWorkspaceRequestSchema = z.object({ workspaceDir: z.string() })
+
+const agentWorkspaceValueSchema = z.object({
+  workspaceDir: z.string(),
+  workspaceDirCustom: z.boolean(),
+})
+
 const diagnoseConflictsValueSchema = z.object({
   conflicts: z.array(conflictSchema),
   scannedAt: z.number(),
@@ -302,6 +310,8 @@ export const TYPERT = {
     invocation('installed', [], result(resultSchema(installedValueSchema), `${REQUEST_TYPES}MarketplaceInstalledOutcome`)),
     invocation('installLocation', [], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallLocationOutcome`)),
     invocation('setInstallDir', [param('request', installDirRequestSchema, `${REQUEST_TYPES}MarketplaceInstallDirRequest`)], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallDirOutcome`)),
+    invocation('agentWorkspace', [], result(resultSchema(agentWorkspaceValueSchema), `${REQUEST_TYPES}MarketplaceAgentWorkspaceOutcome`)),
+    invocation('setAgentWorkspaceDir', [param('request', agentWorkspaceRequestSchema, `${REQUEST_TYPES}MarketplaceAgentWorkspaceRequest`)], result(resultSchema(agentWorkspaceValueSchema), `${REQUEST_TYPES}MarketplaceAgentWorkspaceOutcome`)),
     invocation('diagnoseConflicts', [], result(resultSchema(diagnoseConflictsValueSchema), `${REQUEST_TYPES}MarketplaceDiagnoseConflictsOutcome`)),
     invocation('restart', [], result(resultSchema(restartValueSchema), `${REQUEST_TYPES}MarketplaceRestartOutcome`)),
   ],

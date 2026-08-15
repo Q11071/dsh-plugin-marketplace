@@ -50,7 +50,7 @@ console.log('typert host implementations callable: ' + String(result.invocations
 const expected = new Set([
   'search', 'details', 'guidedTask', 'installPlugin', 'manualInstall', 'update', 'uninstall',
   'setEnabled', 'jobStatus', 'installed', 'installLocation', 'setInstallDir',
-  'diagnoseConflicts', 'restart',
+  'agentWorkspace', 'setAgentWorkspaceDir', 'diagnoseConflicts', 'restart',
 ])
 const actual = new Set(result.invocations.map((invocation) => (invocation as { method: string }).method))
 const missing = [...expected].filter(method => !actual.has(method))

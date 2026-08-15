@@ -10,6 +10,23 @@ Registry refresh commits are grouped instead of listed individually.
 
 No unreleased changes yet.
 
+## [0.9.1] - 2026-08-15
+
+### Added and changed
+
+- Agent installs and updates no longer inherit the current or recent project workspace. The
+  marketplace automatically creates and binds `$DSH_HOME/marketplace/agent-workspace`.
+- Added an Agent workspace setting under Management & diagnostics for selecting an existing
+  directory or restoring the isolated default.
+- Updated `install-dsh-plugin` so every operation uses a unique child of the dedicated workspace,
+  never scans or writes another DSH workspace, and restricts outside writes to the target Profile
+  and explicitly approved plugin-owned configuration.
+
+### Tests
+
+- Added coverage for default directory creation, custom-directory persistence, invalid-path
+  rejection, reset without changing plugin storage, and Agent task/session workspace binding.
+
 ## [0.9.0] - 2026-08-15
 
 ### Added
@@ -299,7 +316,8 @@ No unreleased changes yet.
   Registry failures.
 - Added the Registry Schema, scanner tests, build scripts, and validation against real DSH loaders.
 
-[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...v0.7.3

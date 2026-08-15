@@ -11,6 +11,7 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
+  MarketplaceAgentWorkspace,
   MarketplaceConflict,
   MarketplaceDiagnoseConflictsResult,
   MarketplaceInstalled,
@@ -46,6 +47,9 @@ export interface MarketplaceTabInjected {
   installLocation: () => Promise<MarketplaceInstallLocation>
   setInstallDir: (installDir: string) => Promise<MarketplaceInstallLocation>
   chooseInstallDir: () => Promise<string | null>
+  agentWorkspace: () => Promise<MarketplaceAgentWorkspace>
+  setAgentWorkspaceDir: (workspaceDir: string) => Promise<MarketplaceAgentWorkspace>
+  chooseAgentWorkspaceDir: () => Promise<string | null>
   diagnoseConflicts: () => Promise<MarketplaceDiagnoseConflictsResult>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
   installed: () => Promise<MarketplaceInstalled>
@@ -191,6 +195,7 @@ const s = {
   field: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: 10 } as React.CSSProperties,
   fieldLabel: { color: 'var(--dsw-alias-label-secondary)', fontSize: 13, lineHeight: '20px' } as React.CSSProperties,
   fieldMeta: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 12, lineHeight: '18px', margin: 0 } as React.CSSProperties,
+  fieldActions: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' } as React.CSSProperties,
   manualCommandRow: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'end', gap: 10 } as React.CSSProperties,
   conflictList: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
   conflictItem: { border: '1px solid var(--dsw-alias-state-error-primary)', background: 'color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent)', borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 } as React.CSSProperties,
@@ -276,7 +281,7 @@ function friendlyPackageName(packageName: string): string {
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, guidedAgent, install, manualInstall, update, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, guidedAgent, install, manualInstall, update, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, agentWorkspace, setAgentWorkspaceDir, chooseAgentWorkspaceDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
@@ -307,6 +312,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const [installDirCustom, setInstallDirCustom] = useState(false)
   const [conflicts, setConflicts] = useState<MarketplaceConflict[]>([])
   const [installDirBusy, setInstallDirBusy] = useState(false)
+  const [agentWorkspaceDir, setAgentWorkspaceDirState] = useState('')
+  const [agentWorkspaceCustom, setAgentWorkspaceCustom] = useState(false)
+  const [agentWorkspaceBusy, setAgentWorkspaceBusy] = useState(false)
   const [diagnosisBusy, setDiagnosisBusy] = useState(false)
   const [diagnosedAt, setDiagnosedAt] = useState<number | null>(null)
   const [toggleBusy, setToggleBusy] = useState<string | null>(null)
@@ -384,6 +392,18 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     })
     return () => { current = false }
   }, [installLocation, notify])
+
+  useEffect(() => {
+    let current = true
+    void agentWorkspace().then((result) => {
+      if (!current) return
+      setAgentWorkspaceDirState(result.workspaceDir)
+      setAgentWorkspaceCustom(result.workspaceDirCustom)
+    }, (error: unknown) => {
+      if (current) notify(error instanceof Error ? error.message : String(error))
+    })
+    return () => { current = false }
+  }, [agentWorkspace, notify])
 
   const loadDetails = useCallback((repo: string, verifiedCommit: string): Promise<MarketplacePluginDetails> => {
     const cached = detailsMap.get(repo)
@@ -619,6 +639,40 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     applyInstallDir('', 'installDirReset')
   }
 
+  const applyAgentWorkspace = (value: string, noticeKey: PluginMarketplaceLocaleKey): void => {
+    setAgentWorkspaceBusy(true)
+    void setAgentWorkspaceDir(value).then((result) => {
+      setAgentWorkspaceDirState(result.workspaceDir)
+      setAgentWorkspaceCustom(result.workspaceDirCustom)
+      notify(t(noticeKey), 'info')
+    }).catch((error: unknown) => {
+      notify(error instanceof Error ? error.message : String(error))
+    }).finally(() => { setAgentWorkspaceBusy(false) })
+  }
+
+  const chooseAgentWorkspace = (): void => {
+    setAgentWorkspaceBusy(true)
+    void chooseAgentWorkspaceDir().then((value) => {
+      if (value === null || value.trim() === '') {
+        setAgentWorkspaceBusy(false)
+        return
+      }
+      if (value === agentWorkspaceDir) {
+        notify(t('agentWorkspaceUnchanged'), 'info')
+        setAgentWorkspaceBusy(false)
+        return
+      }
+      applyAgentWorkspace(value, 'agentWorkspaceSaved')
+    }).catch((error: unknown) => {
+      notify(error instanceof Error ? error.message : String(error))
+      setAgentWorkspaceBusy(false)
+    })
+  }
+
+  const resetAgentWorkspace = (): void => {
+    applyAgentWorkspace('', 'agentWorkspaceReset')
+  }
+
   const runDiagnosis = (): void => {
     setDiagnosisBusy(true)
     void diagnoseConflicts().then((result) => {
@@ -817,6 +871,14 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
             onChoose={chooseInstallLocation}
             onReset={resetInstallLocation}
             busy={installDirBusy}
+            t={t}
+          />
+          <AgentWorkspaceField
+            workspaceDir={agentWorkspaceDir}
+            workspaceDirCustom={agentWorkspaceCustom}
+            onChoose={chooseAgentWorkspace}
+            onReset={resetAgentWorkspace}
+            busy={agentWorkspaceBusy}
             t={t}
           />
           <ConflictPanel
@@ -1129,7 +1191,7 @@ function InstallDirField({ installDir, installDirCustom, onChoose, onReset, busy
         ? <p style={s.fieldMeta}>{fmt(t, 'installDirCustomHint', { dir: displayDir })}</p>
         : <p style={s.fieldMeta}>{fmt(t, 'installDirDefaultHint', { dir: displayDir })}</p>}
       <input style={s.directoryPath} value={displayDir} readOnly title={displayDir} aria-label={t('installDirPathLabel')} />
-      <div style={s.installedActions}>
+      <div style={s.fieldActions}>
         <Button variant='primary' size='sm' disabled={busy} onClick={onChoose}>
           {busy ? t('installDirChoosing') : t('installDirChoose')}
         </Button>
@@ -1138,6 +1200,33 @@ function InstallDirField({ installDir, installDirCustom, onChoose, onReset, busy
         ) : null}
       </div>
       <p style={s.fieldMeta}>{t('installDirResetHint')}</p>
+    </div>
+  )
+}
+
+function AgentWorkspaceField({ workspaceDir, workspaceDirCustom, onChoose, onReset, busy, t }: {
+  workspaceDir: string
+  workspaceDirCustom: boolean
+  onChoose: () => void
+  onReset: () => void
+  busy: boolean
+  t: MarketplaceTabProps['t']
+}): ReactNode {
+  const displayDir = workspaceDir || t('agentWorkspaceUnavailable')
+  return (
+    <div style={s.panel}>
+      <strong style={s.fieldLabel}>{t('agentWorkspaceTitle')}</strong>
+      <p style={s.fieldMeta}>{workspaceDirCustom ? t('agentWorkspaceCustomHint') : t('agentWorkspaceDefaultHint')}</p>
+      <input style={s.directoryPath} value={displayDir} readOnly title={displayDir} aria-label={t('agentWorkspacePathLabel')} />
+      <div style={s.fieldActions}>
+        <Button variant='primary' size='sm' disabled={busy} onClick={onChoose}>
+          {busy ? t('agentWorkspaceChoosing') : t('agentWorkspaceChoose')}
+        </Button>
+        {workspaceDirCustom ? (
+          <Button variant='outline' size='sm' disabled={busy} onClick={onReset}>{t('agentWorkspaceResetAction')}</Button>
+        ) : null}
+      </div>
+      <p style={s.fieldMeta}>{t('agentWorkspaceIsolationHint')}</p>
     </div>
   )
 }

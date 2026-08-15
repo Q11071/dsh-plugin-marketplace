@@ -21,6 +21,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type { ProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import type {
+  MarketplaceAgentWorkspace,
   MarketplaceConflict,
   MarketplaceDetailsRequest,
   MarketplaceDiagnoseConflictsResult,
@@ -78,6 +79,7 @@ import {
   writeProfileDependency,
 } from './profile.ts'
 import {
+  agentWorkspaceLocation,
   createProfilePackageLink,
   installLocation,
   linkProfilePeerDependencies,
@@ -85,6 +87,7 @@ import {
   managedInstalledPluginTarget,
   marketplaceSettingsPath,
   persistInstallLocation,
+  persistAgentWorkspace,
   pluginTarget,
   profilePackagePath,
   removePackagePath,
@@ -209,7 +212,8 @@ export class MarketplaceService extends TypertRemoteService {
       )) {
         return fail('audit-stale', 'The guided-install audit does not match the current Registry entry. Wait for the next scan before starting an Agent.')
       }
-      return ok(buildGuidedAgentTask(registered, profile.name, request.operation, evidence))
+      const workspace = agentWorkspaceLocation()
+      return ok(buildGuidedAgentTask(registered, profile.name, request.operation, workspace.workspaceDir, evidence))
     } catch (error) {
       return toFailure(error)
     }
@@ -450,6 +454,26 @@ export class MarketplaceService extends TypertRemoteService {
       const value = typeof request.installDir === 'string' ? request.installDir.trim() : ''
       const profile = profileLocation(this.ctx)
       return ok(persistInstallLocation(profile.dir, value))
+    } catch (error) {
+      return toFailure(error)
+    }
+  }
+
+  @Remote('agentWorkspace')
+  async agentWorkspace(): Promise<MarketplaceResult<MarketplaceAgentWorkspace>> {
+    try {
+      return ok(agentWorkspaceLocation())
+    } catch (error) {
+      return toFailure(error)
+    }
+  }
+
+  @Remote('setAgentWorkspaceDir')
+  async setAgentWorkspaceDir(request: { workspaceDir: string }): Promise<MarketplaceResult<MarketplaceAgentWorkspace>> {
+    try {
+      if (this.restartPending) return fail('restart-pending', 'DSH is already preparing to restart.')
+      const value = typeof request.workspaceDir === 'string' ? request.workspaceDir.trim() : ''
+      return ok(persistAgentWorkspace(value))
     } catch (error) {
       return toFailure(error)
     }

@@ -25,6 +25,7 @@
 | ⚡ 一键安装 | 仅对全部自动安装条件均通过的插件开放 |
 | 🤖 Agent 安装 | 为需要构建、生命周期脚本或人工判断的插件创建受约束的安装 Agent |
 | 🧭 安装 Skill | Agent 强制加载内置安全工作流，自动选择精确来源、隔离构建或停止路径 |
+| 🧱 Agent 工作区 | 默认使用市场专属工作区，也可选择已有目录，避免污染项目工作区 |
 | ⌨️ 手动命令安装 | 安全解析官方 DSH GitHub 安装命令，验证后加入当前 Profile |
 | 🧰 安装管理 | 在当前 Profile 中更新、卸载、启用或停用插件，并可安全重启 DSH |
 | 📈 插件发现 | 支持分类、搜索、Star 排序和最近 7 天增长趋势 |
@@ -35,7 +36,7 @@
 ### 1. 安装
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.9.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.9.1
 ```
 
 本地开发安装：
@@ -92,6 +93,7 @@ Agent 任务会固定以下上下文：
 
 - Registry 验证过的仓库、包名、版本和唯一 commit；
 - 当前 Profile、bundle patch 和扫描器给出的分类原因；
+- 插件市场专用 Agent 工作区的绝对路径；
 - README、Issue、脚本和依赖均属于不可信输入的安全边界；
 - 安装后复查 Profile 依赖、bundle 层和启用状态的验收要求。
 
@@ -112,7 +114,8 @@ Agent 会先只读检查精确 commit。执行安装、构建、`prepare`、`pos
 5. Web 入口或实际调用方式。
 
 > [!NOTE]
-> 启动 Agent 前至少需要一个工作区。Agent 创建后，关闭设置面板即可查看进度并处理审批。
+> Agent 默认绑定 `$DSH_HOME/marketplace/agent-workspace`，不会继承当前或最近的项目工作区。
+> 可在 **管理与诊断 → Agent 安装与更新工作区** 选择已有目录；Agent 创建后，关闭设置面板即可查看进度并处理审批。
 
 ## 已安装插件管理
 
@@ -126,7 +129,7 @@ Agent 会先只读检查精确 commit。执行安装、构建、`prepare`、`pos
 
 npm 包内附带构建后的 `lib/` 和发布时的 Registry 快照。因此远程 Registry 暂时不可用时，市场仍可使用包内快照。
 
-## 安装位置与冲突诊断
+## 安装位置、Agent 工作区与冲突诊断
 
 默认情况下，插件实体由 pnpm 直接安装在当前 Profile 的 `node_modules` 中，所有 pnpm 任务都复用该 Profile 已绑定的 store，避免出现 `ERR_PNPM_UNEXPECTED_STORE`。
 
@@ -136,6 +139,10 @@ npm 包内附带构建后的 `lib/` 和发布时的 Registry 快照。因此远�
 - 外置插件缺失的 Host peer 依赖（例如 `cordis` → `@deepseek-ai/cordis`）会自动链接；
 - 切换目录只影响之后新安装的插件，已有插件保留在原位置并仍可更新或卸载；
 - 目录中存在但未关联 Profile 的插件会单独标记，不提供 Profile 操作。
+
+Agent 工作区面板独立控制引导安装和更新会话。默认目录会自动创建；选择自定义目录时，该目录
+必须已经存在且可读写。市场在首次使用时把它注册为 DSH Workspace，并只让之后新建的安装
+Agent 使用这个 Workspace；现有 Agent 会话和其他项目 Workspace 不会被迁移或修改。
 
 冲突面板对已启用插件做启发式静态诊断：重复的 Bundle ID，以及常见的 Cordis 服务注册形式（`ctx.provide(...)`、`super(ctx, ...)`、`ctx['x'] = ...`、`ctx.x = ...`）。诊断结果是启动崩溃的前置防线，不执行 JavaScript，也可能出现误报（例如入口 bundle 内联了其他插件的代码）；安装、更新或启用前只阻止**新引入**的冲突。
 

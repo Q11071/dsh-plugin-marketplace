@@ -12,6 +12,7 @@ import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type { MarketplaceResult } from '../types.ts'
 import { TYPERT_REMOTE } from '../remote.ts'
 import { MarketplaceTab, type MarketplaceTabInjected } from './MarketplaceTab.tsx'
+import { createGuidedAgentWorkspace } from './agent-workspace.ts'
 import { en, zh, type PluginMarketplaceLocaleKey } from './locales.ts'
 
 export type { MarketplaceTabInjected, MarketplaceTabProps } from './MarketplaceTab.tsx'
@@ -56,16 +57,12 @@ export async function apply(ctx: ClientContext): Promise<void> {
       details: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.details({ repo, ref })),
       guidedAgent: async (repo, ref, operation) => {
         const task = unwrapMarketplace(await scope.remote.marketplace.guidedTask({ repo, ref, operation }))
-        const workspaces = scope.workspaces.list.getSnapshot()
-        const sessions = scope.sessions.list.getSnapshot()
-        const currentSessionId = sessions.current
-        const currentWorkspace = currentSessionId === undefined
-          ? undefined
-          : workspaces.items.find(workspace => workspace.sessionIds.includes(currentSessionId))
-        const target = currentWorkspace
-          ?? workspaces.items.find(workspace => workspace.workspaceId === workspaces.recentWorkspaceId)
-          ?? workspaces.items[0]
-        if (target === undefined) throw new Error(t('agentWorkspaceRequired'))
+        let target: Awaited<ReturnType<typeof scope.workspaces.create>>
+        try {
+          target = await createGuidedAgentWorkspace(scope.workspaces, task.workspaceDir)
+        } catch (error) {
+          throw new Error(t('agentWorkspaceRequired') + ': ' + (error instanceof Error ? error.message : String(error)))
+        }
 
         const roster = await api.agentPresets.list({})
         if (!roster.result.ok) throw new Error(roster.result.error.message)
@@ -90,11 +87,20 @@ export async function apply(ctx: ClientContext): Promise<void> {
       setEnabled: async (packageName, enabled) => unwrapMarketplace(await scope.remote.marketplace.setEnabled({ packageName, enabled })),
       installLocation: async () => unwrapMarketplace(await scope.remote.marketplace.installLocation()),
       setInstallDir: async (installDir) => unwrapMarketplace(await scope.remote.marketplace.setInstallDir({ installDir })),
+      agentWorkspace: async () => unwrapMarketplace(await scope.remote.marketplace.agentWorkspace()),
+      setAgentWorkspaceDir: async (workspaceDir) => unwrapMarketplace(await scope.remote.marketplace.setAgentWorkspaceDir({ workspaceDir })),
       chooseInstallDir: async () => {
         try {
           return await scope.workspaces.pickDirectory()
         } catch (error) {
           throw new Error(t('installDirPickerFailed') + ': ' + (error instanceof Error ? error.message : String(error)))
+        }
+      },
+      chooseAgentWorkspaceDir: async () => {
+        try {
+          return await scope.workspaces.pickDirectory()
+        } catch (error) {
+          throw new Error(t('agentWorkspacePickerFailed') + ': ' + (error instanceof Error ? error.message : String(error)))
         }
       },
       diagnoseConflicts: async () => unwrapMarketplace(await scope.remote.marketplace.diagnoseConflicts()),

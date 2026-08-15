@@ -25,6 +25,7 @@
 | ⚡ One-click install | Available only when every automatic-install requirement passes |
 | 🤖 Agent-assisted install | Creates a constrained installation Agent when builds, lifecycle scripts, or human judgment are required |
 | 🧭 Installation Skill | Makes the Agent load a bundled safe workflow that chooses an exact source, isolated build, or hard stop |
+| 🧱 Agent workspace | Uses a marketplace-only workspace by default, with an existing-directory override to protect project workspaces |
 | ⌨️ Manual command install | Safely parses an official DSH GitHub install command and attaches the verified plugin to the active Profile |
 | 🧰 Installed plugin management | Update, uninstall, enable, disable, and safely restart DSH for the active Profile |
 | 📈 Discovery | Search by category, sort by Stars, and view seven-day Star growth |
@@ -35,7 +36,7 @@
 ### 1. Install
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.9.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.9.1
 ```
 
 For local development:
@@ -93,6 +94,7 @@ Every Agent task is pinned to:
 
 - the Registry-verified repository, package name, version, and unique commit;
 - the active Profile, bundle patch, and the scanner's classification reason;
+- the absolute path of the dedicated plugin-marketplace Agent workspace;
 - a security boundary that treats README files, issues, scripts, and dependencies as untrusted input;
 - acceptance checks for Profile dependencies, bundle layers, and enabled state.
 
@@ -114,7 +116,8 @@ After a successful install, the Agent's final response must include **How to sta
 5. the Web entry point or actual invocation method.
 
 > [!NOTE]
-> At least one workspace must exist before an Agent can be started. After it is created, close Settings to follow its progress and respond to approval requests.
+> Agents default to `$DSH_HOME/marketplace/agent-workspace` and never inherit the current or recent project workspace.
+> Select an existing directory under **Management & diagnostics → Agent install and update workspace** to override it. After the Agent is created, close Settings to follow its progress and respond to approval requests.
 
 ## Installed plugin management
 
@@ -128,7 +131,7 @@ After a successful install, the Agent's final response must include **How to sta
 
 The package includes the built `lib/` files and a Registry snapshot from the release. If the remote Registry is temporarily unavailable, the marketplace can continue using the bundled snapshot.
 
-## Install location and conflict diagnostics
+## Install location, Agent workspace, and conflict diagnostics
 
 By default, plugin entities are installed by pnpm directly into the current Profile's `node_modules`, and every pnpm job reuses the store the Profile is bound to, avoiding `ERR_PNPM_UNEXPECTED_STORE`.
 
@@ -138,6 +141,11 @@ The install-location panel can switch subsequent installs to a custom directory 
 - missing Host peer dependencies (e.g. `cordis` → `@deepseek-ai/cordis`) are linked automatically;
 - switching directories only affects future installs; existing plugins stay in place and remain updateable and removable;
 - directories that contain a plugin not linked to the Profile are marked separately and get no Profile operations.
+
+The Agent-workspace panel separately controls guided install and update sessions. The default
+directory is created automatically; a custom directory must already exist and be readable and
+writable. On first use, the marketplace registers it as a DSH Workspace and binds only future
+installer Agents to it. Existing Agent sessions and other project Workspaces are not moved or changed.
 
 The conflict panel runs heuristic static diagnostics over enabled bundles: duplicate bundle ids and common Cordis service registration forms (`ctx.provide(...)`, `super(ctx, ...)`, `ctx['x'] = ...`, `ctx.x = ...`). Results are a pre-flight guard against startup crashes — JavaScript is not executed and false positives are possible (for example when an entry bundle inlines another plugin's code); install, update, and enable operations only block conflicts that are **newly introduced**.
 

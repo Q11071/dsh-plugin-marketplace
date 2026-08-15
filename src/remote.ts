@@ -8,6 +8,8 @@
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type {
+  MarketplaceAgentWorkspace,
+  MarketplaceAgentWorkspaceRequest,
   MarketplaceDetailsRequest,
   MarketplaceDiagnoseConflictsResult,
   MarketplaceGuidedAgentRequest,
@@ -47,6 +49,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     installed: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
     installLocation: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     setInstallDir: (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
+    agentWorkspace: () => Promise<RemoteResult<MarketplaceResult<MarketplaceAgentWorkspace>>>
+    setAgentWorkspaceDir: (request: MarketplaceAgentWorkspaceRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceAgentWorkspace>>>
     diagnoseConflicts: () => Promise<RemoteResult<MarketplaceResult<MarketplaceDiagnoseConflictsResult>>>
     restart: () => Promise<RemoteResult<MarketplaceResult<MarketplaceRestartResult>>>
   }
@@ -63,6 +67,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/installed': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
     'marketplace/installLocation': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     'marketplace/setInstallDir': (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
+    'marketplace/agentWorkspace': () => Promise<RemoteResult<MarketplaceResult<MarketplaceAgentWorkspace>>>
+    'marketplace/setAgentWorkspaceDir': (request: MarketplaceAgentWorkspaceRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceAgentWorkspace>>>
     'marketplace/diagnoseConflicts': () => Promise<RemoteResult<MarketplaceResult<MarketplaceDiagnoseConflictsResult>>>
     'marketplace/restart': () => Promise<RemoteResult<MarketplaceResult<MarketplaceRestartResult>>>
   }

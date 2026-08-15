@@ -9,6 +9,21 @@
 
 暂无。
 
+## [0.9.1] - 2026-08-15
+
+### 新增与改进
+
+- Agent 安装和更新不再继承当前或最近的项目工作区；市场会自动创建并绑定
+  `$DSH_HOME/marketplace/agent-workspace` 专用工作区。
+- “管理与诊断”新增 Agent 工作区设置，可选择已有目录或恢复隔离默认值。
+- `install-dsh-plugin` Skill 要求每次操作使用专用工作区中的唯一子目录，并禁止扫描或写入
+  其他 DSH 工作区；工作区外写入仅限目标 Profile 和用户明确批准的插件配置。
+
+### 测试
+
+- 增加默认目录自动创建、自定义目录持久化、无效路径拒绝、恢复默认且不影响插件安装位置，
+  以及 Agent 任务与会话工作区绑定测试。
+
 ## [0.9.0] - 2026-08-15
 
 ### 新增
@@ -259,7 +274,8 @@
 - npm 包内置构建产物和 Registry 快照；远程 Registry 不可用时仍可使用。
 - 提供 Registry Schema、扫描测试、构建及真实 DSH loader 验证脚本。
 
-[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.9.0...HEAD
+[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...v0.7.3

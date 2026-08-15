@@ -221,6 +221,17 @@ export interface MarketplaceInstallDirRequest {
   installDir: string
 }
 
+/** Dedicated filesystem Workspace used by marketplace-created Agents. */
+export interface MarketplaceAgentWorkspace {
+  workspaceDir: string
+  workspaceDirCustom: boolean
+}
+
+/** setAgentWorkspaceDir() request: empty restores the isolated default. */
+export interface MarketplaceAgentWorkspaceRequest {
+  workspaceDir: string
+}
+
 /** Manual conflict diagnosis outcome. */
 export interface MarketplaceDiagnoseConflictsResult {
   conflicts: MarketplaceConflict[]
@@ -254,6 +265,7 @@ export type MarketplaceToggleOutcome = MarketplaceResult<MarketplaceToggleResult
 export type MarketplaceRestartOutcome = MarketplaceResult<MarketplaceRestartResult>
 export type MarketplaceInstallLocationOutcome = MarketplaceResult<MarketplaceInstallLocation>
 export type MarketplaceInstallDirOutcome = MarketplaceResult<MarketplaceInstallLocation>
+export type MarketplaceAgentWorkspaceOutcome = MarketplaceResult<MarketplaceAgentWorkspace>
 export type MarketplaceDiagnoseConflictsOutcome = MarketplaceResult<MarketplaceDiagnoseConflictsResult>
 
 export interface MarketplaceToggleResult {
@@ -277,6 +289,8 @@ export interface MarketplaceGuidedAgentTask {
   version: string
   verifiedCommit: string
   profile: string
+  /** Dedicated Workspace that must own the Agent session and all temporary artifacts. */
+  workspaceDir: string
   title: string
   prompt: string
   instructionsUrl: string

@@ -84,7 +84,9 @@ if (pkg.exports?.['./client'] === undefined) throw new Error('./client export mi
 if (pkg.exports?.['./typert'] === undefined) throw new Error('./typert export missing')
 if (!pkg.files?.includes('skills/**')) throw new Error('packaged Skill files missing from package manifest')
 const installSkill = readFileSync(path.join(root, 'skills', 'install-dsh-plugin', 'SKILL.md'), 'utf8')
-if (!installSkill.startsWith('---\nname: install-dsh-plugin\n') || installSkill.includes('[TODO')) {
+if (!installSkill.startsWith('---\nname: install-dsh-plugin\n')
+  || installSkill.includes('[TODO')
+  || !installSkill.includes('marketplace Agent Workspace')) {
   throw new Error('install-dsh-plugin Skill contract invalid')
 }
 console.log('package manifest contract valid')

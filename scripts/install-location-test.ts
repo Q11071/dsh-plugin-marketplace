@@ -10,12 +10,14 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import type { ProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import {
+  agentWorkspaceLocation,
   createProfilePackageLink,
   installedPluginTarget,
   linkProfilePeerDependencies,
   localDependencySpec,
   managedInstalledPluginTarget,
   marketplaceSettingsPath,
+  persistAgentWorkspace,
   persistInstallLocation,
   pluginFolderName,
   pluginTarget,
@@ -99,6 +101,35 @@ try {
     const roots = readMarketplaceSettings().pluginRoots
     assert.ok(roots.includes(resolve(join(tmp, 'custom-a'))))
     assert.ok(roots.includes(resolve(join(tmp, 'custom-b'))))
+  })
+
+  ok('Agent workspace defaults to an isolated DSH_HOME directory', () => {
+    const location = agentWorkspaceLocation()
+    assert.equal(location.workspaceDirCustom, false)
+    assert.equal(location.workspaceDir, resolve(dshHome, 'marketplace', 'agent-workspace'))
+    assert.ok(existsSync(location.workspaceDir))
+  })
+
+  ok('Agent workspace accepts an existing custom directory', () => {
+    const custom = join(tmp, 'agent-workspace-custom')
+    mkdirSync(custom, { recursive: true })
+    const location = persistAgentWorkspace(custom)
+    assert.equal(location.workspaceDirCustom, true)
+    assert.equal(location.workspaceDir, resolve(custom))
+    assert.equal(readMarketplaceSettings().agentWorkspaceDir, resolve(custom))
+  })
+
+  ok('Agent workspace rejects relative and missing directories', () => {
+    assert.throws(() => persistAgentWorkspace('relative-agent-workspace'), /absolute path/)
+    assert.throws(() => persistAgentWorkspace(join(tmp, 'missing-agent-workspace')), /existing directory/)
+  })
+
+  ok('Agent workspace resets without losing plugin location settings', () => {
+    const installDir = readMarketplaceSettings().installDir
+    const location = persistAgentWorkspace('')
+    assert.equal(location.workspaceDirCustom, false)
+    assert.equal(location.workspaceDir, resolve(dshHome, 'marketplace', 'agent-workspace'))
+    assert.equal(readMarketplaceSettings().installDir, installDir)
   })
 
   const oldScopedTarget = join(tmp, 'custom-a', '@scope', 'plugin')

@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { buildGuidedAgentTask, guidedInstallRoute } from '../src/host/guided-agent.ts'
 import { INSTALL_SKILL_NAME, loadInstallSkill } from '../src/host/install-skill.ts'
 import { RegistryClient } from '../src/host/registry.ts'
+import { createGuidedAgentWorkspace } from '../src/client/agent-workspace.ts'
 
 const registryUrl = pathToFileURL(path.resolve('registry/plugins.json')).href
 const registry = new RegistryClient(registryUrl, registryUrl, 60_000, 10_000)
@@ -15,17 +16,31 @@ assert(evidence, 'every bundled guided plugin must have scanner evidence')
 assert.equal(evidence.verifiedCommit, plugin.verifiedCommit)
 assert.equal(evidence.packageName, plugin.packageName)
 
-const task = buildGuidedAgentTask(plugin, plugin.install.profiles[0] ?? 'web', 'install', evidence)
+const workspaceDir = path.resolve('.marketplace-agent-workspace-test')
+const task = buildGuidedAgentTask(plugin, plugin.install.profiles[0] ?? 'web', 'install', workspaceDir, evidence)
 assert.equal(task.verifiedCommit, plugin.verifiedCommit)
+assert.equal(task.workspaceDir, workspaceDir)
 assert.match(task.prompt, new RegExp(plugin.verifiedCommit))
 assert.match(task.prompt, /不可信数据/)
 assert.match(task.prompt, /原生审批/)
 assert.match(task.prompt, /保留所有既有插件原来的启用\/停用状态/)
 assert.match(task.prompt, /启动方法/)
 assert.match(task.prompt, new RegExp(`skill 工具加载 ${INSTALL_SKILL_NAME}`))
+assert.match(task.prompt, /不得切换、扫描或写入其他 DSH Workspace/)
+assert.ok(task.prompt.includes(JSON.stringify(workspaceDir)))
 assert.doesNotMatch(task.prompt, /改用 main、latest[^\n]*可以/)
 
-const update = buildGuidedAgentTask(plugin, plugin.install.profiles[0] ?? 'web', 'update', evidence)
+let createdWorkspacePath = ''
+const boundWorkspace = await createGuidedAgentWorkspace({
+  create: async ({ path: requestedPath }) => {
+    createdWorkspacePath = requestedPath
+    return { workspaceId: 'marketplace-agent-workspace' }
+  },
+}, task.workspaceDir)
+assert.equal(createdWorkspacePath, workspaceDir)
+assert.equal(boundWorkspace.workspaceId, 'marketplace-agent-workspace')
+
+const update = buildGuidedAgentTask(plugin, plugin.install.profiles[0] ?? 'web', 'update', workspaceDir, evidence)
 assert.match(update.title, /^更新插件 /)
 assert.match(update.prompt, /保留现有配置/)
 
@@ -34,6 +49,7 @@ assert.equal(skill.name, INSTALL_SKILL_NAME)
 assert.equal(skill.provider, 'marketplace')
 assert.match(skill.content, /exact 40-character commit/)
 assert.match(skill.content, /references\/decision-matrix\.md/)
+assert.match(skill.content, /never inspect or write another DSH Workspace/)
 
 const routeCases = [
   ['AKS1st/dsh-archived-conversations', /已提交运行产物/],
