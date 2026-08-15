@@ -149,6 +149,21 @@ export function linkedPnpmStore(dir: string): string | null {
 }
 
 /**
+ * Build the pnpm argument list for one job, forwarding the store the working
+ * directory is bound to (or the caller-supplied Profile-linked fallback).
+ * Exposed separately so the store-selection logic is unit-testable without
+ * spawning a process.
+ */
+export function pnpmArgsFor(
+  args: string[],
+  dir: string,
+  fallbackStoreDir: string | null,
+): { args: string[]; storeDir: string | null } {
+  const storeDir = linkedPnpmStore(dir) ?? fallbackStoreDir
+  return { args: storeDir === null ? args : [...args, '--config.store-dir=' + storeDir], storeDir }
+}
+
+/**
  * Run one pnpm invocation in the working directory, streaming stdout and
  * stderr into the job log. When the directory is bound to a pnpm store (or
  * the caller supplies a Profile-linked store as fallback), the same store is
@@ -164,8 +179,7 @@ export function runPnpmJob(
   fallbackStoreDir: string | null = null,
 ): Promise<number | null> {
   return new Promise((resolve) => {
-    const storeDir = linkedPnpmStore(dir) ?? fallbackStoreDir
-    const pnpmArgs = storeDir === null ? args : [...args, '--config.store-dir=' + storeDir]
+    const { args: pnpmArgs, storeDir } = pnpmArgsFor(args, dir, fallbackStoreDir)
     table.append(job, '$ pnpm ' + pnpmArgs.map((arg) => /\s/.test(arg) ? JSON.stringify(arg) : arg).join(' ') + '\n')
     if (storeDir !== null) table.append(job, 'Using profile-linked pnpm store: ' + storeDir + '\n')
     const child = spawn('pnpm', pnpmArgs, {
