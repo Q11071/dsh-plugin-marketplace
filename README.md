@@ -103,6 +103,19 @@ Agent 会先只读检查精确 commit。执行安装、构建、`prepare`、`pos
 
 npm 包内附带构建后的 `lib/` 和发布时的 Registry 快照。因此远程 Registry 暂时不可用时，市场仍可使用包内快照。
 
+## 安装位置与冲突诊断
+
+默认情况下，插件实体由 pnpm 直接安装在当前 Profile 的 `node_modules` 中，所有 pnpm 任务都复用该 Profile 已绑定的 store，避免出现 `ERR_PNPM_UNEXPECTED_STORE`。
+
+安装位置面板允许把后续安装切换到自定义目录（通过 DSH 的目录选择器）：
+
+- 自定义目录中的插件以 `file:` 依赖关联到 Profile，并把运行入口链接回 Profile 的 `node_modules`；
+- 外置插件缺失的 Host peer 依赖（例如 `cordis` → `@deepseek-ai/cordis`）会自动链接；
+- 切换目录只影响之后新安装的插件，已有插件保留在原位置并仍可更新或卸载；
+- 目录中存在但未关联 Profile 的插件会单独标记，不提供 Profile 操作。
+
+冲突面板对已启用插件做启发式静态诊断：重复的 Bundle ID，以及常见的 Cordis 服务注册形式（`ctx.provide(...)`、`super(ctx, ...)`、`ctx['x'] = ...`、`ctx.x = ...`）。诊断结果是启动崩溃的前置防线，不执行 JavaScript，也可能出现误报（例如入口 bundle 内联了其他插件的代码）；安装、更新或启用前只阻止**新引入**的冲突。
+
 ## Registry 如何工作
 
 ```mermaid

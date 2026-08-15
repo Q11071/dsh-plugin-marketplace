@@ -103,6 +103,19 @@ After a successful install, the Agent's final response must include **How to sta
 
 The package includes the built `lib/` files and a Registry snapshot from the release. If the remote Registry is temporarily unavailable, the marketplace can continue using the bundled snapshot.
 
+## Install location and conflict diagnostics
+
+By default, plugin entities are installed by pnpm directly into the current Profile's `node_modules`, and every pnpm job reuses the store the Profile is bound to, avoiding `ERR_PNPM_UNEXPECTED_STORE`.
+
+The install-location panel can switch subsequent installs to a custom directory through DSH's directory picker:
+
+- plugins in a custom directory are linked to the Profile with a `file:` dependency, and their runtime entry is linked back into the Profile's `node_modules`;
+- missing Host peer dependencies (e.g. `cordis` → `@deepseek-ai/cordis`) are linked automatically;
+- switching directories only affects future installs; existing plugins stay in place and remain updateable and removable;
+- directories that contain a plugin not linked to the Profile are marked separately and get no Profile operations.
+
+The conflict panel runs heuristic static diagnostics over enabled bundles: duplicate bundle ids and common Cordis service registration forms (`ctx.provide(...)`, `super(ctx, ...)`, `ctx['x'] = ...`, `ctx.x = ...`). Results are a pre-flight guard against startup crashes — JavaScript is not executed and false positives are possible (for example when an entry bundle inlines another plugin's code); install, update, and enable operations only block conflicts that are **newly introduced**.
+
 ## How the Registry works
 
 ```mermaid
