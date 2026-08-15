@@ -19,7 +19,7 @@ import {
   type ProfileManifest,
 } from '@deepseek-ai/dsh-app-boot'
 import type { MarketplaceInstalledEntry } from '../types.ts'
-import { reconcileBundleNames, toggleBundleName } from './bundle-state.ts'
+import { reconcileBundleName, toggleBundleName } from './bundle-state.ts'
 
 const NAME = 'dsh'
 
@@ -121,24 +121,49 @@ export function installedPackageSummary(packageName: string, dir: string): { des
 }
 
 /**
- * Reconcile dsh.profile.bundles against the installed state after pnpm
- * already wrote the real package names into the profile manifest. New
- * bundle-declaring dependencies join the layer stack; dependency-managed
- * entries whose package no longer declares a bundle leave it.
+ * Reconcile one package's bundle layer after a marketplace mutation. New
+ * bundles and dependencies that gain a bundle declaration join the stack;
+ * an installed bundle already omitted from the stack remains disabled.
  */
-export function reconcileBundles(before: ProfileManifest, dir: string): ProfileManifest {
+export function reconcileBundle(
+  before: ProfileManifest,
+  beforeDeclaresBundle: boolean,
+  packageName: string,
+  dir: string,
+): ProfileManifest {
   const after = readProfileManifest(NAME, dir)
-  const beforeDeps = Object.keys(before.dependencies ?? {})
-  const dependencies = Object.keys(after.dependencies ?? {})
-  // Existing dependencies absent from the layer list are deliberately
-  // disabled. Only newly added bundles join automatically.
   const current = after.dsh?.profile?.bundles ?? []
-  const plugins = reconcileBundleNames(beforeDeps, dependencies, current, packageName => exportsPatch(packageName, dir))
+  const plugins = reconcileBundleName(
+    current,
+    packageName,
+    before.dependencies?.[packageName] !== undefined,
+    beforeDeclaresBundle,
+    after.dependencies?.[packageName] !== undefined,
+    exportsPatch(packageName, dir),
+  )
   if (!sameNames(current, plugins)) {
     after.dsh = { ...after.dsh, profile: { ...after.dsh?.profile, bundles: plugins } }
     writeProfileManifest(dir, after)
   }
   return after
+}
+
+/** Return a manifest with only one dependency changed and every current bundle choice preserved. */
+export function mergeProfileDependency(
+  manifest: ProfileManifest,
+  packageName: string,
+  spec: string | undefined,
+): ProfileManifest {
+  const dependencies = { ...manifest.dependencies }
+  if (spec === undefined) delete dependencies[packageName]
+  else dependencies[packageName] = spec
+  return { ...manifest, dependencies }
+}
+
+/** Merge one dependency into the latest on-disk manifest instead of rewriting a stale snapshot. */
+export function writeProfileDependency(packageName: string, spec: string | undefined, dir: string): void {
+  const current = readProfileManifest(NAME, dir)
+  writeProfileManifest(dir, mergeProfileDependency(current, packageName, spec))
 }
 
 /** Persist whether one installed bundle participates in the Profile layer stack. */

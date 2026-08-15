@@ -19,6 +19,7 @@ assert.equal(task.verifiedCommit, plugin.verifiedCommit)
 assert.match(task.prompt, new RegExp(plugin.verifiedCommit))
 assert.match(task.prompt, /不可信数据/)
 assert.match(task.prompt, /原生审批/)
+assert.match(task.prompt, /保留所有既有插件原来的启用\/停用状态/)
 assert.match(task.prompt, /启动方法/)
 assert.doesNotMatch(task.prompt, /改用 main、latest[^\n]*可以/)
 

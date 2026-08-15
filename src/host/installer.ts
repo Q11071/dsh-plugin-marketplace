@@ -51,6 +51,9 @@ export class JobTable {
   private seq = 0
 
   create(kind: MarketplaceJobKind, packageName: string): JobRecord {
+    if (this.hasActive()) {
+      throw new Error('Another Profile plugin operation is already in progress.')
+    }
     this.seq += 1
     const record: JobRecord = {
       jobId: 'mkt-' + String(this.seq) + '-' + Date.now().toString(36),
@@ -75,13 +78,6 @@ export class JobTable {
 
   get(jobId: string): JobRecord | undefined {
     return this.jobs.get(jobId)
-  }
-
-  activeFor(packageName: string): boolean {
-    for (const job of this.jobs.values()) {
-      if (job.packageName === packageName && job.finishedAt === null) return true
-    }
-    return false
   }
 
   hasActive(): boolean {

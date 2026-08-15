@@ -8,6 +8,30 @@ Registry refresh commits are grouped instead of listed individually.
 
 ## [Unreleased]
 
+No unreleased changes yet.
+
+## [0.7.1] - 2026-08-15
+
+### Fixed
+
+- Fixed installed plugins intermittently reappearing in `dsh.profile.bundles` after an install,
+  update, or uninstall even though the user had disabled them.
+- Profile plugin mutations are now globally serialized, including install-source resolution, so
+  jobs for different packages cannot overwrite each other's dependencies or enabled state.
+- Custom-directory installs and failure rollbacks now merge only the target dependency into the
+  latest `package.json` instead of restoring a stale whole-file snapshot, preserving unrelated
+  configuration changes made while a job is running.
+- Bundle reconciliation is now target-scoped: newly installed bundles and dependencies that gain
+  a bundle declaration are enabled, existing disabled bundles stay disabled, and uninstall removes
+  only its own layer.
+- The guided-install Agent now records the bundle order before invoking DSH or pnpm and preserves
+  every existing plugin's enabled state, protecting users on DSH versions without the CLI fix.
+
+### Tests
+
+- Added regressions for disabled-state preservation, latest-manifest merging, cross-package job
+  exclusion, and the guided Agent safety rule.
+
 ### Documentation
 
 - Added complete Chinese and English changelogs covering `v0.1.0` through the current release,
@@ -202,7 +226,8 @@ Registry refresh commits are grouped instead of listed individually.
   Registry failures.
 - Added the Registry Schema, scanner tests, build scripts, and validation against real DSH loaders.
 
-[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.5.0...v0.6.0

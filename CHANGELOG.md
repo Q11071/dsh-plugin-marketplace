@@ -7,6 +7,27 @@
 
 ## [未发布]
 
+暂无。
+
+## [0.7.1] - 2026-08-15
+
+### 修复
+
+- 修复安装、更新或卸载插件后，原本已停用的插件偶尔被重新加入
+  `dsh.profile.bundles` 并自行启用的问题。
+- Profile 插件操作改为全局串行，安装源解析期间也会锁定写操作，避免不同插件任务并发
+  覆盖彼此的依赖和启停状态。
+- 自定义目录安装和失败回滚只合并目标依赖到最新的 `package.json`，不再写回任务开始时的
+  整份旧快照，从而保留任务期间发生的其他有效配置修改。
+- Bundle 对账改为只处理当前目标插件：新安装或由普通依赖升级为 Bundle 的插件会自动启用，
+  既有但已停用的 Bundle 保持停用，卸载时仅移除自身。
+- 引导安装 Agent 在调用 DSH 或 pnpm 前记录 Bundle 顺序，并在完成后恢复所有既有插件的
+  启停状态，以兼容尚未包含 CLI 修复的 DSH 版本。
+
+### 测试
+
+- 新增停用状态保持、最新 Manifest 合并、跨插件并发互斥及引导 Agent 安全规则回归测试。
+
 ### 文档
 
 - 建立从 `v0.1.0` 到当前版本的完整中英文更新日志，并在 README 中增加入口。
@@ -174,7 +195,8 @@
 - npm 包内置构建产物和 Registry 快照；远程 Registry 不可用时仍可使用。
 - 提供 Registry Schema、扫描测试、构建及真实 DSH loader 验证脚本。
 
-[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...HEAD
+[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.5.0...v0.6.0

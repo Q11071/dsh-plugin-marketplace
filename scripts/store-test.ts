@@ -7,7 +7,7 @@ import { strict as assert } from 'node:assert'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { linkedPnpmStore, pnpmArgsFor } from '../src/host/installer.ts'
+import { JobTable, linkedPnpmStore, pnpmArgsFor } from '../src/host/installer.ts'
 
 let passed = 0
 function ok(name: string, fn: () => void): void {
@@ -85,6 +85,16 @@ try {
   const linkedWins = pnpmArgsFor(['remove', 'x'], yamlDir, 'C:/fallback-store')
   ok('linked store wins over fallback', () => {
     assert.deepEqual(linkedWins.args, ['remove', 'x', '--config.store-dir=C:\\pnpm store\\v9'])
+  })
+
+  const jobs = new JobTable()
+  const first = jobs.create('install', 'first-plugin')
+  ok('Profile mutations are globally serialized across package names', () => {
+    assert.throws(() => jobs.create('update', 'second-plugin'), /another Profile plugin operation/i)
+  })
+  jobs.settle(first, { packageName: 'first-plugin', version: '1.0.0', requiresRestart: true })
+  ok('a new Profile mutation can start after the previous job settles', () => {
+    assert.equal(jobs.create('update', 'second-plugin').packageName, 'second-plugin')
   })
 } finally {
   rmSync(tmp, { recursive: true, force: true })

@@ -64,12 +64,14 @@ import {
 } from './registry.ts'
 import {
   ensureProfile,
+  exportsPatch,
   installedEntries,
   installedVersion,
   packageManifestPath,
   profileLocation,
-  reconcileBundles,
+  reconcileBundle,
   setBundleEnabled,
+  writeProfileDependency,
 } from './profile.ts'
 import {
   createProfilePackageLink,
@@ -210,22 +212,12 @@ export class MarketplaceService extends TypertRemoteService {
 
   @Remote('installPlugin')
   async installPlugin(request: MarketplaceInstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
-    return this.startJob('install', request.repo, request.ref ?? '', (packageName) => {
-      if (this.jobs.activeFor(packageName)) {
-        return fail('job-running', 'Another job is already running for ' + packageName + '.')
-      }
-      return undefined
-    })
+    return this.startJob('install', request.repo, request.ref ?? '')
   }
 
   @Remote('update')
   async update(request: MarketplaceInstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
-    return this.startJob('update', request.repo, request.ref ?? '', (packageName) => {
-      if (this.jobs.activeFor(packageName)) {
-        return fail('job-running', 'Another job is already running for ' + packageName + '.')
-      }
-      return undefined
-    })
+    return this.startJob('update', request.repo, request.ref ?? '')
   }
 
   @Remote('uninstall')
@@ -240,12 +232,13 @@ export class MarketplaceService extends TypertRemoteService {
       }
       const profile = installLocation(this.ctx, this.config)
       ensureProfile(profile.dir, profile.name)
-      if (this.jobs.activeFor(packageName)) {
-        return fail('job-running', 'Another job is already running for ' + packageName + '.')
+      if (this.profileMutationBusy()) {
+        return fail('job-running', 'Another Profile plugin operation is already in progress.')
       }
       const before = readProfileManifest(NAME, profile.dir)
+      const beforeDeclaresBundle = exportsPatch(packageName, profile.dir)
       const job = this.jobs.create('uninstall', packageName)
-      void this.driveUninstall(job, profile, before)
+      void this.driveUninstall(job, profile, before, beforeDeclaresBundle)
       return ok({ jobId: job.jobId })
     } catch (error) {
       return toFailure(error)
@@ -262,8 +255,8 @@ export class MarketplaceService extends TypertRemoteService {
       if (packageName === '' || !/^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
         return fail('bad-package', 'Malformed package name: ' + request.packageName)
       }
-      if (this.jobs.activeFor(packageName)) {
-        return fail('job-running', 'Another job is already running for ' + packageName + '.')
+      if (this.profileMutationBusy()) {
+        return fail('job-running', 'Another Profile plugin operation is already in progress.')
       }
       const profile = installLocation(this.ctx, this.config)
       ensureProfile(profile.dir, profile.name)
@@ -385,6 +378,9 @@ export class MarketplaceService extends TypertRemoteService {
       if (this.restartPending) {
         return fail('restart-pending', 'DSH is already preparing to restart.')
       }
+      if (this.profileMutationBusy()) {
+        return fail('job-running', 'Another Profile plugin operation is already in progress.')
+      }
       const value = typeof request.installDir === 'string' ? request.installDir.trim() : ''
       const profile = profileLocation(this.ctx)
       return ok(persistInstallLocation(profile.dir, value))
@@ -467,10 +463,12 @@ export class MarketplaceService extends TypertRemoteService {
     kind: 'install' | 'update',
     repo: string,
     ref: string,
-    gate: (packageName: string) => Err | undefined,
   ): Promise<MarketplaceResult<{ jobId: string }>> {
     if (this.restartPending) {
       return fail('restart-pending', 'DSH is already preparing to restart.')
+    }
+    if (this.profileMutationBusy()) {
+      return fail('job-running', 'Another Profile plugin operation is already in progress.')
     }
     this.pendingInstallResolution += 1
     try {
@@ -506,8 +504,6 @@ export class MarketplaceService extends TypertRemoteService {
         return fail('registry-mismatch', details.repo + ' no longer matches its verified Registry identity.')
       }
       const packageName = manifest.name
-      const gated = gate(packageName)
-      if (gated !== undefined) return gated
       const profile = installLocation(this.ctx, this.config)
       ensureProfile(profile.dir, profile.name)
       if (registered.install.mode !== 'automatic'
@@ -526,6 +522,7 @@ export class MarketplaceService extends TypertRemoteService {
       if (kind === 'update' && before.dependencies?.[packageName] === undefined) {
         return fail('not-installed', packageName + ' is not installed in profile ' + profile.name + '.')
       }
+      const beforeDeclaresBundle = exportsPatch(packageName, profile.dir)
       const existingCustomTarget = kind === 'update'
         ? managedInstalledPluginTarget(profile, packageName, before)
         : null
@@ -552,13 +549,25 @@ export class MarketplaceService extends TypertRemoteService {
       }
       const job = this.jobs.create(kind, packageName)
       const spec = executableSpec(registered)
-      void this.driveInstall(job, profile, spec, before, registered.install.requiresRestart, customTarget)
+      void this.driveInstall(
+        job,
+        profile,
+        spec,
+        before,
+        beforeDeclaresBundle,
+        registered.install.requiresRestart,
+        customTarget,
+      )
       return ok({ jobId: job.jobId })
     } catch (error) {
       return toFailure(error)
     } finally {
       this.pendingInstallResolution -= 1
     }
+  }
+
+  private profileMutationBusy(): boolean {
+    return this.pendingInstallResolution > 0 || this.jobs.hasActive()
   }
 
   /** Read main/package.json directly, then freeze the update to its resolved commit. */
@@ -579,22 +588,20 @@ export class MarketplaceService extends TypertRemoteService {
     profile: ProfileInstallLocation,
     spec: string,
     before: ProfileManifest,
+    beforeDeclaresBundle: boolean,
     requiresRestart = true,
     customTarget: string | null = null,
   ): Promise<void> {
     if (customTarget === null) {
-      await this.driveProfileInstall(job, profile, spec, before, requiresRestart)
+      await this.driveProfileInstall(job, profile, spec, before, beforeDeclaresBundle, requiresRestart)
       return
     }
     const stageDir = join(dirname(marketplaceSettingsPath()), 'staging', job.jobId)
     const target = customTarget
     const backup = target + '.marketplace-backup-' + job.jobId
-    const manifestPath = join(profile.dir, 'package.json')
-    const originalManifest = readFileSync(manifestPath, 'utf8')
     let targetWritten = false
     let backupCreated = false
     let manifestWritten = false
-    let lockfileWritten = false
     let profilePackageState: { linkPath: string; backupPath: string; backupCreated: boolean } | null = null
     try {
       this.jobs.phase(job, 'running')
@@ -629,17 +636,13 @@ export class MarketplaceService extends TypertRemoteService {
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Plugin dependency install failed: pnpm exited with code ' + String(code) + '.')
       const linkedPeers = linkProfilePeerDependencies(target, profile.dir)
       if (linkedPeers.length > 0) this.jobs.append(job, 'Linked DSH host dependencies: ' + linkedPeers.join(', ') + '\n')
-      const manifest = JSON.parse(originalManifest) as ProfileManifest
-      manifest.dependencies = manifest.dependencies ?? {}
-      manifest.dependencies[job.packageName] = localDependencySpec(profile.dir, target)
-      writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8')
+      writeProfileDependency(job.packageName, localDependencySpec(profile.dir, target), profile.dir)
       manifestWritten = true
       code = await runPnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile lockfile update failed: pnpm exited with code ' + String(code) + '.')
-      lockfileWritten = true
       profilePackageState = createProfilePackageLink(profile.dir, job.packageName, target, job.jobId)
       this.jobs.phase(job, 'reconciling')
-      reconcileBundles(before, profile.dir)
+      reconcileBundle(before, beforeDeclaresBundle, job.packageName, profile.dir)
       const version = installedVersion(job.packageName, profile.dir) ?? 'unknown'
       this.jobs.settle(job, { packageName: job.packageName, version, requiresRestart })
       if (backupCreated) rmSync(backup, { recursive: true, force: true })
@@ -651,14 +654,9 @@ export class MarketplaceService extends TypertRemoteService {
           renameSync(profilePackageState.backupPath, profilePackageState.linkPath)
         }
       }
-      if (manifestWritten) writeFileSync(manifestPath, originalManifest, 'utf8')
       if (targetWritten) rmSync(target, { recursive: true, force: true })
       if (backupCreated && existsSync(backup)) renameSync(backup, target)
-      if (lockfileWritten) {
-        this.jobs.append(job, 'Rolling back the profile lockfile.\n')
-        const rollbackCode = await runPnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
-        if (rollbackCode !== 0) this.jobs.append(job, 'Warning: automatic lockfile rollback did not complete.\n')
-      }
+      if (manifestWritten) await this.rollbackProfileDependency(job, profile, before, true)
       this.jobs.fail(job, {
         code: 'install-failed',
         message: error instanceof Error ? error.message : String(error),
@@ -674,13 +672,10 @@ export class MarketplaceService extends TypertRemoteService {
     profile: ProfileInstallLocation,
     spec: string,
     before: ProfileManifest,
+    beforeDeclaresBundle: boolean,
     requiresRestart = true,
   ): Promise<void> {
     const stageDir = join(dirname(marketplaceSettingsPath()), 'staging', job.jobId)
-    const manifestPath = join(profile.dir, 'package.json')
-    const lockfilePath = join(profile.dir, 'pnpm-lock.yaml')
-    const originalManifest = readFileSync(manifestPath, 'utf8')
-    const originalLockfile = existsSync(lockfilePath) ? readFileSync(lockfilePath, 'utf8') : null
     let profileAttempted = false
     try {
       this.jobs.phase(job, 'running')
@@ -696,17 +691,12 @@ export class MarketplaceService extends TypertRemoteService {
       code = await runPnpmJob(job, ['add', spec, '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile install failed: pnpm exited with code ' + String(code) + '.')
       this.jobs.phase(job, 'reconciling')
-      reconcileBundles(before, profile.dir)
+      reconcileBundle(before, beforeDeclaresBundle, job.packageName, profile.dir)
       const version = installedVersion(job.packageName, profile.dir) ?? 'unknown'
       this.jobs.settle(job, { packageName: job.packageName, version, requiresRestart })
     } catch (error) {
       if (profileAttempted) {
-        writeFileSync(manifestPath, originalManifest, 'utf8')
-        if (originalLockfile === null) rmSync(lockfilePath, { force: true })
-        else writeFileSync(lockfilePath, originalLockfile, 'utf8')
-        this.jobs.append(job, 'Rolling back the Profile dependency state.\n')
-        const rollbackCode = await runPnpmJob(job, ['install', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
-        if (rollbackCode !== 0) this.jobs.append(job, 'Warning: automatic Profile rollback did not complete.\n')
+        await this.rollbackProfileDependency(job, profile, before, false)
       }
       this.jobs.fail(job, {
         code: 'install-failed',
@@ -722,27 +712,23 @@ export class MarketplaceService extends TypertRemoteService {
     job: JobRecord,
     profile: ProfileInstallLocation,
     before: ProfileManifest,
+    beforeDeclaresBundle: boolean,
     requiresRestart = true,
   ): Promise<void> {
     const target = managedInstalledPluginTarget(profile, job.packageName, before)
     if (target === null) {
-      await this.driveProfileUninstall(job, profile, before, requiresRestart)
+      await this.driveProfileUninstall(job, profile, before, beforeDeclaresBundle, requiresRestart)
       return
     }
-    const manifestPath = join(profile.dir, 'package.json')
-    const originalManifest = readFileSync(manifestPath, 'utf8')
     let manifestWritten = false
     try {
       this.jobs.phase(job, 'running')
-      const next = JSON.parse(originalManifest) as ProfileManifest
-      if (next.dependencies !== undefined) delete next.dependencies[job.packageName]
-      const bundles = next.dsh?.profile?.bundles ?? []
-      next.dsh = { ...next.dsh, profile: { ...next.dsh?.profile, bundles: bundles.filter(name => name !== job.packageName) } }
-      writeFileSync(manifestPath, JSON.stringify(next, null, 2) + '\n', 'utf8')
+      writeProfileDependency(job.packageName, undefined, profile.dir)
       manifestWritten = true
       const code = await runPnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile unlink failed: pnpm exited with code ' + String(code) + '.')
       this.jobs.phase(job, 'reconciling')
+      reconcileBundle(before, beforeDeclaresBundle, job.packageName, profile.dir)
       try {
         removePackagePath(profilePackagePath(profile.dir, job.packageName))
       } catch (error) {
@@ -752,10 +738,7 @@ export class MarketplaceService extends TypertRemoteService {
       this.jobs.settle(job, { packageName: job.packageName, version: 'removed', requiresRestart })
     } catch (error) {
       if (manifestWritten) {
-        writeFileSync(manifestPath, originalManifest, 'utf8')
-        this.jobs.append(job, 'Rolling back the profile lockfile.\n')
-        const rollbackCode = await runPnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
-        if (rollbackCode !== 0) this.jobs.append(job, 'Warning: automatic lockfile rollback did not complete.\n')
+        await this.rollbackProfileDependency(job, profile, before, true)
       }
       this.jobs.fail(job, {
         code: 'uninstall-failed',
@@ -769,31 +752,44 @@ export class MarketplaceService extends TypertRemoteService {
     job: JobRecord,
     profile: ProfileInstallLocation,
     before: ProfileManifest,
+    beforeDeclaresBundle: boolean,
     requiresRestart = true,
   ): Promise<void> {
-    const manifestPath = join(profile.dir, 'package.json')
-    const lockfilePath = join(profile.dir, 'pnpm-lock.yaml')
-    const originalManifest = readFileSync(manifestPath, 'utf8')
-    const originalLockfile = existsSync(lockfilePath) ? readFileSync(lockfilePath, 'utf8') : null
     try {
       this.jobs.phase(job, 'running')
       const code = await runPnpmJob(job, ['remove', job.packageName], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile uninstall failed: pnpm exited with code ' + String(code) + '.')
       this.jobs.phase(job, 'reconciling')
-      reconcileBundles(before, profile.dir)
+      reconcileBundle(before, beforeDeclaresBundle, job.packageName, profile.dir)
       this.jobs.settle(job, { packageName: job.packageName, version: 'removed', requiresRestart })
     } catch (error) {
-      writeFileSync(manifestPath, originalManifest, 'utf8')
-      if (originalLockfile === null) rmSync(lockfilePath, { force: true })
-      else writeFileSync(lockfilePath, originalLockfile, 'utf8')
-      this.jobs.append(job, 'Rolling back the Profile dependency state.\n')
-      const rollbackCode = await runPnpmJob(job, ['install', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
-      if (rollbackCode !== 0) this.jobs.append(job, 'Warning: automatic Profile rollback did not complete.\n')
+      await this.rollbackProfileDependency(job, profile, before, false)
       this.jobs.fail(job, {
         code: 'uninstall-failed',
         message: error instanceof Error ? error.message : String(error),
       })
     }
+  }
+
+  /** Restore only the target dependency, preserving newer unrelated Profile edits. */
+  private async rollbackProfileDependency(
+    job: JobRecord,
+    profile: ProfileInstallLocation,
+    before: ProfileManifest,
+    lockfileOnly: boolean,
+  ): Promise<void> {
+    this.jobs.append(job, 'Rolling back the Profile dependency state.\n')
+    try {
+      writeProfileDependency(job.packageName, before.dependencies?.[job.packageName], profile.dir)
+    } catch (error) {
+      this.jobs.append(job, 'Warning: the Profile manifest rollback did not complete: ' + (error instanceof Error ? error.message : String(error)) + '\n')
+      return
+    }
+    const args = lockfileOnly
+      ? ['install', '--lockfile-only', '--ignore-scripts']
+      : ['install', '--ignore-scripts']
+    const rollbackCode = await runPnpmJob(job, args, profile.dir, this.jobs, profile.storeDir)
+    if (rollbackCode !== 0) this.jobs.append(job, 'Warning: automatic Profile rollback did not complete.\n')
   }
 }
 
