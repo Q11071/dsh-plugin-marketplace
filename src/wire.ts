@@ -125,14 +125,42 @@ const jobStatusValueSchema = z.object({
   }), z.null()]),
 })
 
+const conflictProviderSchema = z.object({
+  bundle: z.string(),
+  packageName: z.string(),
+  id: z.string(),
+})
+
+const conflictSchema = z.union([
+  z.object({
+    kind: z.literal('service'),
+    service: z.string(),
+    packages: z.array(z.string()),
+    providers: z.array(conflictProviderSchema).optional(),
+  }),
+  z.object({
+    kind: z.literal('duplicate-id'),
+    id: z.string(),
+    packages: z.array(z.string()),
+    providers: z.array(conflictProviderSchema).optional(),
+  }),
+])
+
 const installedValueSchema = z.object({
   profile: z.string(),
+  installDir: z.string().optional(),
+  installDirCustom: z.boolean().optional(),
+  conflicts: z.array(conflictSchema).optional(),
   entries: z.array(z.object({
     packageName: z.string(),
     version: z.string(),
     isBundle: z.boolean(),
+    linked: z.boolean(),
+    location: z.string(),
     enabled: z.boolean(),
     currentSpec: z.string(),
+    description: z.union([z.string(), z.null()]).optional(),
+    repositoryUrl: z.union([z.string(), z.null()]).optional(),
     registryRepo: z.union([z.string(), z.null()]),
     availableVersion: z.union([z.string(), z.null()]),
     availableVersionSource: z.union([z.literal('registry'), z.literal('repository'), z.null()]),
@@ -186,6 +214,18 @@ const toggleValueSchema = z.object({
 const restartValueSchema = z.object({
   accepted: z.literal(true),
   profile: z.string(),
+})
+
+const installDirRequestSchema = z.object({ installDir: z.string() })
+
+const installDirValueSchema = z.object({
+  installDir: z.string(),
+  installDirCustom: z.boolean(),
+})
+
+const diagnoseConflictsValueSchema = z.object({
+  conflicts: z.array(conflictSchema),
+  scannedAt: z.number(),
 })
 
 /** Business failure: typed code + message + optional payload. */
@@ -250,6 +290,9 @@ export const TYPERT = {
     invocation('setEnabled', [param('request', toggleRequestSchema, `${REQUEST_TYPES}MarketplaceToggleRequest`)], result(resultSchema(toggleValueSchema), `${REQUEST_TYPES}MarketplaceToggleOutcome`)),
     invocation('jobStatus', [param('request', jobStatusRequestSchema, `${REQUEST_TYPES}MarketplaceJobStatusRequest`)], result(resultSchema(jobStatusValueSchema), `${REQUEST_TYPES}MarketplaceJobStatusOutcome`)),
     invocation('installed', [], result(resultSchema(installedValueSchema), `${REQUEST_TYPES}MarketplaceInstalledOutcome`)),
+    invocation('installLocation', [], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallLocationOutcome`)),
+    invocation('setInstallDir', [param('request', installDirRequestSchema, `${REQUEST_TYPES}MarketplaceInstallDirRequest`)], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallDirOutcome`)),
+    invocation('diagnoseConflicts', [], result(resultSchema(diagnoseConflictsValueSchema), `${REQUEST_TYPES}MarketplaceDiagnoseConflictsOutcome`)),
     invocation('restart', [], result(resultSchema(restartValueSchema), `${REQUEST_TYPES}MarketplaceRestartOutcome`)),
   ],
   model: {

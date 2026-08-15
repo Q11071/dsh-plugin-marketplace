@@ -4,6 +4,8 @@
  */
 
 import { spawn } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type {
   MarketplaceJobKind,
   MarketplaceJobPhase,
@@ -123,14 +125,50 @@ export class JobTable {
 }
 
 /**
- * Run one pnpm invocation in the profile directory, streaming stdout and
- * stderr into the job log. Mirrors the CLI's Windows shell forwarding
+ * Reuse the pnpm store the working directory's node_modules is already bound
+ * to (read from node_modules/.modules.yaml). Passing the same store to every
+ * pnpm invocation prevents ERR_PNPM_UNEXPECTED_STORE when the Profile and the
+ * staging/plugin directories would otherwise resolve different stores.
+ */
+export function linkedPnpmStore(dir: string): string | null {
+  try {
+    const metadata = readFileSync(join(dir, 'node_modules', '.modules.yaml'), 'utf8')
+    try {
+      const parsed = JSON.parse(metadata) as { storeDir?: unknown }
+      if (typeof parsed?.storeDir === 'string' && parsed.storeDir.trim() !== '') {
+        return parsed.storeDir.trim()
+      }
+    } catch {
+      // Fall through to the YAML scan below.
+    }
+    const match = /^\s*["']?storeDir["']?\s*:\s*["']?([^"'\r\n]+)["']?\s*,?\s*$/m.exec(metadata)
+    return match?.[1]?.trim() || null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Run one pnpm invocation in the working directory, streaming stdout and
+ * stderr into the job log. When the directory is bound to a pnpm store (or
+ * the caller supplies a Profile-linked store as fallback), the same store is
+ * forwarded through --config.store-dir so staging, plugin and Profile jobs
+ * never drift onto another store. Mirrors the CLI's Windows shell forwarding
  * (pnpm resolves through its .cmd shim).
  */
-export function runPnpmJob(job: JobRecord, args: string[], dir: string, table: JobTable): Promise<number | null> {
+export function runPnpmJob(
+  job: JobRecord,
+  args: string[],
+  dir: string,
+  table: JobTable,
+  fallbackStoreDir: string | null = null,
+): Promise<number | null> {
   return new Promise((resolve) => {
-    table.append(job, '$ pnpm ' + args.join(' ') + '\n')
-    const child = spawn('pnpm', args, {
+    const storeDir = linkedPnpmStore(dir) ?? fallbackStoreDir
+    const pnpmArgs = storeDir === null ? args : [...args, '--config.store-dir=' + storeDir]
+    table.append(job, '$ pnpm ' + pnpmArgs.map((arg) => /\s/.test(arg) ? JSON.stringify(arg) : arg).join(' ') + '\n')
+    if (storeDir !== null) table.append(job, 'Using profile-linked pnpm store: ' + storeDir + '\n')
+    const child = spawn('pnpm', pnpmArgs, {
       cwd: dir,
       shell: process.platform === 'win32',
       stdio: ['ignore', 'pipe', 'pipe'],

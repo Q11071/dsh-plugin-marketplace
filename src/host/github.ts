@@ -164,6 +164,7 @@ export class GitHubClient {
     const rawBase = RAW_BASE + '/' + owner + '/' + repo + '/' + resolved.ref
     let manifest: MarketplacePluginManifest | null = null
     let patch: string | null = null
+    let entrySource: string | null = null
     const headers: Record<string, string> = { accept: 'application/vnd.github+json', 'user-agent': USER_AGENT }
     try {
       const response = await fetch(rawBase + '/package.json', { headers })
@@ -173,6 +174,16 @@ export class GitHubClient {
         const bundle = dsh?.bundle as Record<string, unknown> | undefined
         const client = dsh?.client as Record<string, unknown> | undefined
         const declaredPatch = bundle?.patch
+        const exportsRoot = pkg.exports
+        let entry: string | null = null
+        if (typeof exportsRoot === 'string') entry = exportsRoot
+        else if (exportsRoot !== null && typeof exportsRoot === 'object') {
+          const dot = (exportsRoot as Record<string, unknown>)['.']
+          if (typeof dot === 'string') entry = dot
+          else if (dot !== null && typeof dot === 'object' && typeof (dot as Record<string, unknown>).default === 'string') entry = (dot as Record<string, unknown>).default as string
+          else if (typeof (exportsRoot as Record<string, unknown>).default === 'string') entry = (exportsRoot as Record<string, unknown>).default as string
+        }
+        if (entry === null && typeof pkg.main === 'string') entry = pkg.main
         manifest = {
           name: typeof pkg.name === 'string' ? pkg.name : '',
           version: typeof pkg.version === 'string' ? pkg.version : 'unknown',
@@ -180,6 +191,7 @@ export class GitHubClient {
           license: typeof pkg.license === 'string' ? pkg.license : null,
           bundlePatch: typeof declaredPatch === 'string' && isSafePatchPath(declaredPatch) ? declaredPatch : null,
           hasClient: client !== undefined && typeof client === 'object',
+          entry: typeof entry === 'string' && isSafePatchPath(entry) ? entry : null,
         }
         if (manifest.name === '') {
           throw new GitHubError('bad-manifest', owner + '/' + repo + ' package.json has no name field.')
@@ -187,6 +199,10 @@ export class GitHubClient {
         if (manifest.bundlePatch !== null) {
           const patchResponse = await fetch(rawBase + '/' + manifest.bundlePatch, { headers })
           patch = patchResponse.ok ? (await patchResponse.text()).slice(0, MAX_PATCH_CHARS) : null
+        }
+        if (manifest.entry !== null) {
+          const entryResponse = await fetch(rawBase + '/' + manifest.entry, { headers })
+          entrySource = entryResponse.ok ? (await entryResponse.text()).slice(0, MAX_PATCH_CHARS) : null
         }
       } else if (response.status === 404) {
         manifest = null
@@ -201,6 +217,7 @@ export class GitHubClient {
       resolvedRef: resolved.ref,
       manifest,
       patch,
+      entrySource,
       readmeUrl: 'https://github.com/' + owner + '/' + repo + '#readme',
       rate: resolved.rate,
     }

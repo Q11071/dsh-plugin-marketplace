@@ -123,6 +123,8 @@ export const RegistryConfigSchema = z.object({
   registryUrl: z.url().optional(),
   registryCacheMinutes: z.number().int().min(1).max(1440).default(15),
   registryRequestTimeoutMs: z.number().int().min(1000).max(60000).default(10000),
+  /** Optional override for the plugin entity install directory. */
+  installDir: z.string().min(1).optional(),
 }).default({
   registryCacheMinutes: 15,
   registryRequestTimeoutMs: 10000,

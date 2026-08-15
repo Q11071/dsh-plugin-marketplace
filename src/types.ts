@@ -103,6 +103,8 @@ export interface MarketplacePluginManifest {
   /** dsh.bundle.patch value when declared (the plugin identity contract). */
   bundlePatch: string | null
   hasClient: boolean
+  /** Host entry source path derived from exports['.'] / exports.default / main. */
+  entry: string | null
 }
 
 /** details() outcome: manifest + bundle patch text for pre-install review. */
@@ -115,6 +117,8 @@ export interface MarketplacePluginDetails {
   manifest: MarketplacePluginManifest | null
   /** Bundle patch text, capped at 64 KiB, when the manifest declares one. */
   patch: string | null
+  /** Host entry source text, capped at 64 KiB, when the manifest resolves one. */
+  entrySource: string | null
   readmeUrl: string
   rate: MarketplaceRateLimit
 }
@@ -144,16 +148,46 @@ export interface MarketplaceJobStatus {
   failure: { code: string; message: string } | null
 }
 
+/** One provider contributing to a detected conflict. */
+export interface MarketplaceConflictProvider {
+  bundle: string
+  packageName: string
+  id: string
+}
+
+/** Static heuristic conflict between enabled bundles (duplicate ids / Cordis services). */
+export type MarketplaceConflict =
+  | {
+      kind: 'service'
+      service: string
+      packages: string[]
+      providers?: MarketplaceConflictProvider[]
+    }
+  | {
+      kind: 'duplicate-id'
+      id: string
+      packages: string[]
+      providers?: MarketplaceConflictProvider[]
+    }
+
 /** One row of the installed() listing. */
 export interface MarketplaceInstalledEntry {
   packageName: string
   version: string
   /** Whether the installed dependency declares a DSH bundle patch. */
   isBundle: boolean
+  /** Whether the entry is linked to the current Profile (dependency present). */
+  linked: boolean
+  /** Absolute location of the plugin entity. */
+  location: string
   /** Whether the bundle currently participates in the Profile layer stack. */
   enabled: boolean
   /** Dependency spec currently recorded in the profile package.json. */
   currentSpec: string
+  /** Package description from the local manifest, or the Registry when managed. */
+  description?: string | null
+  /** Repository URL from the local manifest, or the Registry when managed. */
+  repositoryUrl?: string | null
   /** Registry repository when this installed package is centrally managed. */
   registryRepo: string | null
   availableVersion: string | null
@@ -167,7 +201,30 @@ export interface MarketplaceInstalledEntry {
 
 export interface MarketplaceInstalled {
   profile: string
+  /** Absolute plugin install directory in effect. */
+  installDir?: string
+  /** Whether the install directory is a custom location, not the Profile default. */
+  installDirCustom?: boolean
+  /** Static conflicts among currently enabled bundles. */
+  conflicts?: MarketplaceConflict[]
   entries: MarketplaceInstalledEntry[]
+}
+
+/** Current plugin install location. */
+export interface MarketplaceInstallLocation {
+  installDir: string
+  installDirCustom: boolean
+}
+
+/** setInstallDir() request: empty restores the Profile default. */
+export interface MarketplaceInstallDirRequest {
+  installDir: string
+}
+
+/** Manual conflict diagnosis outcome. */
+export interface MarketplaceDiagnoseConflictsResult {
+  conflicts: MarketplaceConflict[]
+  scannedAt: number
 }
 
 /** Job identity returned when an install, update, or uninstall starts. */
@@ -182,6 +239,9 @@ export type MarketplaceJobStatusOutcome = MarketplaceResult<MarketplaceJobStatus
 export type MarketplaceInstalledOutcome = MarketplaceResult<MarketplaceInstalled>
 export type MarketplaceToggleOutcome = MarketplaceResult<MarketplaceToggleResult>
 export type MarketplaceRestartOutcome = MarketplaceResult<MarketplaceRestartResult>
+export type MarketplaceInstallLocationOutcome = MarketplaceResult<MarketplaceInstallLocation>
+export type MarketplaceInstallDirOutcome = MarketplaceResult<MarketplaceInstallLocation>
+export type MarketplaceDiagnoseConflictsOutcome = MarketplaceResult<MarketplaceDiagnoseConflictsResult>
 
 export interface MarketplaceToggleResult {
   packageName: string
