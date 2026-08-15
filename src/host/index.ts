@@ -47,6 +47,7 @@ import type {
 import { readProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
 import { buildGuidedAgentTask } from './guided-agent.ts'
+import { loadInstallSkill, type MarketplaceSkillRegistration } from './install-skill.ts'
 import { JobTable, runPnpmJob, type JobRecord } from './installer.ts'
 import { parseManualInstall } from './manual-install.ts'
 import { scheduleProcessRestart } from './restart.ts'
@@ -129,7 +130,7 @@ function toFailure(error: unknown): Err {
 }
 
 export class MarketplaceService extends TypertRemoteService {
-  static inject = []
+  static inject = ['skills']
   static Config = RegistryConfigSchema
 
   private readonly github = new GitHubClient()
@@ -142,6 +143,7 @@ export class MarketplaceService extends TypertRemoteService {
 
   constructor(ctx: Context, config: RegistryConfig) {
     super(ctx, 'marketplace')
+    ;(ctx as Context & { skills: { register: (skill: MarketplaceSkillRegistration) => () => void } }).skills.register(loadInstallSkill())
     this.config = config
     const source = config.registryUrl ?? process.env.DSH_PLUGIN_REGISTRY_URL?.trim() ?? DEFAULT_REGISTRY_URL
     // Fail a self-contained URL misconfiguration while the plugin is loading.

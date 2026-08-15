@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { buildGuidedAgentTask } from '../src/host/guided-agent.ts'
+import { buildGuidedAgentTask, guidedInstallRoute } from '../src/host/guided-agent.ts'
+import { INSTALL_SKILL_NAME, loadInstallSkill } from '../src/host/install-skill.ts'
 import { RegistryClient } from '../src/host/registry.ts'
 
 const registryUrl = pathToFileURL(path.resolve('registry/plugins.json')).href
@@ -21,10 +22,29 @@ assert.match(task.prompt, /不可信数据/)
 assert.match(task.prompt, /原生审批/)
 assert.match(task.prompt, /保留所有既有插件原来的启用\/停用状态/)
 assert.match(task.prompt, /启动方法/)
+assert.match(task.prompt, new RegExp(`skill 工具加载 ${INSTALL_SKILL_NAME}`))
 assert.doesNotMatch(task.prompt, /改用 main、latest[^\n]*可以/)
 
 const update = buildGuidedAgentTask(plugin, plugin.install.profiles[0] ?? 'web', 'update', evidence)
 assert.match(update.title, /^更新插件 /)
 assert.match(update.prompt, /保留现有配置/)
 
-console.log(`guided Agent task valid: ${plugin.fullName} @ ${plugin.verifiedCommit}`)
+const skill = loadInstallSkill()
+assert.equal(skill.name, INSTALL_SKILL_NAME)
+assert.equal(skill.provider, 'marketplace')
+assert.match(skill.content, /exact 40-character commit/)
+assert.match(skill.content, /references\/decision-matrix\.md/)
+
+const routeCases = [
+  ['AKS1st/dsh-archived-conversations', /已提交运行产物/],
+  ['781316853/dsh-provider-quota', /隔离源码构建/],
+  ['CH4ACKO3/dsh-harmony', /隔离源码构建/],
+  ['JeremyGuo/dsh-custom-workspace', /隔离源码构建/],
+] as const
+for (const [repository, expectedRoute] of routeCases) {
+  const sample = await registry.guidedEvidence(repository)
+  assert(sample, `guided evidence missing for ${repository}`)
+  assert.match(guidedInstallRoute(sample), expectedRoute)
+}
+
+console.log(`guided Agent task and ${INSTALL_SKILL_NAME} valid across ${routeCases.length} Registry risk paths`)

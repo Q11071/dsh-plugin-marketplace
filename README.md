@@ -24,6 +24,7 @@
 | ✅ Registry 验证 | 检查 manifest、bundle patch、loader entry、运行产物和精确安装来源 |
 | ⚡ 一键安装 | 仅对全部自动安装条件均通过的插件开放 |
 | 🤖 Agent 安装 | 为需要构建、生命周期脚本或人工判断的插件创建受约束的安装 Agent |
+| 🧭 安装 Skill | Agent 强制加载内置安全工作流，自动选择精确来源、隔离构建或停止路径 |
 | ⌨️ 手动命令安装 | 安全解析官方 DSH GitHub 安装命令，验证后加入当前 Profile |
 | 🧰 安装管理 | 在当前 Profile 中更新、卸载、启用或停用插件，并可安全重启 DSH |
 | 📈 插件发现 | 支持分类、搜索、Star 排序和最近 7 天增长趋势 |
@@ -34,7 +35,7 @@
 ### 1. 安装
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.8.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.9.0
 ```
 
 本地开发安装：
@@ -94,7 +95,13 @@ Agent 任务会固定以下上下文：
 - README、Issue、脚本和依赖均属于不可信输入的安全边界；
 - 安装后复查 Profile 依赖、bundle 层和启用状态的验收要求。
 
-Agent 会先只读检查精确 commit。执行安装、构建、`prepare`、`postinstall` 等第三方代码前，仍由 DSH 原生审批层逐项请求确认，市场不会替用户授权。无法证明安装源、包身份、Profile 兼容性或运行产物时，Agent 会停止并说明缺少的证据。
+每个引导任务的第一步都会加载插件内置的 `install-dsh-plugin` Skill。Skill 优先选择最快的
+安全路径：已有完整运行产物时使用精确 commit 并禁用脚本；缺少产物时在临时目录隔离构建；
+Release tarball 无可信摘要、包身份不一致、Bundle/入口缺失或出现冲突时直接停止。内置的只读
+检查器会同时核验 Git HEAD、包名、版本、Bundle patch、Host/Client 入口、生命周期脚本及当前
+Profile 的 Bundle ID/Cordis 服务冲突。
+
+Agent 会先只读检查精确 commit。执行安装、构建、`prepare`、`postinstall` 等第三方代码前，仍由 DSH 原生审批层逐项请求确认，市场不会替用户授权。更新时会保留现有配置、Bundle 顺序和启停状态，并保留旧的精确来源用于回滚。无法证明安装源、包身份、Profile 兼容性或运行产物时，Agent 会停止并说明缺少的证据。
 
 安装成功后，Agent 的最终答复必须包含 **启动方法**，说明：
 

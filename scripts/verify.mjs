@@ -82,6 +82,11 @@ if (pkg.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error('dsh.bundle
 if (pkg.dsh?.client?.platform !== 'web') throw new Error('dsh.client.platform must be web')
 if (pkg.exports?.['./client'] === undefined) throw new Error('./client export missing')
 if (pkg.exports?.['./typert'] === undefined) throw new Error('./typert export missing')
+if (!pkg.files?.includes('skills/**')) throw new Error('packaged Skill files missing from package manifest')
+const installSkill = readFileSync(path.join(root, 'skills', 'install-dsh-plugin', 'SKILL.md'), 'utf8')
+if (!installSkill.startsWith('---\nname: install-dsh-plugin\n') || installSkill.includes('[TODO')) {
+  throw new Error('install-dsh-plugin Skill contract invalid')
+}
 console.log('package manifest contract valid')
 
 // Bundled central Registry contract.

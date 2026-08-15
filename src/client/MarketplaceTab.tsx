@@ -170,10 +170,17 @@ const s = {
   tag: { color: 'var(--dsw-alias-state-success-primary)', fontSize: 11, lineHeight: '16px', flex: 'none' } as React.CSSProperties,
   installedList: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
   installedToolbar: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } as React.CSSProperties,
-  installedCard: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: 16, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '14px 16px' } as React.CSSProperties,
+  installedCard: { display: 'flex', flexDirection: 'column', gap: 12, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '16px 18px' } as React.CSSProperties,
+  installedTop: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', gap: 20 } as React.CSSProperties,
   installedInfo: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 } as React.CSSProperties,
-  installedDescription: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', margin: 0, overflowWrap: 'anywhere' } as React.CSSProperties,
-  installedActions: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' } as React.CSSProperties,
+  installedDescription: { color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', minHeight: 40, margin: '2px 0 0', overflowWrap: 'anywhere', overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2 } as React.CSSProperties,
+  installedMetaRow: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 2 } as React.CSSProperties,
+  installedStatusRow: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } as React.CSSProperties,
+  installedStatusChip: { display: 'inline-flex', alignItems: 'center', minHeight: 22, border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 999, padding: '1px 8px', color: 'var(--dsw-alias-label-tertiary)', background: 'var(--dsw-alias-bg-layer-2)', fontSize: 11, lineHeight: '18px' } as React.CSSProperties,
+  installedStatusChipActive: { borderColor: 'color-mix(in srgb, var(--dsw-alias-state-success-primary) 45%, var(--dsw-alias-border-l2))', color: 'var(--dsw-alias-state-success-primary)' } as React.CSSProperties,
+  installedActions: { display: 'grid', gridTemplateColumns: 'minmax(92px, auto) 68px 68px', alignItems: 'center', justifyContent: 'end', gap: 8, paddingTop: 2 } as React.CSSProperties,
+  installedActionButton: { width: '100%', justifyContent: 'center', whiteSpace: 'nowrap' } as React.CSSProperties,
+  installedActionLink: { display: 'inline-flex', width: '100%', minHeight: 30, alignItems: 'center', justifyContent: 'center', border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 999, padding: '0 10px', boxSizing: 'border-box' } as React.CSSProperties,
   directoryPath: { width: '100%', boxSizing: 'border-box', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', color: 'var(--dsw-alias-label-primary)', borderRadius: 8, padding: '9px 11px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: 13 } as React.CSSProperties,
   toast: { position: 'fixed', top: 16, right: 16, zIndex: 99999, maxWidth: 460, minWidth: 260, display: 'flex', alignItems: 'flex-start', gap: 10, borderRadius: 10, padding: '12px 14px', fontSize: 13, lineHeight: '20px', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.28)', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', color: 'var(--dsw-alias-label-primary)' } as React.CSSProperties,
   toastError: { borderColor: 'var(--dsw-alias-state-error-primary)' } as React.CSSProperties,
@@ -1001,58 +1008,68 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
         const operationActive = startingKind !== null || jobActive
         return (
           <li key={entry.packageName} style={s.installedCard}>
-            <div style={s.installedInfo}>
-              <strong style={s.title} title={entry.packageName}>{friendlyPackageName(entry.packageName)}</strong>
-              <span style={s.meta}>{entry.packageName}</span>
-              {entry.description ? <p style={s.installedDescription}>{entry.description}</p> : null}
-              <span style={s.muted} title={entry.currentSpec}>
-                {fmt(t, 'installedVersion', { version: entry.version })}
-                {entry.availableVersion !== null
-                  ? ' · ' + fmt(t, entry.availableVersionSource === 'repository' ? 'repositoryVersion' : 'registryVersion', { version: entry.availableVersion })
-                  : ''}
-              </span>
-              {!entry.linked ? (
-                <span style={s.meta} title={entry.location}>{t('directoryOnly')}</span>
-              ) : (
-                <span style={entry.updateAvailable ? s.tag : s.meta}>
-                  {entry.registryRepo === null
-                    ? t('notInRegistry')
-                    : entry.updateAvailable
-                      ? t('updateAvailable')
-                      : t('upToDate')}
-                </span>
-              )}
-              {entry.linked ? <span style={entry.enabled ? s.tag : s.meta}>{entry.enabled ? t('enabled') : t('disabled')}</span> : null}
-            </div>
-            <div style={s.installedActions}>
-              {!entry.linked ? (
-                <Button variant='outline' size='sm' disabled>{t('profileActionsUnavailable')}</Button>
-              ) : operationActive ? (
-                <Button variant='primary' size='sm' disabled>{activeJobLabel({ kind: job?.kind ?? startingKind ?? 'install' }, t)}</Button>
-              ) : entry.updateAvailable && entry.canUpdate ? (
-                <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
-                  {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}
-                </Button>
-              ) : entry.updateAvailable
-                && entry.install?.mode === 'guided'
-                && entry.registryRepo !== null
-                && entry.verifiedCommit !== null
-                && (entry.install.profiles.length === 0 || entry.install.profiles.includes(currentProfile)) ? (
-                  <Button variant='primary' size='sm' disabled={agentBusy === entry.registryRepo} onClick={() => { onAgentUpdate(entry) }}>
-                    {agentBusy === entry.registryRepo ? t('agentStarting') : t('agentUpdate')}
+            <div style={s.installedTop}>
+              <div style={s.installedInfo}>
+                <strong style={s.title} title={entry.packageName}>{friendlyPackageName(entry.packageName)}</strong>
+                <span style={s.meta}>{entry.packageName}</span>
+                <p style={s.installedDescription}>{entry.description ?? '—'}</p>
+                <div style={s.installedMetaRow}>
+                  <span style={s.muted} title={entry.currentSpec}>
+                    {fmt(t, 'installedVersion', { version: entry.version })}
+                    {entry.availableVersion !== null
+                      ? ' · ' + fmt(t, entry.availableVersionSource === 'repository' ? 'repositoryVersion' : 'registryVersion', { version: entry.availableVersion })
+                      : ''}
+                  </span>
+                </div>
+                <div style={s.installedStatusRow}>
+                  {!entry.linked ? (
+                    <span style={s.installedStatusChip} title={entry.location}>{t('directoryOnly')}</span>
+                  ) : (
+                    <span style={{ ...s.installedStatusChip, ...(entry.updateAvailable ? s.installedStatusChipActive : {}) }}>
+                      {entry.registryRepo === null
+                        ? t('notInRegistry')
+                        : entry.updateAvailable
+                          ? t('updateAvailable')
+                          : t('upToDate')}
+                    </span>
+                  )}
+                  {entry.linked ? (
+                    <span style={{ ...s.installedStatusChip, ...(entry.enabled ? s.installedStatusChipActive : {}) }}>
+                      {entry.enabled ? t('enabled') : t('disabled')}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div style={s.installedActions}>
+                {!entry.linked ? (
+                  <Button style={s.installedActionButton} variant='outline' size='sm' disabled>{t('profileActionsUnavailable')}</Button>
+                ) : operationActive ? (
+                  <Button style={s.installedActionButton} variant='primary' size='sm' disabled>{activeJobLabel({ kind: job?.kind ?? startingKind ?? 'install' }, t)}</Button>
+                ) : entry.updateAvailable && entry.canUpdate ? (
+                  <Button style={s.installedActionButton} variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
+                    {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}
                   </Button>
-              ) : entry.updateAvailable && entry.install !== null ? (
-                <a style={s.link} href={entry.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
-              ) : (
-                <Button variant='outline' size='sm' disabled>{t('upToDate')}</Button>
-              )}
-              <Button variant='outline' size='sm' disabled={!entry.linked || operationActive || toggleBusy === entry.packageName} onClick={() => { onSetEnabled(entry) }}>
-                {entry.enabled ? t('disable') : t('enable')}
-              </Button>
-              <Button variant='outline' size='sm' disabled={!entry.linked || operationActive} onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
+                ) : entry.updateAvailable
+                  && entry.install?.mode === 'guided'
+                  && entry.registryRepo !== null
+                  && entry.verifiedCommit !== null
+                  && (entry.install.profiles.length === 0 || entry.install.profiles.includes(currentProfile)) ? (
+                    <Button style={s.installedActionButton} variant='primary' size='sm' disabled={agentBusy === entry.registryRepo} onClick={() => { onAgentUpdate(entry) }}>
+                      {agentBusy === entry.registryRepo ? t('agentStarting') : t('agentUpdate')}
+                    </Button>
+                ) : entry.updateAvailable && entry.install !== null ? (
+                  <a style={{ ...s.link, ...s.installedActionLink }} href={entry.install.instructionsUrl} target='_blank' rel='noreferrer'>{t('installGuide')}</a>
+                ) : (
+                  <Button style={s.installedActionButton} variant='outline' size='sm' disabled>{t('upToDate')}</Button>
+                )}
+                <Button style={s.installedActionButton} variant='outline' size='sm' disabled={!entry.linked || operationActive || toggleBusy === entry.packageName} onClick={() => { onSetEnabled(entry) }}>
+                  {entry.enabled ? t('disable') : t('enable')}
+                </Button>
+                <Button style={s.installedActionButton} variant='outline' size='sm' disabled={!entry.linked || operationActive} onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
+              </div>
             </div>
             {job !== undefined ? (
-              <div style={{ gridColumn: '1 / -1', width: '100%' }}>
+              <div style={{ width: '100%' }}>
                 <JobPanel job={job} t={t} />
               </div>
             ) : null}

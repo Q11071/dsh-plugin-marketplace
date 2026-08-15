@@ -24,6 +24,7 @@
 | ✅ Registry validation | Checks manifests, bundle patches, loader entries, runtime artifacts, and exact install sources |
 | ⚡ One-click install | Available only when every automatic-install requirement passes |
 | 🤖 Agent-assisted install | Creates a constrained installation Agent when builds, lifecycle scripts, or human judgment are required |
+| 🧭 Installation Skill | Makes the Agent load a bundled safe workflow that chooses an exact source, isolated build, or hard stop |
 | ⌨️ Manual command install | Safely parses an official DSH GitHub install command and attaches the verified plugin to the active Profile |
 | 🧰 Installed plugin management | Update, uninstall, enable, disable, and safely restart DSH for the active Profile |
 | 📈 Discovery | Search by category, sort by Stars, and view seven-day Star growth |
@@ -34,7 +35,7 @@
 ### 1. Install
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.8.0
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.9.0
 ```
 
 For local development:
@@ -95,7 +96,14 @@ Every Agent task is pinned to:
 - a security boundary that treats README files, issues, scripts, and dependencies as untrusted input;
 - acceptance checks for Profile dependencies, bundle layers, and enabled state.
 
-The Agent inspects the exact commit in read-only mode first. Before running installation, build, `prepare`, `postinstall`, or other third-party code, it must request approval through DSH's native approval layer. The marketplace never grants approval on the user's behalf. If the Agent cannot prove the install source, package identity, Profile compatibility, or runtime artifacts, it stops and explains what evidence is missing.
+Every guided task starts by loading the bundled `install-dsh-plugin` Skill. It selects the shortest
+safe route: use an exact commit with scripts disabled when complete runtime artifacts already exist;
+build in an isolated temporary checkout when artifacts are missing; or stop when a Release tarball
+lacks a trusted digest, identity differs, bundle/runtime files are absent, or conflicts exist. Its
+read-only inspector verifies Git HEAD, package identity, bundle patch, Host/Client entries, lifecycle
+scripts, and Bundle ID/Cordis service conflicts against the active Profile.
+
+The Agent inspects the exact commit in read-only mode first. Before running installation, build, `prepare`, `postinstall`, or other third-party code, it must request approval through DSH's native approval layer. The marketplace never grants approval on the user's behalf. Updates preserve configuration, bundle order, and enabled state while retaining the previous exact source for rollback. If the Agent cannot prove the install source, package identity, Profile compatibility, or runtime artifacts, it stops and explains what evidence is missing.
 
 After a successful install, the Agent's final response must include **How to start**, covering:
 

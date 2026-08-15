@@ -5,6 +5,7 @@ import type {
   MarketplaceGuidedAgentTask,
   MarketplaceRegistryPlugin,
 } from '../types.ts'
+import { INSTALL_SKILL_NAME } from './install-skill.ts'
 
 export interface GuidedAuditEvidence {
   repository: string
@@ -38,15 +39,18 @@ export function buildGuidedAgentTask(
   const lifecycleScripts = (evidence?.current.lifecycleScripts ?? [])
     .filter(value => /^[a-zA-Z0-9:_-]{1,64}$/.test(value))
   const candidateCommandCount = evidence?.targetedCommands.length ?? 0
+  const recommendedRoute = guidedInstallRoute(evidence)
   const auditLines = [
     `- Registry 分类原因：${assessment}`,
     `- npm 精确版本：${plugin.packageName}@${plugin.version}（${npmReason}）`,
     `- 已提交运行产物：${evidence?.current.runtimeArtifactsCommitted === true ? '是' : '否或未确认'}`,
     `- 生命周期脚本：${lifecycleScripts.length === 0 ? '未发现' : lifecycleScripts.join(', ')}`,
     `- 审计发现的远程候选命令数量：${String(candidateCommandCount)}（仅作计数，不代表允许执行）`,
+    `- 推荐快速路径：${recommendedRoute}`,
   ]
   const prompt = [
     `你是 DSH 插件市场启动的“引导安装 Agent”。请在当前机器上为用户${verb}插件，并在完成后给出明确的启动方法。`,
+    `第一步必须调用 skill 工具加载 ${INSTALL_SKILL_NAME}；在成功加载 Skill 前不得运行安装、构建或 Profile 修改命令。若 Skill 不可用，停止并告诉用户。`,
     '',
     'Registry 已验证事实：',
     `- 仓库：https://github.com/${plugin.fullName}`,
@@ -85,6 +89,14 @@ export function buildGuidedAgentTask(
     requiresBuildApproval: plugin.install.requiresBuildApproval,
     lifecycleScripts,
   }
+}
+
+/** Recommend the shortest route that still respects the scanner evidence. */
+export function guidedInstallRoute(evidence: GuidedAuditEvidence | undefined): string {
+  if (evidence?.npmVerification.verified === true) return 'Registry 验证的精确 npm 版本，禁用生命周期脚本'
+  if (evidence?.current.runtimeArtifactsCommitted === true) return '精确 GitHub commit 的已提交运行产物；先禁用脚本，仅经审批执行必要配置'
+  if (evidence !== undefined) return '精确 commit 的隔离源码构建；构建前请求原生审批'
+  return '先只读核验精确 commit，再选择安装路径'
 }
 
 /** Keep scanner diagnostics declarative when interpolating them into a model prompt. */

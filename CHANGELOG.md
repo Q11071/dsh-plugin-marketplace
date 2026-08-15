@@ -9,6 +9,29 @@
 
 暂无。
 
+## [0.9.0] - 2026-08-15
+
+### 新增
+
+- 内置并全局注册 `install-dsh-plugin` Skill；“Agent 安装/更新”创建的会话必须先加载该
+  Skill，再执行任何安装、构建或 Profile 修改。
+- Skill 增加精确来源、隔离源码构建、生命周期审批、配置与启停状态保持、目标级回滚和
+  启动说明工作流，并附带无第三方依赖的只读插件检查器。
+
+### 改进
+
+- 统一已安装插件卡片：名称、包名、两行说明、版本和状态各自占据固定信息层级，更新、
+  启停、卸载按钮使用固定操作列，任务日志固定显示在卡片底部。
+- 引导 Agent 会根据 Registry 证据预选最快安全路径：完整预构建 commit 直接禁用脚本安装；
+  缺少运行产物时转入经审批的隔离构建；证据不足时停止。
+
+### 安全与测试
+
+- 检查器验证精确 Git HEAD、包名/版本、Bundle patch、Host/Client 入口、生命周期脚本、
+  重复 Bundle ID 和 Cordis 服务冲突。
+- 使用四个不同风险类别的真实 Registry 仓库复验决策路径；另在隔离 DSH_HOME 中完成两个
+  精确 commit 安装，并验证更新不会重新启用已停用插件或改变其他插件状态。
+
 ## [0.8.0] - 2026-08-15
 
 ### 新增
@@ -236,7 +259,8 @@
 - npm 包内置构建产物和 Registry 快照；远程 Registry 不可用时仍可使用。
 - 提供 Registry Schema、扫描测试、构建及真实 DSH loader 验证脚本。
 
-[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.8.0...HEAD
+[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...v0.7.2
