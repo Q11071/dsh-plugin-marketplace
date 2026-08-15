@@ -86,6 +86,10 @@ await esbuild.build({
   bundle: true,
   platform: 'browser',
   format: 'cjs',
+  // Do not inherit the maintainer checkout's absolute tsconfig path. Besides
+  // being non-portable, that made Windows and Linux disagree about whether
+  // the generated CommonJS bundle should contain the strict-mode directive.
+  tsconfigRaw: { compilerOptions: { alwaysStrict: true } },
   jsx: 'automatic',
   outfile: 'lib/client.js',
   external: PLATFORM_EXTERNALS,
