@@ -14,6 +14,13 @@ import type {
 
 const MAX_LOG_CHARS = 65536
 const MAX_JOBS = 8
+const WINDOWS_ABSOLUTE_PATH = /^(?:[A-Za-z]:[\\/]|\\\\)/
+
+function resolveStoreDir(dir: string, storeDir: string): string {
+  return isAbsolute(storeDir) || WINDOWS_ABSOLUTE_PATH.test(storeDir)
+    ? storeDir
+    : resolve(dir, storeDir)
+}
 
 export interface JobOutcome {
   packageName: string
@@ -137,7 +144,7 @@ export function linkedPnpmStore(dir: string): string | null {
       const parsed = JSON.parse(metadata) as { storeDir?: unknown }
       if (typeof parsed?.storeDir === 'string' && parsed.storeDir.trim() !== '') {
         const storeDir = parsed.storeDir.trim()
-        return isAbsolute(storeDir) ? storeDir : resolve(dir, storeDir)
+        return resolveStoreDir(dir, storeDir)
       }
     } catch {
       // Fall through to the YAML scan below.
@@ -145,7 +152,7 @@ export function linkedPnpmStore(dir: string): string | null {
     const match = /^\s*["']?storeDir["']?\s*:\s*["']?([^"'\r\n]+)["']?\s*,?\s*$/m.exec(metadata)
     const storeDir = match?.[1]?.trim()
     if (storeDir === undefined || storeDir === '') return null
-    return isAbsolute(storeDir) ? storeDir : resolve(dir, storeDir)
+    return resolveStoreDir(dir, storeDir)
   } catch {
     return null
   }
