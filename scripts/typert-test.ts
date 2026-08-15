@@ -36,6 +36,17 @@ if (typeof mod.validateTypertManifest !== 'function') {
 const result = mod.validateTypertManifest('dsh-plugin-marketplace', TYPERT)
 console.log('typert manifest valid: ' + String(result.invocations.length) + ' invocations, package ' + result.package)
 
+const host = await import('../lib/index.js') as { default: { prototype: Record<string, unknown> } }
+for (const invocation of result.invocations) {
+  const descriptor = invocation as { method: string; implementation?: string }
+  const implementation = descriptor.implementation ?? descriptor.method
+  if (typeof host.default.prototype[implementation] !== 'function') {
+    console.error('Remote method is not callable on MarketplaceService: ' + descriptor.method + ' -> ' + implementation)
+    process.exit(1)
+  }
+}
+console.log('typert host implementations callable: ' + String(result.invocations.length))
+
 const expected = new Set([
   'search', 'details', 'guidedTask', 'installPlugin', 'update', 'uninstall',
   'setEnabled', 'jobStatus', 'installed', 'installLocation', 'setInstallDir',

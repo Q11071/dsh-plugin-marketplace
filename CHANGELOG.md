@@ -9,6 +9,18 @@
 
 暂无。
 
+## [0.7.2] - 2026-08-15
+
+### 修复
+
+- 修复打开插件市场时 `marketplace/installLocation` 报错“active Service has no callable
+  method”的问题。Host 实现名称现在与 Typert 远端描述符完全一致。
+
+### 测试
+
+- Typert 契约测试现在会逐项检查远端描述符对应的 Host 方法是否真实存在且可调用，防止
+  类似的实现名称偏差再次进入发布版本。
+
 ## [0.7.1] - 2026-08-15
 
 ### 修复
@@ -195,7 +207,8 @@
 - npm 包内置构建产物和 Registry 快照；远程 Registry 不可用时仍可使用。
 - 提供 Registry Schema、扫描测试、构建及真实 DSH loader 验证脚本。
 
-[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...HEAD
+[未发布]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.0...v0.6.1

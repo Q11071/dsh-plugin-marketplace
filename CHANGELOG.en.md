@@ -10,6 +10,19 @@ Registry refresh commits are grouped instead of listed individually.
 
 No unreleased changes yet.
 
+## [0.7.2] - 2026-08-15
+
+### Fixed
+
+- Fixed `marketplace/installLocation` failing with “active Service has no callable method” when
+  opening the marketplace. The Host implementation name now exactly matches its Typert Remote
+  descriptor.
+
+### Tests
+
+- The Typert contract test now checks that every Remote descriptor resolves to a real callable
+  method on the Host service, preventing similar implementation-name drift from shipping again.
+
 ## [0.7.1] - 2026-08-15
 
 ### Fixed
@@ -226,7 +239,8 @@ No unreleased changes yet.
   Registry failures.
 - Added the Registry Schema, scanner tests, build scripts, and validation against real DSH loaders.
 
-[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/YELEBAI/dsh-plugin-marketplace/compare/v0.6.0...v0.6.1

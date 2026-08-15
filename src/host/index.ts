@@ -363,7 +363,7 @@ export class MarketplaceService extends TypertRemoteService {
   }
 
   @Remote('installLocation')
-  async installLocationRemote(): Promise<MarketplaceResult<MarketplaceInstallLocation>> {
+  async installLocation(): Promise<MarketplaceResult<MarketplaceInstallLocation>> {
     try {
       const profile = installLocation(this.ctx, this.config)
       return ok({ installDir: profile.pluginDir, installDirCustom: profile.custom })
