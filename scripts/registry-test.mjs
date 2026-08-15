@@ -122,13 +122,21 @@ const preparePrebuilt = classifyInstall(
   'dsh plugin --profile web add github:dsh-external/dsh-side-panel',
   ['ccq1/dsh-side-panel', 'dsh-external/dsh-side-panel'],
 )
-assert.equal(preparePrebuilt.identity.installHints.requiresBuildApproval, false)
-assert.equal(preparePrebuilt.identity.installHints.manualSteps, false)
+assert.equal(preparePrebuilt.identity.installHints.requiresBuildApproval, true)
+assert.equal(preparePrebuilt.identity.installHints.manualSteps, true)
 assert.equal(preparePrebuilt.inspection.runtimeArtifactsCommitted, true)
 assert.equal(preparePrebuilt.inspection.readme.directGitHub, true)
-assert.deepEqual(preparePrebuilt.inspection.resolvedReasons, [
-  'prepare-present-but-author-documented-github-install-and-runtime-artifacts-are-committed',
-])
+assert.deepEqual(preparePrebuilt.inspection.resolvedReasons, [])
+const prepareGitHubRow = verifiedPlugin({
+  full_name: 'ccq1/dsh-side-panel',
+  name: 'dsh-side-panel',
+  default_branch: 'main',
+  html_url: 'https://github.com/ccq1/dsh-side-panel',
+  updated_at: '2026-08-14T00:00:00Z',
+  owner: { login: 'ccq1' },
+}, 'c'.repeat(40), preparePrebuilt.identity, '2026-08-14T00:00:00Z')
+assert.equal(prepareGitHubRow.install.mode, 'guided')
+assert.equal(prepareGitHubRow.install.requiresBuildApproval, true)
 
 const sameNameDifferentRepository = classifyInstall(
   prepareManifest,

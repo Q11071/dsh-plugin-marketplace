@@ -33,7 +33,7 @@
 ### 1. Install
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.6.1
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.7.0
 ```
 
 For local development:
@@ -225,7 +225,7 @@ The Registry never decides automatic installation from a single keyword. It cros
 - the Registry URL, SHA-512 integrity, package identity, bundle patch, and runtime entries of same-name, same-version npm releases;
 - whether an npm package contains `preinstall` / `install` / `postinstall` or a root-level `binding.gyp`.
 
-`preinstall`, `install`, `postinstall`, or missing runtime artifacts always require build approval. `prepare` alone no longer forces guided installation: a GitHub source can remain automatic when runtime artifacts are committed, the README documents the GitHub install command, and build approval is not requested. An npm tarball can likewise be automatic when it contains all runtime artifacts and passes static validation.
+Any GitHub source containing `preinstall`, `install`, `postinstall`, or `prepare` always requires build approval and remains guided; committed runtime artifacts do not suppress that lifecycle warning. An exact npm tarball does not execute `prepare` when installed as a dependency, so a release that contains all runtime artifacts and passes static validation may still be automatic.
 
 An incorrect migration URL in a README is retained as audit information but does not block a complete, installable exact commit in the current repository. Missing or contradictory evidence keeps the plugin guided; the scanner never guesses its way to one-click installation.
 

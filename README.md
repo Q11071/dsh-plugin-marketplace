@@ -33,7 +33,7 @@
 ### 1. 安装
 
 ```sh
-dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.6.1
+dsh plugin --profile web add github:YELEBAI/dsh-plugin-marketplace#v0.7.0
 ```
 
 本地开发安装：
@@ -225,7 +225,7 @@ Registry 不会只根据某一个关键词决定能否自动安装，而会交�
 - 同名同版本 npm 发行版的 Registry URL、SHA-512 完整性、package identity、bundle patch 和全部运行入口；
 - npm 包是否包含 `preinstall` / `install` / `postinstall` 或根级 `binding.gyp`。
 
-`preinstall`、`install`、`postinstall` 或缺少运行产物时始终要求构建授权。`prepare` 不会单独触发引导安装：如果 GitHub 源已经提交运行产物、README 明确提供安装命令且未要求 build approval，仍可自动安装；npm tarball 包含完整运行产物并通过静态验证时同样可以自动安装。
+GitHub 来源只要包含 `preinstall`、`install`、`postinstall` 或 `prepare`，就始终要求构建授权并保持引导安装；已经提交运行产物也不会取消生命周期脚本的风险提示。精确 npm tarball 不会在作为依赖安装时执行 `prepare`，因此包含完整运行产物且通过静态验证的 npm 版本仍可自动安装。
 
 README 中错误的迁移地址只作为审计信息。如果当前仓库的精确 commit 自身完整且可安装，不会因此被阻断。证据缺失或互相矛盾时，插件保持引导安装，不会靠猜测开放一键安装。
 

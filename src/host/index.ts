@@ -70,15 +70,13 @@ import {
   profileLocation,
   reconcileBundles,
   setBundleEnabled,
-  type ProfileLocation,
 } from './profile.ts'
 import {
   createProfilePackageLink,
   installLocation,
-  installedPluginTarget,
-  isManagedPluginTarget,
   linkProfilePeerDependencies,
   localDependencySpec,
+  managedInstalledPluginTarget,
   marketplaceSettingsPath,
   persistInstallLocation,
   pluginTarget,
@@ -528,9 +526,13 @@ export class MarketplaceService extends TypertRemoteService {
       if (kind === 'update' && before.dependencies?.[packageName] === undefined) {
         return fail('not-installed', packageName + ' is not installed in profile ' + profile.name + '.')
       }
-      const target = profile.custom
-        ? (kind === 'update' ? installedPluginTarget(profile, packageName, before) : pluginTarget(profile, packageName))
-        : profilePackagePath(profile.dir, packageName)
+      const existingCustomTarget = kind === 'update'
+        ? managedInstalledPluginTarget(profile, packageName, before)
+        : null
+      const customTarget = kind === 'install' && profile.custom
+        ? pluginTarget(profile, packageName)
+        : existingCustomTarget
+      const target = customTarget ?? profilePackagePath(profile.dir, packageName)
       if (kind === 'install' && existsSync(target)) {
         return fail('plugin-dir-exists', 'Install blocked: target directory already exists: ' + target, { target })
       }
@@ -550,7 +552,7 @@ export class MarketplaceService extends TypertRemoteService {
       }
       const job = this.jobs.create(kind, packageName)
       const spec = executableSpec(registered)
-      void this.driveInstall(job, profile, spec, before, registered.install.requiresRestart)
+      void this.driveInstall(job, profile, spec, before, registered.install.requiresRestart, customTarget)
       return ok({ jobId: job.jobId })
     } catch (error) {
       return toFailure(error)
@@ -578,13 +580,14 @@ export class MarketplaceService extends TypertRemoteService {
     spec: string,
     before: ProfileManifest,
     requiresRestart = true,
+    customTarget: string | null = null,
   ): Promise<void> {
-    if (!profile.custom) {
+    if (customTarget === null) {
       await this.driveProfileInstall(job, profile, spec, before, requiresRestart)
       return
     }
     const stageDir = join(dirname(marketplaceSettingsPath()), 'staging', job.jobId)
-    const target = pluginTarget(profile, job.packageName)
+    const target = customTarget
     const backup = target + '.marketplace-backup-' + job.jobId
     const manifestPath = join(profile.dir, 'package.json')
     const originalManifest = readFileSync(manifestPath, 'utf8')
@@ -603,7 +606,7 @@ export class MarketplaceService extends TypertRemoteService {
       if (stagedManifest === null) throw new Error('Downloaded package ' + job.packageName + ' could not be found in staging.')
       const conflict = stagedInstallConflict(job.packageName, stageDir, before, profile.dir)
       if (conflict !== null) throw new Error(conflict.message)
-      mkdirSync(profile.pluginDir, { recursive: true })
+      mkdirSync(dirname(target), { recursive: true })
       if (existsSync(target)) {
         renameSync(target, backup)
         backupCreated = true
@@ -617,7 +620,12 @@ export class MarketplaceService extends TypertRemoteService {
       const copiedManifest = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')) as { name?: unknown }
       if (copiedManifest.name !== job.packageName) throw new Error('Downloaded package identity mismatch: expected ' + job.packageName + '.')
       this.jobs.append(job, 'Installing dependencies inside the plugin directory.\n')
-      code = await runPnpmJob(job, ['install', '--prod', '--ignore-scripts'], target, this.jobs, profile.storeDir)
+      code = await runPnpmJob(job, [
+        'install',
+        '--prod',
+        '--ignore-scripts',
+        '--config.auto-install-peers=false',
+      ], target, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Plugin dependency install failed: pnpm exited with code ' + String(code) + '.')
       const linkedPeers = linkProfilePeerDependencies(target, profile.dir)
       if (linkedPeers.length > 0) this.jobs.append(job, 'Linked DSH host dependencies: ' + linkedPeers.join(', ') + '\n')
@@ -716,7 +724,8 @@ export class MarketplaceService extends TypertRemoteService {
     before: ProfileManifest,
     requiresRestart = true,
   ): Promise<void> {
-    if (!profile.custom) {
+    const target = managedInstalledPluginTarget(profile, job.packageName, before)
+    if (target === null) {
       await this.driveProfileUninstall(job, profile, before, requiresRestart)
       return
     }
@@ -725,9 +734,6 @@ export class MarketplaceService extends TypertRemoteService {
     let manifestWritten = false
     try {
       this.jobs.phase(job, 'running')
-      const spec = before.dependencies?.[job.packageName]
-      const target = installedPluginTarget(profile, job.packageName, before)
-      const managedTarget = typeof spec === 'string' && spec.startsWith('file:') && isManagedPluginTarget(profile, job.packageName, target)
       const next = JSON.parse(originalManifest) as ProfileManifest
       if (next.dependencies !== undefined) delete next.dependencies[job.packageName]
       const bundles = next.dsh?.profile?.bundles ?? []
@@ -742,7 +748,7 @@ export class MarketplaceService extends TypertRemoteService {
       } catch (error) {
         this.jobs.append(job, 'Warning: the old runtime package could not be removed until DSH restarts: ' + (error instanceof Error ? error.message : String(error)) + '\n')
       }
-      if (managedTarget && existsSync(target)) rmSync(target, { recursive: true, force: true })
+      if (existsSync(target)) rmSync(target, { recursive: true, force: true })
       this.jobs.settle(job, { packageName: job.packageName, version: 'removed', requiresRestart })
     } catch (error) {
       if (manifestWritten) {

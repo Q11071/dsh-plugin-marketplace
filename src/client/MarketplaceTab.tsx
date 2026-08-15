@@ -43,7 +43,7 @@ export interface MarketplaceTabInjected {
   setEnabled: (packageName: string, enabled: boolean) => Promise<MarketplaceToggleResult>
   installLocation: () => Promise<MarketplaceInstallLocation>
   setInstallDir: (installDir: string) => Promise<MarketplaceInstallLocation>
-  chooseInstallDir: () => Promise<string>
+  chooseInstallDir: () => Promise<string | null>
   diagnoseConflicts: () => Promise<MarketplaceDiagnoseConflictsResult>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
   installed: () => Promise<MarketplaceInstalled>
@@ -837,7 +837,7 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
         </div>
         <div style={s.actions}>
           {operationActive ? (
-            <Button variant='primary' size='sm' disabled>{activeJobLabel(job ?? { kind: startingKind }, t)}</Button>
+            <Button variant='primary' size='sm' disabled>{activeJobLabel({ kind: job?.kind ?? startingKind ?? 'install' }, t)}</Button>
           ) : isInstalled ? (
             <Button variant='outline' size='sm' disabled>{t('installedTag')}</Button>
           ) : profileLoading ? (
@@ -967,7 +967,7 @@ function InstalledList({ entries, currentProfile, loading, error, t, onRetry, on
               {!entry.linked ? (
                 <Button variant='outline' size='sm' disabled>{t('profileActionsUnavailable')}</Button>
               ) : operationActive ? (
-                <Button variant='primary' size='sm' disabled>{activeJobLabel(job ?? { kind: startingKind }, t)}</Button>
+                <Button variant='primary' size='sm' disabled>{activeJobLabel({ kind: job?.kind ?? startingKind ?? 'install' }, t)}</Button>
               ) : entry.updateAvailable && entry.canUpdate ? (
                 <Button variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
                   {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}

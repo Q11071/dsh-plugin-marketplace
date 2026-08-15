@@ -40,11 +40,14 @@ try {
   mkdirSync(emptyDir, { recursive: true })
   ok('missing node_modules resolves to null', () => assert.equal(linkedPnpmStore(emptyDir), null))
 
-  // Relative storeDir is preserved verbatim (the caller resolves it later).
+  // Relative storeDir is resolved against the bound project before it is
+  // forwarded to staging or external plugin directories with another cwd.
   const relDir = join(tmp, 'relative')
   mkdirSync(join(relDir, 'node_modules'), { recursive: true })
   writeFileSync(join(relDir, 'node_modules', '.modules.yaml'), 'storeDir: ../../shared-store\n')
-  ok('relative storeDir preserved', () => assert.equal(linkedPnpmStore(relDir), '../../shared-store'))
+  ok('relative storeDir resolved against the linked project', () => {
+    assert.equal(linkedPnpmStore(relDir), join(relDir, '../../shared-store'))
+  })
 
   // Empty JSON storeDir falls back to the YAML scan / null.
   const emptyStore = join(tmp, 'empty-store')

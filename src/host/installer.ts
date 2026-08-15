@@ -5,7 +5,7 @@
 
 import { spawn } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { isAbsolute, join, resolve } from 'node:path'
 import type {
   MarketplaceJobKind,
   MarketplaceJobPhase,
@@ -136,13 +136,16 @@ export function linkedPnpmStore(dir: string): string | null {
     try {
       const parsed = JSON.parse(metadata) as { storeDir?: unknown }
       if (typeof parsed?.storeDir === 'string' && parsed.storeDir.trim() !== '') {
-        return parsed.storeDir.trim()
+        const storeDir = parsed.storeDir.trim()
+        return isAbsolute(storeDir) ? storeDir : resolve(dir, storeDir)
       }
     } catch {
       // Fall through to the YAML scan below.
     }
     const match = /^\s*["']?storeDir["']?\s*:\s*["']?([^"'\r\n]+)["']?\s*,?\s*$/m.exec(metadata)
-    return match?.[1]?.trim() || null
+    const storeDir = match?.[1]?.trim()
+    if (storeDir === undefined || storeDir === '') return null
+    return isAbsolute(storeDir) ? storeDir : resolve(dir, storeDir)
   } catch {
     return null
   }

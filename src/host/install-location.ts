@@ -11,6 +11,7 @@ import {
   existsSync,
   lstatSync,
   mkdirSync,
+  realpathSync,
   readFileSync,
   renameSync,
   rmSync,
@@ -19,7 +20,8 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { homedir } from 'node:os'
-import { basename, dirname, join, relative, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import type { ProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { linkedPnpmStore } from './installer.ts'
@@ -111,11 +113,24 @@ export function persistInstallLocation(profileDir: string, requestedDir: string)
 
 /** Folder name used for a package inside the plugin entity directory. */
 export function pluginFolderName(packageName: string): string {
-  return packageName.includes('/') ? packageName.slice(packageName.lastIndexOf('/') + 1) : packageName
+  return packageName
 }
 
 export function pluginTarget(profile: ProfileInstallLocation, packageName: string): string {
-  return join(profile.pluginDir, pluginFolderName(packageName))
+  return join(profile.pluginDir, ...packageName.split('/'))
+}
+
+function fileDependencyTarget(profileDir: string, spec: string): string {
+  const value = spec.slice(5)
+  if (value.startsWith('//')) {
+    try {
+      return fileURLToPath(spec)
+    } catch {
+      // Fall through to path resolution so malformed specs fail validation
+      // without escaping the marketplace-managed root checks.
+    }
+  }
+  return resolve(profileDir, value)
 }
 
 /**
@@ -126,7 +141,7 @@ export function pluginTarget(profile: ProfileInstallLocation, packageName: strin
 export function installedPluginTarget(profile: ProfileInstallLocation, packageName: string, manifest: ProfileManifest): string {
   const spec = manifest.dependencies?.[packageName]
   if (typeof spec === 'string' && spec.startsWith('file:')) {
-    const target = resolve(profile.dir, spec.slice(5))
+    const target = fileDependencyTarget(profile.dir, spec)
     if (!target.toLocaleLowerCase().endsWith('.tgz')) return target
   }
   return pluginTarget(profile, packageName)
@@ -143,21 +158,35 @@ export function knownPluginRoots(profile: ProfileInstallLocation): string[] {
 
 /** Whether a target directory is a marketplace-managed entity of packageName. */
 export function isManagedPluginTarget(profile: ProfileInstallLocation, packageName: string, target: string): boolean {
-  const expectedFolder = pluginFolderName(packageName).toLocaleLowerCase()
-  const resolvedTarget = resolve(target)
-  if (basename(resolvedTarget).toLocaleLowerCase() !== expectedFolder) return false
-  if (!knownPluginRoots(profile).some(root => dirname(resolvedTarget).toLocaleLowerCase() === root)) return false
+  const resolvedTarget = resolve(target).toLocaleLowerCase()
+  const expectedTargets = knownPluginRoots(profile)
+    .map(root => resolve(root, ...packageName.split('/')).toLocaleLowerCase())
+  if (!expectedTargets.includes(resolvedTarget)) return false
   try {
-    const manifest = JSON.parse(readFileSync(join(resolvedTarget, 'package.json'), 'utf8')) as { name?: unknown }
+    const manifest = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')) as { name?: unknown }
     return manifest.name === packageName
   } catch {
     return false
   }
 }
 
+/** Existing marketplace-managed external entity, independent of the current setting. */
+export function managedInstalledPluginTarget(
+  profile: ProfileInstallLocation,
+  packageName: string,
+  manifest: ProfileManifest,
+): string | null {
+  const spec = manifest.dependencies?.[packageName]
+  if (typeof spec !== 'string' || !spec.startsWith('file:') || spec.toLocaleLowerCase().endsWith('.tgz')) return null
+  const target = installedPluginTarget(profile, packageName, manifest)
+  return isManagedPluginTarget(profile, packageName, target) ? target : null
+}
+
 function dependencyPath(root: string, packageName: string): string {
   return join(root, ...packageName.split('/'))
 }
+
+const PACKAGE_NAME_RE = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
 
 /** Compatible aliases for Host peer dependencies declared with legacy names. */
 const HOST_PEER_ALIASES: Record<string, string> = {
@@ -179,8 +208,8 @@ export function linkProfilePeerDependencies(target: string, profileDir: string):
   const peerMeta = manifest.peerDependenciesMeta ?? {}
   const linked: string[] = []
   for (const packageName of Object.keys(peers)) {
+    if (!PACKAGE_NAME_RE.test(packageName)) throw new Error('Invalid host peer dependency name: ' + packageName + '.')
     const destination = dependencyPath(join(target, 'node_modules'), packageName)
-    if (existsSync(destination)) continue
     const providedNames = [packageName, HOST_PEER_ALIASES[packageName]].filter((value): value is string => value !== undefined)
     const candidates = providedNames.flatMap((providedName) => [
       dependencyPath(join(profileDir, 'node_modules'), providedName),
@@ -191,6 +220,14 @@ export function linkProfilePeerDependencies(target: string, profileDir: string):
       if (peerMeta?.[packageName]?.optional === true) continue
       throw new Error('Required host peer dependency is unavailable: ' + packageName + '.')
     }
+    if (existsSync(destination)) {
+      try {
+        if (realpathSync(destination).toLocaleLowerCase() === realpathSync(source).toLocaleLowerCase()) continue
+      } catch {
+        // Replace a stale or unreadable peer entry with the Host-owned one.
+      }
+      removePackagePath(destination)
+    }
     mkdirSync(dirname(destination), { recursive: true })
     symlinkSync(source, destination, process.platform === 'win32' ? 'junction' : 'dir')
     linked.push(packageName)
@@ -200,7 +237,10 @@ export function linkProfilePeerDependencies(target: string, profileDir: string):
 
 /** file: spec pointing from the Profile directory at an external entity. */
 export function localDependencySpec(profileDir: string, target: string): string {
-  let value = relative(profileDir, target).replace(/\\/g, '/')
+  const resolvedTarget = resolve(target)
+  let value = relative(resolve(profileDir), resolvedTarget)
+  if (isAbsolute(value)) return 'file:' + resolvedTarget.replace(/\\/g, '/')
+  value = value.replace(/\\/g, '/')
   if (!value.startsWith('.')) value = './' + value
   return 'file:' + value
 }

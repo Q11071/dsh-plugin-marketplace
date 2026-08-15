@@ -14,6 +14,7 @@ import {
   installedPluginTarget,
   linkProfilePeerDependencies,
   localDependencySpec,
+  managedInstalledPluginTarget,
   marketplaceSettingsPath,
   persistInstallLocation,
   pluginFolderName,
@@ -36,8 +37,8 @@ try {
   process.env.DSH_HOME = dshHome
 
   // ── folder naming ─────────────────────────────────────────────────────
-  ok('pluginFolderName strips scopes', () => {
-    assert.equal(pluginFolderName('@scope/plugin'), 'plugin')
+  ok('pluginFolderName preserves scopes', () => {
+    assert.equal(pluginFolderName('@scope/plugin'), '@scope/plugin')
     assert.equal(pluginFolderName('plain'), 'plain')
   })
 
@@ -49,8 +50,9 @@ try {
     pluginDir: join(tmp, 'plugins'),
     storeDir: null,
   }
-  ok('pluginTarget maps scoped names to last path segment', () => {
-    assert.equal(pluginTarget(profile, '@scope/plugin'), join(profile.pluginDir, 'plugin'))
+  ok('pluginTarget keeps scoped packages in separate directories', () => {
+    assert.equal(pluginTarget(profile, '@scope/plugin'), join(profile.pluginDir, '@scope', 'plugin'))
+    assert.notEqual(pluginTarget(profile, '@scope-a/plugin'), pluginTarget(profile, '@scope-b/plugin'))
   })
 
   const manifestWithDir = { name: 'p', dependencies: { plugin: 'file:./plugins/plugin' } } as unknown as ProfileManifest
@@ -71,6 +73,11 @@ try {
   ok('localDependencySpec emits relative file: specs', () => {
     assert.equal(localDependencySpec(profile.dir, join(profile.dir, 'plugins', 'plugin')), 'file:./plugins/plugin')
   })
+  if (process.platform === 'win32') {
+    ok('localDependencySpec emits an absolute file spec across Windows drives', () => {
+      assert.equal(localDependencySpec('C:/dsh/profile', 'D:/plugins/plugin'), 'file:D:/plugins/plugin')
+    })
+  }
 
   // ── settings persistence and directory switching ──────────────────────
   ok('persistInstallLocation writes custom dir and remembers roots', () => {
@@ -94,6 +101,18 @@ try {
     assert.ok(roots.includes(resolve(join(tmp, 'custom-b'))))
   })
 
+  const oldScopedTarget = join(tmp, 'custom-a', '@scope', 'plugin')
+  mkdirSync(oldScopedTarget, { recursive: true })
+  writeFileSync(join(oldScopedTarget, 'package.json'), JSON.stringify({ name: '@scope/plugin', version: '1.0.0' }))
+  const switchedProfile = { ...profile, pluginDir: join(tmp, 'custom-b') }
+  const switchedManifest = {
+    name: 'p',
+    dependencies: { '@scope/plugin': localDependencySpec(profile.dir, oldScopedTarget) },
+  } as unknown as ProfileManifest
+  ok('managed installed target remains the old entity after directory switching', () => {
+    assert.equal(managedInstalledPluginTarget(switchedProfile, '@scope/plugin', switchedManifest), oldScopedTarget)
+  })
+
   // ── host peer dependency linking ──────────────────────────────────────
   const hostProfile = join(tmp, 'host-profile')
   mkdirSync(join(hostProfile, 'node_modules', '@deepseek-ai', 'cordis'), { recursive: true })
@@ -114,6 +133,19 @@ try {
     const link = join(pluginDir, 'node_modules', 'cordis')
     assert.ok(existsSync(link))
     assert.ok(lstatSync(link).isSymbolicLink() || lstatSync(link).isDirectory())
+  })
+
+  const stalePeerPlugin = join(tmp, 'stale-peer-plugin')
+  mkdirSync(join(stalePeerPlugin, 'node_modules', 'cordis'), { recursive: true })
+  writeFileSync(join(stalePeerPlugin, 'package.json'), JSON.stringify({
+    name: 'stale-peer-plugin',
+    version: '1.0.0',
+    peerDependencies: { cordis: '^4.0.0' },
+  }))
+  writeFileSync(join(stalePeerPlugin, 'node_modules', 'cordis', 'package.json'), JSON.stringify({ name: 'cordis', version: '0.0.0' }))
+  ok('linkProfilePeerDependencies replaces an auto-installed peer with the Host peer', () => {
+    assert.deepEqual(linkProfilePeerDependencies(stalePeerPlugin, hostProfile), ['cordis'])
+    assert.ok(lstatSync(join(stalePeerPlugin, 'node_modules', 'cordis')).isSymbolicLink())
   })
 
   const missingRequired = join(tmp, 'missing-peer-plugin')
