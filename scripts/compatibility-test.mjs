@@ -132,7 +132,7 @@ function result(repository, commit, status) {
     packageName: repository.split('/')[1],
     version: '1.0.0',
     profile: 'web',
-    harnessVersion: 2,
+    harnessVersion: 3,
     checkedAt: '2026-08-16T00:00:00Z',
     result: status,
     scope: 'compatibility',

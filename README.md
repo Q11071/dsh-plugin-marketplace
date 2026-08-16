@@ -245,7 +245,7 @@ pnpm registry:audit
 
 静态检测不会执行插件代码，主要寻找反向 Shell、破坏性系统命令、持久化、矿工特征、编码载荷执行、凭据读取与联网组合、下载与进程执行组合，以及仓库内原生可执行文件。静态检查未要求人工复核时，Host 入口才会被放入无网络、只读文件系统、无额外 capability、受内存/PID/CPU 限制且不包含 Token 的临时 Docker 容器中导入。依赖缺失会记录为“不确定”，不会误报为恶意。
 
-兼容性工作流只选择当前精确 commit 已通过静态检查、且具有精确自动安装来源的插件。安装阶段使用官方 DSH CLI 和 `--ignore-scripts`，只挂载一次性临时目录；运行阶段移除网络、Token、额外 capability 和宿主工作区，先启动干净 DSH 基线，再启动插件 Profile 并检查是否能在 SIGTERM 后释放。当前 Harness v1 尚未真正执行 Mock Agent Loop、浏览器 React 挂载和旧版本更新回滚，因此这些项目明确记录为 `unsupported` 或 `inconclusive`，总结果只能是 `partial`，不会显示成完整兼容性通过。
+兼容性工作流只选择当前精确 commit 已通过静态检查、且具有精确自动安装来源的插件。安装阶段使用官方 DSH CLI 和 `--ignore-scripts`，仅对白名单中的官方 DSH `node-pty@1.1.0` 运行时依赖执行重建，并只挂载一次性临时目录；插件及其依赖的生命周期脚本始终不会执行。运行阶段移除网络、Token、额外 capability 和宿主工作区，先启动干净 DSH 基线，再启动插件 Profile 并检查是否能在 SIGTERM 后释放。当前 Harness 尚未真正执行 Mock Agent Loop 和浏览器 React 挂载，因此这些项目明确记录为 `unsupported` 或 `inconclusive`，不会显示成完整兼容性通过。
 
 只有最终合并报告的任务拥有仓库写权限。运行第三方代码的沙箱任务不接收 PAT、不持久化 checkout 凭据，也不能修改宿主报告；合并器会再次核对计划中的仓库与 40 位 commit 后才接受结果。检测结果为启发式风险信号，命中高风险规则时转为引导安装和人工复核，不把单条规则当作恶意代码的最终定论。
 

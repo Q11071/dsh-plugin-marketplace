@@ -1,7 +1,7 @@
 /** Shared policy for exact-commit DSH runtime compatibility verification. */
 
 export const COMPATIBILITY_POLICY_VERSION = 1
-export const COMPATIBILITY_HARNESS_VERSION = 2
+export const COMPATIBILITY_HARNESS_VERSION = 3
 export const COMPATIBILITY_CHECKS = Object.freeze([
   'install',
   'hostLoad',
