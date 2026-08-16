@@ -21,6 +21,8 @@ Registry refresh commits are grouped instead of listed individually.
 - Exhausting the GitHub API allowance during candidate validation now checkpoints completed work and defers the rest instead of discarding the entire run.
 - Guided audits read READMEs from exact-commit Raw URLs and no longer consume the discovery PAT's API allowance.
 - An oversized README or temporary per-repository network failure now leaves that entry guided with incomplete audit evidence instead of failing the entire Registry workflow.
+- The security sandbox now reports an uncommitted runtime entry or missing runtime dependency as inconclusive instead of a runtime failure, and scanner-version upgrades prioritize old results for rechecking.
+- Persistence findings now require both a scheduler/autostart signal and process-execution capability, reducing false positives from plugins that only display cron-related text.
 
 ## [0.9.1] - 2026-08-15
 

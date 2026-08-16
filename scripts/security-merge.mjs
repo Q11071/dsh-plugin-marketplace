@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import {
   applySecurityGate,
   SECURITY_POLICY_VERSION,
+  SECURITY_SCANNER_VERSION,
   validSecurityReportRoot,
   validSecurityResult,
 } from './security-core.mjs'
@@ -64,6 +65,7 @@ for (const [key, target] of planned) {
     verifiedCommit: target.verifiedCommit,
     packageName: plugin.packageName,
     version: plugin.version,
+    scannerVersion: SECURITY_SCANNER_VERSION,
     scannedAt: new Date().toISOString(),
     status: 'error',
     riskScore: 0,
@@ -131,6 +133,7 @@ function sanitizeResult(value) {
     verifiedCommit: value.verifiedCommit,
     packageName: value.packageName,
     version: value.version,
+    scannerVersion: value.scannerVersion ?? SECURITY_SCANNER_VERSION,
     scannedAt: value.scannedAt,
     status: value.status,
     riskScore: value.riskScore,

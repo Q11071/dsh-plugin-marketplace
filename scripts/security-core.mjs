@@ -1,6 +1,7 @@
 /** Shared policy for incremental, exact-commit plugin security scans. */
 
 export const SECURITY_POLICY_VERSION = 1
+export const SECURITY_SCANNER_VERSION = 2
 export const SECURITY_REASON_PENDING = 'security-scan-pending-for-exact-commit'
 export const SECURITY_REASON_REVIEW = 'security-scan-requires-manual-review'
 export const SECURITY_REASON_RETRY = 'security-scan-could-not-complete'
@@ -45,6 +46,8 @@ export function planSecurityScan(registry, report, limit = 100, batchSize = 5) {
     if (previous === undefined) {
       priority = Date.parse(plugin.verifiedAt) >= Date.parse(report.enforcementStartedAt) ? 1 : 3
     } else if (previous.verifiedCommit !== plugin.verifiedCommit) {
+      priority = 0
+    } else if (previous.scannerVersion !== SECURITY_SCANNER_VERSION) {
       priority = 0
     } else if (previous.status === 'error') {
       priority = 2
@@ -138,7 +141,7 @@ export function analyzePluginFiles(files, manifest = undefined) {
     if (signals.destructive) addFinding(findings, 'destructive-system-command', 'critical', file.path, lineOf(text, signals.destructive.index))
     if (signals.reverseShell) addFinding(findings, 'reverse-shell-indicator', 'critical', file.path, lineOf(text, signals.reverseShell.index))
     if (signals.miner) addFinding(findings, 'crypto-miner-indicator', 'critical', file.path, lineOf(text, signals.miner.index))
-    if (signals.persistence) addFinding(findings, 'persistence-installation', 'high', file.path, lineOf(text, signals.persistence.index))
+    if (signals.persistence && signals.process) addFinding(findings, 'persistence-installation', 'high', file.path, lineOf(text, signals.persistence.index))
     if (signals.encodedExecution) addFinding(findings, 'encoded-payload-execution', 'high', file.path, lineOf(text, signals.encodedExecution.index))
     if (signals.credentials) addFinding(findings, 'sensitive-credential-access', 'medium', file.path, lineOf(text, signals.credentials.index))
     if (signals.dynamic) addFinding(findings, 'dynamic-code-execution', 'medium', file.path, lineOf(text, signals.dynamic.index))
@@ -187,6 +190,7 @@ export function validSecurityResult(value) {
     && /^[0-9a-f]{40}$/i.test(value.verifiedCommit ?? '')
     && typeof value.packageName === 'string'
     && typeof value.version === 'string'
+    && (value.scannerVersion === undefined || (Number.isInteger(value.scannerVersion) && value.scannerVersion >= 1))
     && !Number.isNaN(Date.parse(value.scannedAt))
     && ['passed', 'review', 'error'].includes(value.status)
     && Number.isInteger(value.riskScore)

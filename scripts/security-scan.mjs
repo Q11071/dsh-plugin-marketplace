@@ -5,7 +5,7 @@
 
 import { execFile } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
@@ -14,7 +14,11 @@ import { promisify } from 'node:util'
 import { createGunzip } from 'node:zlib'
 import { fileURLToPath } from 'node:url'
 import tar from 'tar-stream'
-import { analyzePluginFiles, SECURITY_POLICY_VERSION } from './security-core.mjs'
+import {
+  analyzePluginFiles,
+  SECURITY_POLICY_VERSION,
+  SECURITY_SCANNER_VERSION,
+} from './security-core.mjs'
 
 const execute = promisify(execFile)
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -65,6 +69,7 @@ async function scanPlugin(plugin) {
       verifiedCommit: plugin.verifiedCommit,
       packageName: plugin.packageName,
       version: plugin.version,
+      scannerVersion: SECURITY_SCANNER_VERSION,
       scannedAt,
       status: analysis.status,
       riskScore: analysis.riskScore,
@@ -84,6 +89,7 @@ async function scanPlugin(plugin) {
       verifiedCommit: plugin.verifiedCommit,
       packageName: plugin.packageName,
       version: plugin.version,
+      scannerVersion: SECURITY_SCANNER_VERSION,
       scannedAt,
       status: 'error',
       riskScore: 0,
@@ -159,8 +165,14 @@ async function extractSnapshot(compressed, destination) {
 async function syntaxCheck(directory, entry) {
   if (entry === null) return { status: 'inconclusive', reason: 'runtime-entry-could-not-be-resolved' }
   if (!/\.(?:cjs|js|mjs)$/i.test(entry)) return { status: 'inconclusive', reason: 'runtime-entry-is-not-javascript' }
+  const entryPath = path.join(directory, ...entry.split('/'))
   try {
-    await execute(process.execPath, ['--check', path.join(directory, ...entry.split('/'))], {
+    await access(entryPath)
+  } catch {
+    return { status: 'inconclusive', reason: 'runtime-entry-is-not-committed-at-exact-source' }
+  }
+  try {
+    await execute(process.execPath, ['--check', entryPath], {
       timeout: 15_000,
       windowsHide: true,
       maxBuffer: 256 * 1024,
@@ -189,14 +201,15 @@ async function sandboxImport(directory, entry) {
     await execute('docker', args, { timeout: 30_000, windowsHide: true, maxBuffer: 512 * 1024 })
     return { status: 'passed', reason: 'entry-imported-in-no-network-read-only-sandbox' }
   } catch (error) {
+    const fullDetail = errorOutput(error)
     const detail = boundedReason(error)
-    if (/Cannot find package|ERR_MODULE_NOT_FOUND|Cannot find module/i.test(detail)) {
+    if (/Cannot find package|ERR_MODULE_NOT_FOUND|Cannot find module/i.test(fullDetail)) {
       return { status: 'inconclusive', reason: 'sandbox-missing-runtime-dependency' }
     }
-    if (/ENOENT|not recognized|not found/i.test(detail) && /docker/i.test(detail)) {
+    if (/ENOENT|not recognized|not found/i.test(fullDetail) && /docker/i.test(fullDetail)) {
       return { status: 'unavailable', reason: 'docker-is-unavailable' }
     }
-    if (/timed out|status 124|SIGKILL/i.test(detail)) {
+    if (/timed out|status 124|SIGKILL/i.test(fullDetail)) {
       return { status: 'failed', reason: 'sandbox-runtime-timeout' }
     }
     return { status: 'failed', reason: 'sandbox-import-failed: ' + detail }
@@ -299,8 +312,14 @@ function parseTargets(value) {
 }
 
 function boundedReason(error) {
-  const output = [error?.message, error?.stderr, error?.stdout].filter(value => typeof value === 'string' && value !== '').join(' | ')
+  const output = errorOutput(error)
   return output.replace(/[\r\n\t]+/g, ' ').slice(0, 500) || String(error).slice(0, 500)
+}
+
+function errorOutput(error) {
+  return [error?.stderr, error?.stdout, error?.message]
+    .filter(value => typeof value === 'string' && value !== '')
+    .join(' | ')
 }
 
 function argument(name) {

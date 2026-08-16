@@ -58,6 +58,10 @@ const plan = planSecurityScan(registry, report, 3, 2)
 assert.deepEqual(plan.selected.map(row => row.repository), ['owner/stale', 'owner/new', 'owner/retry'])
 assert.equal(plan.batches.length, 2)
 assert.equal(plan.remaining, 1)
+const legacyResult = result('owner/done', 'f', 'passed')
+delete legacyResult.scannerVersion
+const legacyPlan = planSecurityScan({ plugins: [registry.plugins[4]] }, securityReport([legacyResult]), 1, 1)
+assert.equal(legacyPlan.selected.length, 1, 'older scanner results must be rechecked once')
 assert.equal(securityGateReason(registry.plugins[1], report), SECURITY_REASON_PENDING)
 assert.equal(securityGateReason(registry.plugins[3], report), null, 'pre-enforcement plugins remain visible during backfill')
 
@@ -133,6 +137,7 @@ function result(repository, commit, status) {
     verifiedCommit: commit.repeat(40),
     packageName: repository.split('/')[1],
     version: '1.0.0',
+    scannerVersion: 2,
     scannedAt: '2026-08-16T00:00:00Z',
     status,
     riskScore: 0,
