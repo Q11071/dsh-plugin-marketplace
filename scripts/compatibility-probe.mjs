@@ -123,8 +123,14 @@ async function clientCheck(target, inspection) {
       || (typeof plugin !== 'function' && typeof plugin.apply !== 'function')) {
       return check('failed', 'client-module-factory-returned-no-cordis-plugin-exports')
     }
-    return check('inconclusive', 'client-module-factory-loaded-browser-react-mount-not-executed-by-harness-v1')
+    return check('inconclusive', 'client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness')
   } catch (error) {
+    if (/undeclared client platform module: @deepseek-ai\/dsh-client-[^\s]+\/client/i.test(reason(error))) {
+      return check('inconclusive', 'official-client-graph-dependency-is-not-materialized-by-node-harness: ' + reason(error))
+    }
+    if (/Unknown file extension ["']\.css["']/i.test(reason(error))) {
+      return check('inconclusive', 'official-client-module-css-cannot-be-loaded-by-node-harness: ' + reason(error))
+    }
     if (/Cannot find package|Cannot find module|ERR_MODULE_NOT_FOUND|browser|document|window/i.test(reason(error))) {
       return check('unsupported', 'client-platform-runtime-is-incomplete: ' + reason(error))
     }

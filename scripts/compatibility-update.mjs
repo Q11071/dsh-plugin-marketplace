@@ -51,6 +51,8 @@ try {
   const detail = reason(error)
   if (/EAI_AGAIN|ENETUNREACH|ECONNRESET|ETIMEDOUT|HTTP\s+(?:429|5\d\d)/i.test(detail)) {
     await result('inconclusive', 'update-probe-network-error: ' + detail)
+  } else if (/update re-enabled a disabled bundle/i.test(detail)) {
+    await result('inconclusive', 'official-dsh-cli-did-not-preserve-disabled-state-during-update')
   } else if (phase === 'previous-install') {
     await result('unsupported', 'previous-version-could-not-be-staged-without-scripts: ' + detail)
   } else {
