@@ -20,8 +20,12 @@ const checks = {
   networkIsolation: check('passed', 'runtime-container-network-is-none'),
 }
 
-const executable = '/work/runtime/node_modules/.bin/dsh'
+const dshPackageDir = '/work/runtime/node_modules/@deepseek-ai/dsh'
 try {
+  const dshManifest = JSON.parse(await readFile(path.join(dshPackageDir, 'package.json'), 'utf8'))
+  const dshBin = typeof dshManifest.bin === 'string' ? dshManifest.bin : dshManifest.bin?.dsh
+  if (typeof dshBin !== 'string' || dshBin.length === 0) throw new Error('official DSH package does not declare its CLI entry')
+  const executable = path.resolve(dshPackageDir, dshBin)
   await access(executable)
   const baseline = await observeHost(executable, target.profile, '/work/baseline-home')
   if (baseline.hostLoad.status !== 'passed') {
@@ -119,7 +123,9 @@ async function updateCheck() {
 }
 
 async function observeHost(executable, profile, dshHome) {
-  const child = spawn(executable, ['--profile', profile], {
+  // DSH's bundled HMR service deliberately checks process.execArgv, so this
+  // cannot be supplied through NODE_OPTIONS (Node also rejects it there).
+  const child = spawn(process.execPath, ['--expose-internals', executable, '--profile', profile], {
     cwd: '/work/agent-workspace',
     env: {
       PATH: process.env.PATH ?? '/usr/local/bin:/usr/bin:/bin',
