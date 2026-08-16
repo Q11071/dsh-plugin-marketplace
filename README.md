@@ -180,6 +180,7 @@ flowchart LR
 | [`registry/guided-audit.json`](./registry/guided-audit.json) | 所有引导安装条目的逐轮复验结果 |
 | [`registry/security-report.json`](./registry/security-report.json) | 按仓库和精确 commit 保存的恶意行为检测与隔离探测结果 |
 | [`registry/compatibility-report.json`](./registry/compatibility-report.json) | 官方 DSH CLI 安装、Host 启动、释放及受限分项兼容性结果 |
+| `registry/full-scan-state.json` | 一键全量扫描首次运行后生成的会话、轮次、剩余工作与暂停原因断点 |
 | [`registry/install-review.json`](./registry/install-review.json) | 安装命令、Profile、生命周期脚本与运行产物证据 |
 | [`registry/rejected.json`](./registry/rejected.json) | 未通过结构验证的候选及原因 |
 | [`registry/state.json`](./registry/state.json) | 增量扫描状态与每日 Star 基线 |
@@ -212,7 +213,11 @@ dsh --profile web
 
 ## 自动扫描与 PAT
 
-[聚合验证工作流](./.github/workflows/daily-registry-scan.yml) 默认每两小时在第 17 分钟执行。一次运行会依次完成仓库发现与安装分类、精确 commit 安全扫描、对本轮安全通过条目的运行时兼容性验证，最后统一合并两份报告，不再等待下一条工作流。手动运行时可用 `max_plugins` 控制本轮安全和兼容性阶段各自最多处理的条目数，默认均为 100。
+[聚合验证工作流](./.github/workflows/daily-registry-scan.yml) 默认每两小时在第 17 分钟执行。一次运行会依次完成仓库发现与安装分类、精确 commit 安全扫描、对本轮安全通过条目的运行时兼容性验证，最后统一合并两份报告，不再等待下一条工作流。手动运行选择 `incremental` 时，可用 `max_plugins` 控制两个阶段各自最多处理的条目数，默认均为 100。
+
+手动选择 `full` 即可启动一次一键全量扫描。首轮先刷新仓库发现，之后每轮处理最多 200 个安全目标和 200 个已通过安全门禁的兼容性目标；报告和 `registry/full-scan-state.json` 提交成功后，工作流使用内部 `repository_dispatch` 自动启动下一轮。后续轮次不会重复执行全仓库发现，已具有当前精确 commit 结果的条目也会自动跳过。这样即使某轮被中断，再次选择 `full` 也会直接从现有报告继续，而不是重扫已经完成的 commit。
+
+全量模式最多自动接力 50 轮，并在连续 3 轮没有新增证据、GitHub Core API 剩余额度低于 750，或所有待处理项已经完成时停止。前两项会将状态写为 `paused` 并记录原因；额度下限与轮数上限可分别用 Actions Variables `FULL_SCAN_RATE_MINIMUM`、`FULL_SCAN_MAX_WAVES` 调整。暂停后再次手动选择 `full` 会基于现有断点创建新的续扫会话。
 
 扫描优先使用 Actions Secret `REGISTRY_GITHUB_TOKEN` 中的只读 PAT；未配置时回退到仓库自动提供的 `GITHUB_TOKEN`。PAT 只用于读取 GitHub API，不参与 Registry 提交；写回仓库仍使用 Actions checkout 的内置凭据。
 
@@ -239,7 +244,7 @@ pnpm registry:audit
 - npm 压缩包：50 MiB
 - npm 解包内容：150 MiB
 
-安全阶段每轮最多选择 100 个精确 commit，先处理分类器判断可自动安装的条目，其内部优先级依次为 commit 已变化、新收录、上次临时失败和首次存量回填，并按每批 5 个、最多 4 批并行执行。未变化且已有结果的 commit 不会重复扫描。新收录或发生变化的 commit 在结果产生前会临时保持引导安装，但状态中会保存分类器的原始安装决策；若本轮安全检查通过，会立即恢复该决策并进入同一次运行的兼容性阶段。启用安全策略前已经收录的条目继续在后台逐批补齐。
+安全阶段的定时/增量扫描默认每轮选择 100 个精确 commit，一键全量模式每轮选择 200 个。分类器判断可自动安装的条目优先，其内部优先级依次为 commit 已变化、新收录、上次临时失败和首次存量回填，并按每批 5 个、最多 4 批并行执行。未变化且已有结果的 commit 不会重复扫描。新收录或发生变化的 commit 在结果产生前会临时保持引导安装，但状态中会保存分类器的原始安装决策；若本轮安全检查通过，会立即恢复该决策并进入同一次运行的兼容性阶段。启用安全策略前已经收录的条目继续在后台逐批补齐。
 
 静态检测不会执行插件代码，主要寻找反向 Shell、破坏性系统命令、持久化、矿工特征、编码载荷执行、凭据读取与联网组合、下载与进程执行组合，以及仓库内原生可执行文件。静态检查未要求人工复核时，Host 入口才会被放入无网络、只读文件系统、无额外 capability、受内存/PID/CPU 限制且不包含 Token 的临时 Docker 容器中导入。依赖缺失会记录为“不确定”，不会误报为恶意。
 

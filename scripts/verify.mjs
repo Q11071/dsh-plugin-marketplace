@@ -18,6 +18,7 @@ import {
   validCompatibilityReportRoot,
   validCompatibilityResult,
 } from './compatibility-core.mjs'
+import { validFullScanState } from './full-scan-core.mjs'
 
 const require = createRequire(import.meta.url)
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -293,5 +294,14 @@ for (const status of compatibilityStatuses) {
 const compatibilityPending = registry.plugins.length - currentCompatibility.length
 if (compatibilityReport.summary?.pending !== compatibilityPending) throw new Error('compatibility report summary mismatch: pending')
 console.log('compatibility report contract valid: ' + currentCompatibility.length + ' current exact-commit results; ' + compatibilityPending + ' pending')
+
+// A full-scan checkpoint is created only after the first manual full wave.
+// Reports remain the source of truth; this sidecar records continuation state.
+const fullScanStatePath = path.join(root, 'registry', 'full-scan-state.json')
+if (existsSync(fullScanStatePath)) {
+  const fullScanState = JSON.parse(readFileSync(fullScanStatePath, 'utf8'))
+  if (!validFullScanState(fullScanState)) throw new Error('full scan state contract invalid')
+  console.log('full scan state contract valid: ' + fullScanState.status + ', wave ' + fullScanState.wave)
+}
 
 console.log('VERIFY OK')

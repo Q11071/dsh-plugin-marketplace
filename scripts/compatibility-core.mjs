@@ -20,7 +20,7 @@ export function planCompatibilityScan(registry, securityReport, report, limit = 
   if (!plainObject(registry) || !Array.isArray(registry.plugins)) throw new Error('Registry root is invalid')
   if (!plainObject(securityReport) || !Array.isArray(securityReport.results)) throw new Error('security report root is invalid')
   if (!validCompatibilityReportRoot(report)) throw new Error('compatibility report root is invalid')
-  if (!Number.isInteger(limit) || limit < 1 || limit > 100) throw new Error('compatibility scan limit must be between 1 and 100')
+  if (!Number.isInteger(limit) || limit < 1 || limit > 500) throw new Error('compatibility scan limit must be between 1 and 500')
   if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 5) throw new Error('compatibility batch size must be between 1 and 5')
 
   const security = new Map(securityReport.results.map(row => [row.repository?.toLocaleLowerCase(), row]))

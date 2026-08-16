@@ -183,6 +183,7 @@ Discovery and static scanning never install dependencies, execute third-party co
 | [`registry/guided-audit.json`](./registry/guided-audit.json) | Per-scan verification of every guided-install entry |
 | [`registry/security-report.json`](./registry/security-report.json) | Malware indicators and isolated probe results keyed by repository and exact commit |
 | [`registry/compatibility-report.json`](./registry/compatibility-report.json) | Official DSH CLI install, Host startup, disposal, and bounded per-check compatibility results |
+| `registry/full-scan-state.json` | Session, wave, remaining work, and pause-reason checkpoint created by the first one-click full scan |
 | [`registry/install-review.json`](./registry/install-review.json) | Evidence for commands, Profiles, lifecycle scripts, and runtime artifacts |
 | [`registry/rejected.json`](./registry/rejected.json) | Structurally invalid candidates and rejection reasons |
 | [`registry/state.json`](./registry/state.json) | Incremental scan state and daily Star baselines |
@@ -215,7 +216,11 @@ A custom Registry may omit `discovery.json`, `guided-audit.json`, `security-repo
 
 ## Automated scans and PAT usage
 
-The [aggregated verification workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours. One run discovers and classifies repositories, security-scans exact commits, immediately runtime-tests entries cleared in that same run, and finally merges both evidence reports. Manual dispatch exposes `max_plugins`, which limits each of the security and compatibility stages and defaults to 100.
+The [aggregated verification workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours. One run discovers and classifies repositories, security-scans exact commits, immediately runtime-tests entries cleared in that same run, and finally merges both evidence reports. In manual `incremental` mode, `max_plugins` limits each stage and defaults to 100.
+
+Select `full` in a manual dispatch for a one-click full scan. The first wave refreshes repository discovery; each wave then handles up to 200 security targets and 200 security-cleared compatibility targets. After reports and `registry/full-scan-state.json` are committed, an internal `repository_dispatch` starts the next wave. Continuation waves skip the expensive discovery pass, and exact commits that already have current evidence are skipped. If a wave is interrupted, selecting `full` again resumes from the committed reports instead of rescanning completed commits.
+
+Full mode stops after all work is complete, 50 automatic waves, three consecutive waves without new evidence, or when the GitHub Core API allowance falls below 750. A protective stop records `paused` and its reason. Configure the thresholds with the `FULL_SCAN_RATE_MINIMUM` and `FULL_SCAN_MAX_WAVES` Actions Variables. A later manual `full` dispatch creates a new continuation session over the existing checkpoint.
 
 Scans prefer the read-only PAT stored in the `REGISTRY_GITHUB_TOKEN` Actions Secret and fall back to the repository-provided `GITHUB_TOKEN`. The PAT is used only for GitHub API reads and never for Registry commits; writes continue to use the credential provided by Actions checkout.
 
@@ -242,7 +247,7 @@ The scanner automatically partitions GitHub Search results beyond the 1,000-resu
 - npm archive: 50 MiB
 - extracted npm content: 150 MiB
 
-Each security stage selects at most 100 exact commits. Classifier-approved automatic sources come first; within that group, changed commits, newly published entries, temporary failures, and initial backfill are prioritized in that order. Work is grouped into batches of five with at most four parallel jobs. An unchanged commit with an existing result is not scanned again. New and changed commits remain temporarily guided while the result is pending, but their classifier decision is preserved; a same-run pass restores that decision and immediately feeds the compatibility stage. Pre-enforcement entries continue to backfill gradually.
+Scheduled and incremental security stages select 100 exact commits by default; each one-click full-scan wave selects 200. Classifier-approved automatic sources come first; within that group, changed commits, newly published entries, temporary failures, and initial backfill are prioritized in that order. Work is grouped into batches of five with at most four parallel jobs. An unchanged commit with an existing result is not scanned again. New and changed commits remain temporarily guided while the result is pending, but their classifier decision is preserved; a same-run pass restores that decision and immediately feeds the compatibility stage. Pre-enforcement entries continue to backfill gradually.
 
 Compatibility runs select only automatic exact sources whose current commit passed static checks. The install phase uses the official DSH CLI with `--ignore-scripts`; only the allowlisted official DSH runtime dependency `node-pty@1.1.0` is rebuilt, while plugin and plugin-dependency lifecycle scripts remain disabled. Only a disposable directory is mounted. The runtime phase has no network, tokens, extra capabilities, Docker socket, or maintainer workspace. It starts a clean DSH baseline before the plugin Profile and verifies bounded startup and SIGTERM disposal. Agent-classified plugins also run through a market-owned offline Mock Agent turn that performs a tool call, receives `tool/result`, produces a final reply, and verifies the call ID, error flag, and message content. Client bundles receive only the official DSH platform modules and execute their ModuleLoader factory; a real browser React mount is still `inconclusive`, never a fabricated full pass.
 

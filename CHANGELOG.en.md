@@ -10,6 +10,8 @@ Registry refresh commits are grouped instead of listed individually.
 
 ### Added
 
+- Added a one-click full Actions scan. One manual dispatch chains 200-target waves, uses committed reports as checkpoints, skips repeated discovery and already verified exact commits, and pauses protectively on low API budget, the wave cap, or repeated lack of progress.
+- Added `registry/full-scan-state.json` to record the session, wave, remaining security and compatibility work, API allowance, and pause reason so interrupted scans can resume from committed evidence.
 - Aggregated discovery, exact-commit security scanning, and runtime compatibility into one two-hour workflow. A commit cleared by security now enters compatibility in the same run instead of waiting for another workflow.
 - Security gating now preserves the classifier's original install decision and restores it after a pass; automatic-install candidates are prioritized during backfill.
 - Added a runtime compatibility stage and `registry/compatibility-report.json`. It uses the official DSH CLI with lifecycle scripts disabled for security-cleared exact automatic sources, then checks Host startup and disposal in an offline temporary Profile.
