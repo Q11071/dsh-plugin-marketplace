@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T16:52:59.381Z",
-  "total": 6,
+  "generatedAt": "2026-08-16T16:56:31.631Z",
+  "total": 7,
   "summary": {
     "passed": 0,
-    "partial": 5,
+    "partial": 6,
     "failed": 1,
     "timeout": 0,
     "unsupported": 0,
     "error": 0,
-    "pending": 3006
+    "pending": 3005
   },
   "results": [
     {
@@ -257,6 +257,48 @@
         "update": {
           "status": "unsupported",
           "reason": "no-earlier-stable-npm-version-is-published"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "3274375092/dsh-voice",
+      "verifiedCommit": "706361394eea3ae1f16262d8d00e1347c6afd3c6",
+      "packageName": "@nn12138/dsh-voice",
+      "version": "0.2.5",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T16:55:15.996Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
           "status": "passed",
