@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T22:37:42.961Z",
-  "total": 344,
+  "generatedAt": "2026-08-16T23:17:52.755Z",
+  "total": 408,
   "summary": {
     "passed": 0,
-    "partial": 282,
-    "failed": 24,
-    "timeout": 0,
+    "partial": 372,
+    "failed": 33,
+    "timeout": 1,
     "unsupported": 0,
-    "error": 26,
-    "pending": 3104
+    "error": 0,
+    "pending": 3030
   },
   "results": [
     {
@@ -1275,12 +1275,12 @@
     },
     {
       "repository": "AbcdefgXW/dsh-msg-hub",
-      "verifiedCommit": "eccb665bf425b24f2405d870bd84c6d8637c6d4f",
+      "verifiedCommit": "697d39ea91d22af2034ac597a5a786f68927dcc1",
       "packageName": "dsh-msg-hub",
-      "version": "0.1.3",
+      "version": "0.1.6",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:37:01.474Z",
+      "checkedAt": "2026-08-16T22:48:59.580Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -1317,12 +1317,12 @@
     },
     {
       "repository": "AbcdefgXW/dsh-toolbox-web",
-      "verifiedCommit": "453aaceaaba762e359ca25a96fbead38d9e255ec",
+      "verifiedCommit": "eecf226c708cfbc1df308b15813953e204db2aeb",
       "packageName": "dsh-toolbox-web",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:00:39.195Z",
+      "checkedAt": "2026-08-16T22:49:49.618Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -4634,6 +4634,48 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "boogoo619/dsh-focus-overlay",
+      "verifiedCommit": "9c1a1ed632b5a19f199a3f91877a9c18073f6181",
+      "packageName": "dsh-focus-overlay",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:55:17.785Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "bowenliang123/dsh-context",
       "verifiedCommit": "a4deb93e21104be439b8ca789c38445d37cabd4f",
       "packageName": "dsh-context",
@@ -4928,6 +4970,48 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "cainiao1992/dsh-codebuddy-auth",
+      "verifiedCommit": "581f7e993eba4234af679a0591cce98f5ed07506",
+      "packageName": "dsh-codebuddy-auth",
+      "version": "0.4.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:56:04.479Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "caoyiwei850/dsh-client-ui-skins",
       "verifiedCommit": "1321f06c4be992b678661c1d9758356c05f0e620",
       "packageName": "dsh-client-ui-skins",
@@ -5139,12 +5223,12 @@
     },
     {
       "repository": "CharlotteN7/dsh-dlp",
-      "verifiedCommit": "7b6668ab82bf61a6e556da8f449065b2719f058a",
+      "verifiedCommit": "9738385d0f1f6bd94446b76229288a60a3f2513e",
       "packageName": "dsh-dlp",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:58:16.453Z",
+      "checkedAt": "2026-08-16T22:50:46.342Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -5177,16 +5261,16 @@
           "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "dsh web: http://127.0.0.1:3080\n"
+      "log": "dsh-dlp: telemetryRedaction is enabled, but the mounted session-telemetry backend reports sharing \"disabled\", so nothing dispatches the session-telemetry/record waterfall and this plugin's telemetry redaction never runs. Nothing is exported in this state, so this is not a leak — it means the redaction rules are unverified, and they begin running the moment telemetry is turned on. Informational only: the plugin's other seams are unaffected.\ndsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "CharlotteN7/dsh-ocsf-forwarder",
-      "verifiedCommit": "4a13b1a9ffd6f0315bb211a917e7583b74023dcb",
+      "verifiedCommit": "3b0e21a23b05d8253386a99e0fdf54a50426b195",
       "packageName": "dsh-ocsf-forwarder",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:59:14.641Z",
+      "checkedAt": "2026-08-16T22:51:44.788Z",
       "result": "failed",
       "scope": "compatibility",
       "checks": {
@@ -5600,6 +5684,48 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "chenyinrusi/dsh-llm-cost",
+      "verifiedCommit": "4c06a77abf346134b73d1d452ce65f8baf51acb1",
+      "packageName": "dsh-llm-cost",
+      "version": "0.4.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:56:52.922Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "cheshireez/dsh-skill-hub",
       "verifiedCommit": "1fe1b926255c8f2c5acddad21adb499e2ed3c0e0",
       "packageName": "dsh-skill-hub",
@@ -5727,12 +5853,12 @@
     },
     {
       "repository": "ChiYuKe/dsh-message-map",
-      "verifiedCommit": "bba32634661b39170539463c91cf5bf1e66fa3d7",
+      "verifiedCommit": "890b1ee52726d0a84f41ac80ca4af477fb935a9b",
       "packageName": "dsh-message-map",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:01:31.606Z",
+      "checkedAt": "2026-08-16T22:52:31.108Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -6903,12 +7029,12 @@
     },
     {
       "repository": "Czerror/dsh-plugin-prompt-tool",
-      "verifiedCommit": "7a096ecd78853714ef50b4cfab56fbc0f3f7c217",
+      "verifiedCommit": "96739ec27fdeb7332377aff34fe4e99ca6698b5e",
       "packageName": "dsh-plugin-prompt-tool",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:10:32.117Z",
+      "checkedAt": "2026-08-16T22:48:50.674Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -7175,6 +7301,90 @@
         "agentLoop": {
           "status": "skipped",
           "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "DDDFXYqiming/dsh-layered-memory",
+      "verifiedCommit": "724c1c92ec1f80e39479a439b282a5384446c00b",
+      "packageName": "dsh-layered-memory",
+      "version": "0.4.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:57:40.027Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "DDDFXYqiming/dsh-vision-skill",
+      "verifiedCommit": "eb124d79b5d33503766463a4b142eb787390657e",
+      "packageName": "dsh-vision-skill",
+      "version": "0.4.4",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:58:14.408Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
           "status": "inconclusive",
@@ -7488,6 +7698,48 @@
         }
       },
       "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Dingpenghui-good/dsh-conversation-language",
+      "verifiedCommit": "8b93801affb99fafa01e207a525423f8d1aaee67",
+      "packageName": "dsh-conversation-language",
+      "version": "1.0.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:59:11.223Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "failed",
+          "reason": "les/esm/loader:617:12)\n              at #createModuleJob (node:internal/modules/esm/loader:640:36)\n              at #getJobFromResolveResult (node:internal/modules/esm/loader:353:34)\n              at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:321:41)\n              at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:25) {\n            code: 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING'\n          }\n        }\n      ]\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "ode_modules/dsh-conversation-language/src/index.ts\"\n              at stripTypeScriptModuleTypes (node:internal/modules/typescript:156:11)\n              at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:656:29)\n              at #translate (node:internal/modules/esm/loader:559:20)\n              at afterLoad (node:internal/modules/esm/loader:612:29)\n              at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:617:12)\n              at #createModuleJob (node:internal/modules/esm/loader:640:36)\n              at #getJobFromResolveResult (node:internal/modules/esm/loader:353:34)\n              at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:321:41)\n              at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:25) {\n            code: 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING'\n          }\n        },\n        Error: failed to import loader entry client-conversation-language (dsh-conversation-language/client): Stripping types is currently unsupported for files under node_modules, for \"file:///work/dsh-home/profiles/web/node_modules/dsh-conversation-language/src/client/index.ts\"\n            at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n            at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:514:10)\n            at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n            at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n            at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n            at async Promise.allSettled (index 130)\n            at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n            at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n          [cause]: Error [ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING]: Stripping types is currently unsupported for files under node_modules, for \"file:///work/dsh-home/profiles/web/node_modules/dsh-conversation-language/src/client/index.ts\"\n              at stripTypeScriptModuleTypes (node:internal/modules/typescript:156:11)\n              at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:656:29)\n              at #translate (node:internal/modules/esm/loader:559:20)\n              at afterLoad (node:internal/modules/esm/loader:612:29)\n              at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:617:12)\n              at #createModuleJob (node:internal/modules/esm/loader:640:36)\n              at #getJobFromResolveResult (node:internal/modules/esm/loader:353:34)\n              at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:321:41)\n              at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:25) {\n            code: 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING'\n          }\n        }\n      ]\n    }\n  }\n}\n\nNode.js v22.23.2\n"
     },
     {
       "repository": "dingyi222666/dsh-agents-md",
@@ -8246,6 +8498,48 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "dsh-tui-ecosystem/dsh-code-memory",
+      "verifiedCommit": "047e7fe0d75c7c461d8a2b7ec21981e721d01cbb",
+      "packageName": "dsh-code-memory",
+      "version": "0.0.2",
+      "profile": "dsh-tui",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:59:54.568Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "failed",
+          "reason": "market-mock-agent-loop-produced-no-result: Warning: Detected unsettled top-level await at file:///harness/compatibility-agent-probe.mjs:11\nconst result = await probe().catch(error => ({\n               ^\n\n\n\n"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": ""
+    },
+    {
       "repository": "dsh-tui/dsh-tui",
       "verifiedCommit": "8bdc850732464e2c10278f47b4f2b82da38d801e",
       "packageName": "@dsh-tui/dsh-tui",
@@ -8960,6 +9254,48 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "Fafaisa6305/dsh-gamemode",
+      "verifiedCommit": "1c97f10fa0fca1cefcbf0496bf671b0be39a8032",
+      "packageName": "dsh-gamemode",
+      "version": "0.0.3",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:00:54.664Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "fakechris/dsh-track",
       "verifiedCommit": "4e6112b6b3c243e1867f876a68b16af2e2f2eb3c",
       "packageName": "@fakechris/dsh-track",
@@ -9428,40 +9764,40 @@
       "version": "1.3.2",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:48:51.965Z",
+      "result": "timeout",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "timeout",
+          "reason": "market-mock-agent-loop-timed-out"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n[dsh-vault] 运行状态标记写入失败: spawn powershell.exe ENOENT\n[dsh-vault] manifest 写入失败: spawn powershell.exe ENOENT\n[dsh-vault] 备份完成: /work/.dsh-backups/backup-2026-08-16T22-49-29-797Z (0 个会话)\n[dsh-vault] 运行状态标记写入失败: spawn powershell.exe ENOENT\n"
     },
     {
       "repository": "feverZHONG/dsh-chess-xq",
@@ -9801,12 +10137,12 @@
     },
     {
       "repository": "freehul/sgme",
-      "verifiedCommit": "6118f2af2c0d3f580523b5228530da15760e2d6a",
+      "verifiedCommit": "36bf75194289024bfe69138035799cbc98cbde6e",
       "packageName": "dsh-sgme",
       "version": "0.1.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:24:31.052Z",
+      "checkedAt": "2026-08-16T22:49:39.848Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -11103,12 +11439,12 @@
     },
     {
       "repository": "GraySilver/dsh-task-modes",
-      "verifiedCommit": "16266a4138bfc68cada12936a6103bf814967a7c",
+      "verifiedCommit": "a093bd23d1ae7e4beb009ed058360d8a7d39a3b1",
       "packageName": "@graysilver/dsh-task-modes",
-      "version": "0.1.8",
+      "version": "0.1.9",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:34:23.642Z",
+      "checkedAt": "2026-08-16T22:50:35.438Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -11145,12 +11481,12 @@
     },
     {
       "repository": "GTC2080/dsh-APEX_Plugin",
-      "verifiedCommit": "c559325a34846d379750f9191b6367e89c702368",
+      "verifiedCommit": "8fddb1648c5e594b3d0b39286eb19d7d9d59ec5c",
       "packageName": "dsh-minimal-max",
-      "version": "0.4.1",
+      "version": "0.5.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:35:17.043Z",
+      "checkedAt": "2026-08-16T22:51:30.678Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -11183,7 +11519,7 @@
           "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "[dsh-apex] installed and mount-validated preset \"minimal-max-v2\"\n[dsh-apex] installed and mount-validated preset \"apex-v03\"\n[dsh-apex] installed and mount-validated preset \"apex-v04\"\n[dsh-apex] installed and mount-validated preset \"apex-v041\"\ndsh web: http://127.0.0.1:3080\n"
+      "log": "[dsh-apex] installed and mount-validated preset \"minimal-max-v2\"\n[dsh-apex] installed and mount-validated preset \"apex-v03\"\n[dsh-apex] installed and mount-validated preset \"apex-v04\"\n[dsh-apex] installed and mount-validated preset \"apex-v041\"\n[dsh-apex] installed and mount-validated preset \"apex-v05\"\ndsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "GULI-lab/DSH-element-source",
@@ -12572,6 +12908,48 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "HubaKing/dsh-community-plugins",
+      "verifiedCommit": "455159f29e484989abdfb9f99099d50f06051256",
+      "packageName": "dsh-community-plugins",
+      "version": "0.1.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:01:53.053Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "huguangyu666/dsh-plugin-session-import",
       "verifiedCommit": "13139abe5820ea07bf5a89cef36801ee17987aa0",
       "packageName": "dsh-plugin-session-import",
@@ -13376,40 +13754,40 @@
       "version": "0.1.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:49:55.432Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "ipcjs/dsh-model-slider",
@@ -13418,40 +13796,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:50:43.818Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "itr-del/dsh-feishu",
@@ -13460,40 +13838,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:51:32.089Z",
+      "result": "failed",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "failed",
+          "reason": "@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at file:///work/dsh-home/profiles/web/#feishu-bridge\n          at file:///work/dsh-home/profiles/web/#include\n    }\n  }\n}\n\nNode.js v22.23.2\n"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "host-exited-before-disposal-probe"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "bridge\n    at file:///work/dsh-home/profiles/web/#include\n    at boot (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:1186:9)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async runProfile (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:247:14)\n    at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n  [cause]: Error: failed to apply loader entry include (cordis:include): failed to apply loader entry feishu-bridge (dsh-feishu): Cannot read properties of undefined (reading 'appId')\n      at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n      at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n      at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {\n    [cause]: Error: failed to apply loader entry feishu-bridge (dsh-feishu): Cannot read properties of undefined (reading 'appId')\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._await (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:506:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:500:3)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: TypeError: Cannot read properties of undefined (reading 'appId')\n          at new FeishuBridgeService (file:///work/dsh-home/profiles/web/node_modules/dsh-feishu/src/index.js:56:25)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at file:///work/dsh-home/profiles/web/#feishu-bridge\n          at file:///work/dsh-home/profiles/web/#include\n    }\n  }\n}\n\nNode.js v22.23.2\n"
     },
     {
       "repository": "izwarm195/dsh-net-tools",
@@ -13502,40 +13880,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:52:15.077Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "iZY3/dsh-notebook-knowledge-studio",
@@ -13544,40 +13922,40 @@
       "version": "0.1.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:49:08.551Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "izz-BLUE/dsh-deepseek-usage-dashboard",
@@ -13586,40 +13964,40 @@
       "version": "0.2.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:49:57.675Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "(node:38) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\ndsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "izz-BLUE/dsh-devtools",
@@ -13628,82 +14006,82 @@
       "version": "0.1.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:51:10.237Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "JackeyWilder/dsh-file-picker",
-      "verifiedCommit": "626d800148c411d8d961767c9b1c14d96fd3e05c",
+      "verifiedCommit": "fdd5cbec0105dcd7169bf4b435086f21f49074bb",
       "packageName": "@jackeywilder/dsh-file-picker",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:52:16.125Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jackxiao-hub/dsh-plugin-tree",
@@ -13712,40 +14090,40 @@
       "version": "0.0.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:52:08.995Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "Jamailar/beav-deepseek-harness",
@@ -13754,40 +14132,40 @@
       "version": "0.1.2",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:52:57.612Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "Jannchie/dsh-artifact",
@@ -13796,40 +14174,40 @@
       "version": "0.4.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:53:37.698Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "Jannchie/dsh-bill",
@@ -13838,40 +14216,40 @@
       "version": "0.12.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:54:26.406Z",
+      "result": "failed",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "failed",
+          "reason": "///work/dsh-home/profiles/web/node_modules/dsh-bill/lib/index.js:991:47)\n    at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n    at file:///work/dsh-home/profiles/web/node_modules/dsh-bill/lib/index.js:991:13\n[dsh-bill] pricing: source \"modelsdev\" failed to load fetch failed\n[dsh-bill] pricing: source \"openrouter\" failed to load fetch failed\n"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
         },
         "dispose": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "host-exited-before-disposal-probe"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh: fatal load failure: JsonSchemaError: unsupported JSON schema: parameters.type must be a value schema object\n    at authorError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:543:8)\n    at runSchemaCompiler (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:600:44)\n    at compilePropertyMap (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:756:2)\n    at parameterSchemaSpecToJsonSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:801:19)\n    at defineTool (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:845:21)\n    at Fiber.<anonymous> (file:///work/dsh-home/profiles/web/node_modules/dsh-bill/lib/index.js:991:47)\n    at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n    at file:///work/dsh-home/profiles/web/node_modules/dsh-bill/lib/index.js:991:13\n[dsh-bill] pricing: source \"modelsdev\" failed to load fetch failed\n[dsh-bill] pricing: source \"openrouter\" failed to load fetch failed\n"
     },
     {
       "repository": "Jason-Liao/dsh-memory-tdai",
@@ -13880,40 +14258,40 @@
       "version": "1.0.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:55:09.132Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "(node:30) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\ndsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jasonrale/dsh-archive-manager",
@@ -13922,40 +14300,40 @@
       "version": "1.0.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:56:03.499Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "Jeffine322/dsh-tool-pdf",
@@ -13964,40 +14342,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:56:48.111Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "JeremyGuo/dsh-playwright",
@@ -14006,40 +14384,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:53:45.211Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "Jescoi/dsh-balance-bubble",
@@ -14048,40 +14426,40 @@
       "version": "1.0.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:54:41.706Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jiangr100/dsh-in-convo-mode-change",
@@ -14090,40 +14468,40 @@
       "version": "1.0.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:55:30.510Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jiangr100/dsh-rewind",
@@ -14132,40 +14510,40 @@
       "version": "1.0.4",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:56:27.597Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "JianTG/dsh-auto-model-router",
@@ -14174,40 +14552,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:57:15.881Z",
+      "result": "failed",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "failed",
+          "reason": "5:11)\n          at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n          at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n          at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n          at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n        code: 'ERR_MODULE_NOT_FOUND',\n        url: 'file:///work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/route.js'\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "host-exited-before-disposal-probe"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:247:14)\n    at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n  [cause]: Error: failed to apply loader entry include (cordis:include): failed to import loader entry auto-model-router (dsh-auto-model-router): Cannot find module '/work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/route.js' imported from /work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/index.js\n      at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n      at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n      at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {\n    [cause]: Error: failed to import loader entry auto-model-router (dsh-auto-model-router): Cannot find module '/work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/route.js' imported from /work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/index.js\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:514:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/route.js' imported from /work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/index.js\n          at finalizeResolution (node:internal/modules/esm/resolve:275:11)\n          at moduleResolve (node:internal/modules/esm/resolve:861:10)\n          at defaultResolve (node:internal/modules/esm/resolve:985:11)\n          at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n          at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n          at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n          at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n        code: 'ERR_MODULE_NOT_FOUND',\n        url: 'file:///work/dsh-home/profiles/web/node_modules/dsh-auto-model-router/lib/route.js'\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
     },
     {
       "repository": "jianweideng0515-create/dsh-usage-stats",
@@ -14216,40 +14594,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:54:00.201Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "official-client-graph-dependency-is-not-materialized-by-node-harness: undeclared client platform module: @deepseek-ai/dsh-client-runtime/client"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jiay98528-dev/dsh-plugin-weaknet-adaptor",
@@ -14258,40 +14636,40 @@
       "version": "1.0.5",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:54:45.741Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jiekesu967/dsh-plugin-opencode-usage",
@@ -14300,40 +14678,40 @@
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:55:32.847Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jiesou/dsh-commandcode-go-provider",
@@ -14342,40 +14720,40 @@
       "version": "0.1.5",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:56:16.504Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jiesou/dsh-stream-rules",
@@ -14384,40 +14762,40 @@
       "version": "0.1.7",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:57:02.176Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "jiezeng2004-design/dsh-chatgpt-bridge",
@@ -14426,40 +14804,2350 @@
       "version": "0.3.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:55:38.935Z",
-      "result": "error",
+      "checkedAt": "2026-08-16T22:54:29.267Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "JimingYang25/Lafeng-UI-A-snazzy-personalized-custom-UI-plugin-for-DeepSeek-Harness-Cordis-.",
+      "verifiedCommit": "245981091ad8c0e57a268e76c3376fc831e0a20a",
+      "packageName": "@linxin666/dsh-client-ui-la-feng",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:58:13.807Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "[la-feng] systemPrompt available, registering persona section\ndsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "JimLuan/dsh-tui-plugin",
+      "verifiedCommit": "3302501112e0bb43a3648b0b22c3b9f3b096c712",
+      "packageName": "dsh-tui-plugin",
+      "version": "0.3.0",
+      "profile": "tui",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:59:01.878Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "         Ctrl+N new session · / commands · Tab views\u001b[0m\u001b[0m                    \n\u001b[0m\u001b[90m      Ctrl+X model · Ctrl+O tool card · Ctrl+E settings file · Ctrl+Q quit\u001b[0m\u001b[0m       \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n\u001b[0m\u001b[36mdeepseek-official/deepseek-v4-flash\u001b[0m\u001b[2m · \u001b[0m\u001b[33mworkspace-write\u001b[0m\u001b[0m                            \n\u001b[0m\u001b[36m❯ \u001b[0m\u001b[7m \u001b[0m\u001b[0m                                                                             \u001b[H\u001b[0m\u001b[1mdshcli\u001b[0m\u001b[0m                                                                           \n\u001b[0m\u001b[90m                   dshcli — DeepSeek Harness in your terminal\u001b[0m\u001b[0m                    \n\u001b[0m\u001b[90m                                        \u001b[0m\u001b[0m                                         \n\u001b[0m\u001b[90m                     type a message to start a new session\u001b[0m\u001b[0m                       \n\u001b[0m\u001b[90m                  Ctrl+N new session · / commands · Tab views\u001b[0m\u001b[0m                    \n\u001b[0m\u001b[90m      Ctrl+X model · Ctrl+O tool card · Ctrl+E settings file · Ctrl+Q quit\u001b[0m\u001b[0m       \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n                                                                                \u001b[0m \n\u001b[0m\u001b[36mdeepseek-official/deepseek-v4-flash\u001b[0m\u001b[2m · \u001b[0m\u001b[33mworkspace-write\u001b[0m\u001b[0m                            \n\u001b[0m\u001b[36m❯ \u001b[0m\u001b[7m \u001b[0m\u001b[0m                                                                             \u001b[?25h\u001b[?1049l\u001b[?1006l\u001b[?1002l"
+    },
+    {
+      "repository": "king-bcolor/dsh-aliyundrive-plugin",
+      "verifiedCommit": "0cf0d19484f7bb01062487717a94fa587b7f5d32",
+      "packageName": "dsh-aliyundrive-plugin",
+      "version": "0.1.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:59:58.956Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "king-bcolor/dsh-chaingate-wallet-plugin",
+      "verifiedCommit": "3a4966043414a31e12b3719ed545a3c4cf3a2361",
+      "packageName": "dsh-chaingate-wallet-plugin",
+      "version": "0.3.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:00:55.275Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "king-bcolor/dsh-gh-plugin",
+      "verifiedCommit": "3bd56186ddbcd2d1fb0a5672584022b27d85fd0f",
+      "packageName": "dsh-gh-plugin",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:01:52.711Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=2, toolResult=false, finalText=false"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "king-bcolor/dsh-ncm-plugin",
+      "verifiedCommit": "aa0126d9b22c5866737e5f8cd085515ca71439a3",
+      "packageName": "dsh-ncm-plugin",
+      "version": "0.2.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:58:28.473Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=2, toolResult=false, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "KoanJan/dsh-plugin-boundary",
+      "verifiedCommit": "9e7a1175408a07a1d668c3fa9d842faf3d001b40",
+      "packageName": "@koanjan/dsh-plugin-boundary",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T22:59:24.570Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "LA7-F/dsh-MyCordis",
+      "verifiedCommit": "a9b312cd0aa0cab0f91d391280f713daca671ce5",
+      "packageName": "dsh-mycordis",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:00:13.295Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "LeslieWylie/dsh-fleet-audit",
+      "verifiedCommit": "cb934a61442ef0b2971cec9c28a42a3f3bdca5ca",
+      "packageName": "dsh-fleet-audit",
+      "version": "0.0.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:00:59.897Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "LeslieWylie/dsh-gateway-billing",
+      "verifiedCommit": "0f436c71b04af7b3770c4c3a0c008a6664ab83bd",
+      "packageName": "dsh-gateway-billing",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:01:54.711Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "LeslieWylie/dsh-session-search-pro",
+      "verifiedCommit": "824564218a1486cd506267ff6ec6ba992af16ffd",
+      "packageName": "dsh-session-search-pro",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:04:04.082Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "liceses/dsh-all-gitbash",
+      "verifiedCommit": "ee390769b5e0a6973773839389f25b770ff038cd",
+      "packageName": "@icelily/dsh-all-gitbash",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:04:59.984Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "failed",
+          "reason": "ernal/modules/esm/resolve:855:18)\n          at defaultResolve (node:internal/modules/esm/resolve:985:11)\n          at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n          at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n          at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n          at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n        code: 'ERR_MODULE_NOT_FOUND'\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
         },
         "dispose": {
           "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "reason": "host-exited-before-disposal-probe"
         },
         "update": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "scan-job-produced-no-result-artifact"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "scan-job-produced-no-result-artifact"
+      "log": ".processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async runProfile (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:247:14)\n    at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n  [cause]: Error: failed to apply loader entry include (cordis:include): failed to import loader entry dsh-all-gitbash (@icelily/dsh-all-gitbash): Cannot find package 'schemastery' imported from /work/dsh-home/profiles/web/node_modules/@icelily/dsh-all-gitbash/lib/index.js\n      at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n      at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n      at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {\n    [cause]: Error: failed to import loader entry dsh-all-gitbash (@icelily/dsh-all-gitbash): Cannot find package 'schemastery' imported from /work/dsh-home/profiles/web/node_modules/@icelily/dsh-all-gitbash/lib/index.js\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:514:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'schemastery' imported from /work/dsh-home/profiles/web/node_modules/@icelily/dsh-all-gitbash/lib/index.js\n          at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)\n          at packageResolve (node:internal/modules/esm/resolve:768:81)\n          at moduleResolve (node:internal/modules/esm/resolve:855:18)\n          at defaultResolve (node:internal/modules/esm/resolve:985:11)\n          at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n          at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n          at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)\n          at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {\n        code: 'ERR_MODULE_NOT_FOUND'\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+    },
+    {
+      "repository": "lilyblessing/dsh-mcp-skill-panel",
+      "verifiedCommit": "2cbd906100f4671f675deeec3771ae71d0497ad3",
+      "packageName": "dsh-mcp-skill-panel",
+      "version": "0.4.6",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:05:40.919Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "lincong1987/dsh-model-switch",
+      "verifiedCommit": "fca5f24627f668d88230e4e1bec50d2247322710",
+      "packageName": "dsh-model-switch",
+      "version": "0.2.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:06:28.237Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "loeanxi/dsh-cursor-acp",
+      "verifiedCommit": "cefd6c5dbda2967225dac9f4145da2da8e23fb29",
+      "packageName": "dsh-cursor-acp",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:07:22.964Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "loklamlok/dsh-queue-director",
+      "verifiedCommit": "93a23a9338cc7d29bfd08486ccdc436e8994b380",
+      "packageName": "dsh-queue-director",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:03:07.430Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Luoji-Yuli/dsh-turn-rail",
+      "verifiedCommit": "ce32d113e72d6dd5f487eab5dc57fbd7fd46aed7",
+      "packageName": "@deepseek-ai/dsh-turn-rail",
+      "version": "0.1.0-rc.5",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:04:02.520Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-graph-dependency-is-not-materialized-by-node-harness: undeclared client platform module: @deepseek-ai/dsh-client-runtime/client"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "lzbaclz/dsh-conversation-outline",
+      "verifiedCommit": "a0b67d4b3e4f2dff60a4f6261e41d9cf39029231",
+      "packageName": "dsh-conversation-outline",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:04:48.483Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "MichengAI/dsh-agency-agents",
+      "verifiedCommit": "1760c343c142461f494dbd4933d9eebd09535ab6",
+      "packageName": "@michengai/dsh-agency-agents",
+      "version": "0.1.13",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:05:34.882Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "MichengAI/dsh-archive-manager",
+      "verifiedCommit": "d8afb4efbc6427cb68cfa96f1a144e0995771f4c",
+      "packageName": "@michengai/dsh-archive-manager",
+      "version": "0.1.8",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:06:29.989Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-graph-dependency-is-not-materialized-by-node-harness: undeclared client platform module: @deepseek-ai/dsh-client-runtime/client"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "MichengAI/dsh-skills-manager",
+      "verifiedCommit": "02589ed78ec160a9119b290e940d1c698b5d4311",
+      "packageName": "@michengai/dsh-skills-manager",
+      "version": "0.1.17",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:03:19.187Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "mmzm0808/dsh-ventus-whale",
+      "verifiedCommit": "730513f39b9fe0f41014841874e29e76686302f9",
+      "packageName": "dsh-ventus-whale",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:04:08.245Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "failed",
+          "reason": "client-bundle-check-failed: undeclared client platform module: react-dom/client"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Mooling0602/dsh-web-file-uploader",
+      "verifiedCommit": "dedce39b02826dd007ad1d3fed3658a427c4bb2e",
+      "packageName": "dsh-web-file-uploader",
+      "version": "0.2.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:05:04.380Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "NanmiCoder/dsh-agent-teams",
+      "verifiedCommit": "00857a1f1a8559f860286ca082e43f796b5e9389",
+      "packageName": "@nanmicoder/dsh-agent-teams",
+      "version": "0.1.6",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:05:51.412Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Noob-stupid/dsh-plugin-hub",
+      "verifiedCommit": "79dc09ceeaa41c11121d039b51f2c5295c7b517b",
+      "packageName": "@deepseek-ai/dsh-plugin-console",
+      "version": "0.1.0-rc.6",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:06:51.360Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Nuo-cl/dsh-auto-mode",
+      "verifiedCommit": "0eddaea527a943deb136f73c0aee16492d8253fc",
+      "packageName": "dsh-auto-mode",
+      "version": "0.1.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:03:17.706Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "pengyue-polaron/deepseek-harness-genui",
+      "verifiedCommit": "0466f31b635bcc438ba6488926d69f33277dd94c",
+      "packageName": "dsh-plugin-genui",
+      "version": "0.12.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:04:06.747Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Phant0Meow/dsh-memory-meow",
+      "verifiedCommit": "10641e755d29f767b37e978994eba508915cab78",
+      "packageName": "meow-memory",
+      "version": "0.8.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:04:58.015Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "(node:38) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\ndsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Saikel-Orado-Liu/dsh-cost-meter",
+      "verifiedCommit": "57fcc52f1eae3d9daa1425621d7c21b9706bc4f5",
+      "packageName": "@gamegeek-saikel/dsh-cost-meter",
+      "version": "0.1.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:06:02.065Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "says693/dsh-log-memory",
+      "verifiedCommit": "1b785f25e2f4a841bcaaa69adbe1110f220b83c0",
+      "packageName": "dsh-log-memory",
+      "version": "1.3.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:06:51.856Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "siweina/dsh-novel-writer",
+      "verifiedCommit": "30825e55c0d776929bc8fe3629ecbe8c732d8252",
+      "packageName": "dsh-novel-writer",
+      "version": "1.0.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:07:54.484Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "SnoWinKK/dsh-web-skin",
+      "verifiedCommit": "d5bbefba7668c51bd28b0d13a88593ffabfa4af3",
+      "packageName": "dsh-web-skin",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:08:41.332Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "sunshaobei/dsh-session-review",
+      "verifiedCommit": "413afc43f5041a6b80bfa1a7440f13929531d54f",
+      "packageName": "dsh-session-review",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:09:28.256Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "SZMY-haruhi/dsh-tavily",
+      "verifiedCommit": "4bf9310075f6bbb51504a1e8a52542bc0527b7c8",
+      "packageName": "dsh-tavily",
+      "version": "0.3.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:10:14.189Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-graph-dependency-is-not-materialized-by-node-harness: undeclared client platform module: @deepseek-ai/dsh-client-runtime/client"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "TableRogue/dsh-fusion-pixel-font",
+      "verifiedCommit": "c6c67c5c3af0808ae7ba0418d2da5e7e70314ad1",
+      "packageName": "dsh-fusion-pixel-font",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:11:01.676Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "TableRogue/dsh-fusion-pixel-ui-adapt",
+      "verifiedCommit": "97498e55feaced0caaa14706b51a214e8b20721e",
+      "packageName": "dsh-fusion-pixel-ui-adapt",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:08:06.413Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "TableRogue/dsh-pixel-icons",
+      "verifiedCommit": "39cf2e6e3a54ca2a6cd87cd924ba7fcf97aeed18",
+      "packageName": "dsh-pixel-icons",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:08:52.967Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "TableRogue/dsh-pixel-probe",
+      "verifiedCommit": "0066a10b7279218af75c9b170d3122afa5d83df6",
+      "packageName": "dsh-pixel-probe",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:09:38.753Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Taler97/dsh-rollback",
+      "verifiedCommit": "fcc3419999a7190445f03c97c8a30f5a20e7b2d7",
+      "packageName": "dsh-rollback",
+      "version": "0.1.0",
+      "profile": "demo",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:10:24.878Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": ""
+    },
+    {
+      "repository": "tangzheng202202/dsh-voice-live",
+      "verifiedCommit": "118f56353378421123481121228b8b4a78c05462",
+      "packageName": "dsh-voice-live",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:11:10.199Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "TYEclipse/dsh-finance",
+      "verifiedCommit": "3d1e2773df75019c972a9fec0835d93c9ab47edb",
+      "packageName": "dsh-finance",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:08:09.541Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "U1s1-king/dsh-live2d-mygo",
+      "verifiedCommit": "0605eeb15cc58a7bcb2f926e6ec90467ce74f6d7",
+      "packageName": "dsh-live2d-mygo",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:08:58.221Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "failed",
+          "reason": "client-bundle-check-failed: ReferenceError: localStorage is not defined"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "wang-xudong/dsh-plugin-undo",
+      "verifiedCommit": "31228d7493f28d824d2fb127628f6b78cfdc24ef",
+      "packageName": "dsh-plugin-undo",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:09:51.830Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "wanglaixiang-cyber/dsh-composer-scroll-hide",
+      "verifiedCommit": "203a3a648d6495619f733745a3aff3a7ec444116",
+      "packageName": "dsh-composer-scroll-hide",
+      "version": "0.6.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:10:39.002Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "WenhongPan/dsh-projects",
+      "verifiedCommit": "bdfea123c93044f298610ac9bebd2e5a94875b73",
+      "packageName": "dsh-projects",
+      "version": "0.1.0-alpha.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:11:26.029Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "wepar1212/dsh-wsl-workspace",
+      "verifiedCommit": "63c1fe8c2d55a37854bb1ef52ee3173683928729",
+      "packageName": "dsh-wsl-workspace",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:08:46.983Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "whitefirer/dsh-browser-fs",
+      "verifiedCommit": "5de38ec5fbb0b851351c15a3d7a8aed0f8dfce5a",
+      "packageName": "dsh-browser-fs",
+      "version": "0.1.3",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:09:36.488Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "Whning0513/deepseek-protocol-doctor",
+      "verifiedCommit": "43f6df8cbeb4073cd83535966a47c13fb40b0e6f",
+      "packageName": "dsh-deepseek-protocol-doctor",
+      "version": "0.1.2",
+      "profile": "demo",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:10:34.238Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": ""
+    },
+    {
+      "repository": "Wine-Red/dsh-prompt-stash",
+      "verifiedCommit": "265057c6ddc0351e35022128fa710b6cdf28c893",
+      "packageName": "dsh-prompt-stash",
+      "version": "0.2.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:11:22.444Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "WinRNGS/dsh-session-prompt-standalone",
+      "verifiedCommit": "be6a31a653e13450efc099dab2b5aa323a2dffde",
+      "packageName": "@dsh-external/dsh-session-prompt",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:12:13.028Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "winterhuan/dsh-skills-viewer",
+      "verifiedCommit": "14f9bb3479576583ebb90bbe04ff2762b8248885",
+      "packageName": "@winterchenhuan/dsh-skills-viewer",
+      "version": "0.1.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:12:19.720Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "wlj521/dsh-ui-tweaks",
+      "verifiedCommit": "bbe25f3fe60cfc9ac14e7736eb44d312df24a066",
+      "packageName": "dsh-ui-tweaks",
+      "version": "0.3.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:13:10.950Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "wloops/dsh-git-worktree",
+      "verifiedCommit": "89b95ab3f8460365fa2aa55bfc5b7db11e76d98f",
+      "packageName": "dsh-git-worktree",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:14:00.530Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "wmglimpser-hash/dsh-file-links",
+      "verifiedCommit": "f00331f4d1589bad630c06a56f56f4bbef757d3a",
+      "packageName": "dsh-file-links",
+      "version": "1.0.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:14:51.877Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "woshi-Tom/dsh-status-plugin",
+      "verifiedCommit": "672e7b17e19477c425e9eb0fd02b144e1eeafe20",
+      "packageName": "dsh-status-plugin",
+      "version": "0.5.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T23:15:38.756Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
     }
   ]
 }
