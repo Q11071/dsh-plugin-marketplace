@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: dsh-plugin-registry-refresh
+  group: dsh-plugin-registry-write
   cancel-in-progress: false
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
       - name: Commit Registry changes
         shell: bash
         run: |
-          git add registry/plugins.json registry/discovery.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json
+          git add registry/plugins.json registry/discovery.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json registry/security-report.json
           if git diff --cached --quiet; then
             echo "Registry is already current."
             exit 0

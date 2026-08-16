@@ -6,6 +6,7 @@
 
 [![Version](https://img.shields.io/github/v/tag/YELEBAI/dsh-plugin-marketplace?label=version&style=flat-square)](https://github.com/YELEBAI/dsh-plugin-marketplace/tags)
 [![Registry Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
+[![Security Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-security-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-security-scan.yml)
 [![License](https://img.shields.io/github/license/YELEBAI/dsh-plugin-marketplace?style=flat-square)](./LICENSE)
 ![DSH Web](https://img.shields.io/badge/DSH-Web-4f46e5?style=flat-square)
 
@@ -22,6 +23,7 @@
 | --- | --- |
 | 🔍 自动发现 | 每两小时扫描一次 `topic:dsh-plugin archived:false` |
 | ✅ Registry 验证 | 检查 manifest、bundle patch、loader entry、运行产物和精确安装来源 |
+| 🛡️ Commit 安全复验 | 对新增和变更 commit 做恶意行为静态检测，并在无网络只读沙箱中探测入口 |
 | ⚡ 一键安装 | 仅对全部自动安装条件均通过的插件开放 |
 | 🤖 Agent 安装 | 为需要构建、生命周期脚本或人工判断的插件创建受约束的安装 Agent |
 | 🧭 安装 Skill | Agent 强制加载内置安全工作流，自动选择精确来源、隔离构建或停止路径 |
@@ -153,10 +155,14 @@ flowchart LR
     A["GitHub topic: dsh-plugin"] --> B["两小时增量扫描"]
     B --> C["锁定默认分支的 40 位 commit SHA"]
     C --> D["静态验证 manifest、patch、入口和 npm tarball"]
-    D -->|"验证通过"| E["registry/plugins.json"]
+    D -->|"验证通过"| E["精确 commit 安全队列"]
+    E --> I["静态规则 + 隔离入口探测"]
+    I -->|"通过"| J["registry/security-report.json"]
+    I -->|"需复核"| F
+    J --> K["registry/plugins.json"]
     D -->|"证据不足"| F["引导安装审计"]
     D -->|"结构无效"| G["registry/rejected.json"]
-    E --> H["DSH 插件市场"]
+    K --> H["DSH 插件市场"]
     F --> H
 ```
 
@@ -169,6 +175,7 @@ flowchart LR
 | [`registry/plugins.json`](./registry/plugins.json) | 已验证插件及其安装策略，公开格式为 v2 |
 | [`registry/discovery.json`](./registry/discovery.json) | 分类与最近 7 天 Star 增长数据 |
 | [`registry/guided-audit.json`](./registry/guided-audit.json) | 所有引导安装条目的逐轮复验结果 |
+| [`registry/security-report.json`](./registry/security-report.json) | 按仓库和精确 commit 保存的恶意行为检测与隔离探测结果 |
 | [`registry/install-review.json`](./registry/install-review.json) | 安装命令、Profile、生命周期脚本与运行产物证据 |
 | [`registry/rejected.json`](./registry/rejected.json) | 未通过结构验证的候选及原因 |
 | [`registry/state.json`](./registry/state.json) | 增量扫描状态与每日 Star 基线 |
@@ -200,7 +207,7 @@ dsh --profile web
 
 ## 自动扫描与 PAT
 
-[Registry Scan 工作流](./.github/workflows/daily-registry-scan.yml) 默认每两小时在第 17 分钟执行，也支持在 GitHub Actions 页面手动运行。
+[Registry Scan 工作流](./.github/workflows/daily-registry-scan.yml) 默认每两小时在第 17 分钟执行；[Security Scan 工作流](./.github/workflows/plugin-security-scan.yml) 在第 43 分钟执行。两者都支持在 GitHub Actions 页面手动运行，并使用同一并发锁，避免同时写 Registry。
 
 扫描优先使用 Actions Secret `REGISTRY_GITHUB_TOKEN` 中的只读 PAT；未配置时回退到仓库自动提供的 `GITHUB_TOKEN`。PAT 只用于读取 GitHub API，不参与 Registry 提交；写回仓库仍使用 Actions checkout 的内置凭据。
 
@@ -226,6 +233,12 @@ pnpm registry:audit
 - bundle patch：64 KiB
 - npm 压缩包：50 MiB
 - npm 解包内容：150 MiB
+
+安全工作流每轮最多选择 100 个精确 commit，优先级依次为 commit 已变化、新收录、上次临时失败和首次存量回填，并按每批 5 个、最多 4 批并行执行。未变化且已有结果的 commit 不会重复扫描。新收录或发生变化的 commit 在得到结果前保持引导安装；启用安全策略前已经收录的条目会在后台逐批补齐，不会一次性中断整个市场。
+
+静态检测不会执行插件代码，主要寻找反向 Shell、破坏性系统命令、持久化、矿工特征、编码载荷执行、凭据读取与联网组合、下载与进程执行组合，以及仓库内原生可执行文件。静态检查未要求人工复核时，Host 入口才会被放入无网络、只读文件系统、无额外 capability、受内存/PID/CPU 限制且不包含 Token 的临时 Docker 容器中导入。依赖缺失会记录为“不确定”，不会误报为恶意。
+
+只有最终合并报告的任务拥有仓库写权限。运行第三方代码的沙箱任务不接收 PAT、不持久化 checkout 凭据，也不能修改宿主报告；合并器会再次核对计划中的仓库与 40 位 commit 后才接受结果。检测结果为启发式风险信号，命中高风险规则时转为引导安装和人工复核，不把单条规则当作恶意代码的最终定论。
 
 ## 安全与验证规则
 

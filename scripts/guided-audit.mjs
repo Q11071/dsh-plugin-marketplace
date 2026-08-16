@@ -1,26 +1,57 @@
 /** Audit every guided Registry entry against its verified-commit README. */
 
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  assessGuidedInstall,
+  installReviewRowFromState,
+  promoteExactNpm,
+} from './guided-audit-core.mjs'
 import { verifyExactNpmRelease } from './npm-release.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 const registry = JSON.parse(await readFile(path.join(root, 'registry', 'plugins.json'), 'utf8'))
 const state = JSON.parse(await readFile(path.join(root, 'registry', 'state.json'), 'utf8'))
+const installReview = JSON.parse(await readFile(path.join(root, 'registry', 'install-review.json'), 'utf8'))
 const token = process.env.GITHUB_TOKEN?.trim()
 if (!token) throw new Error('GITHUB_TOKEN is required for the guided audit')
 
 const guided = registry.plugins.filter(plugin => plugin.install.mode === 'guided')
-const rows = new Array(guided.length)
+const audited = new Array(guided.length)
 let cursor = 0
 await Promise.all(Array.from({ length: Math.min(8, guided.length) }, async () => {
   for (;;) {
     const index = cursor++
     if (index >= guided.length) return
-    rows[index] = await audit(guided[index])
+    audited[index] = await audit(guided[index])
   }
 }))
+
+// npm can become available between the Registry pass and this audit pass. In
+// that case the old workflow produced an internally contradictory snapshot and
+// failed verification. Reconcile the second exact-tarball proof into Registry
+// state so one workflow run always converges on the strongest current evidence.
+const rows = []
+let promoted = 0
+for (const row of audited) {
+  if (row.assessment.outcome !== 'automatic-npm-candidate') {
+    rows.push(row)
+    continue
+  }
+  const key = row.repository.toLocaleLowerCase()
+  const pluginIndex = registry.plugins.findIndex(plugin => plugin.fullName.toLocaleLowerCase() === key)
+  const stateRow = state.repositories[key]
+  if (pluginIndex < 0 || stateRow?.plugin === undefined || stateRow?.inspection === undefined) {
+    throw new Error('guided audit could not reconcile Registry state for ' + row.repository)
+  }
+  const reconciled = promoteExactNpm(registry.plugins[pluginIndex], stateRow, row.npmVerification)
+  registry.plugins[pluginIndex] = reconciled.plugin
+  state.repositories[key] = reconciled.stateRow
+  installReview.repositories = installReview.repositories.filter(item => item.repository.toLocaleLowerCase() !== key)
+  installReview.repositories.push(installReviewRowFromState(reconciled.stateRow))
+  promoted += 1
+}
 
 const groups = {}
 for (const row of rows) {
@@ -31,9 +62,19 @@ for (const row of rows) {
       : 'no-install-command-found'
   groups[key] = (groups[key] ?? 0) + 1
 }
-const report = { schemaVersion: 1, generatedAt: new Date().toISOString(), total: rows.length, groups, rows }
-await writeFile(path.join(root, 'registry', 'guided-audit.json'), JSON.stringify(report, null, 2) + '\n', 'utf8')
-console.log(JSON.stringify({ total: rows.length, groups }, null, 2))
+const generatedAt = new Date().toISOString()
+registry.generatedAt = generatedAt
+state.generatedAt = generatedAt
+installReview.generatedAt = generatedAt
+installReview.repositories.sort((left, right) => left.repository.localeCompare(right.repository))
+const report = { schemaVersion: 1, generatedAt, total: rows.length, groups, rows }
+await Promise.all([
+  atomicJson(path.join(root, 'registry', 'plugins.json'), registry),
+  atomicJson(path.join(root, 'registry', 'state.json'), state),
+  atomicJson(path.join(root, 'registry', 'install-review.json'), installReview),
+  atomicJson(path.join(root, 'registry', 'guided-audit.json'), report),
+])
+console.log(JSON.stringify({ total: rows.length, promoted, groups }, null, 2))
 
 async function audit(plugin) {
   const inspection = state.repositories[plugin.fullName.toLocaleLowerCase()]?.inspection ?? null
@@ -42,7 +83,7 @@ async function audit(plugin) {
   const targetedCommands = commands.filter(command => targetsPlugin(command, plugin))
   const remoteCommands = targetedCommands.filter(command => command.source !== 'local' && command.source !== 'unknown')
   const npmVerification = await verifyExactNpmRelease(plugin, { userAgent: 'dsh-plugin-registry-audit' })
-  const assessment = assess(plugin, inspection, remoteCommands, npmVerification)
+  const assessment = assessGuidedInstall(plugin, inspection, remoteCommands, npmVerification)
   return {
     repository: plugin.fullName,
     packageName: plugin.packageName,
@@ -173,31 +214,12 @@ function githubRepository(spec) {
   return match?.[1]?.replace(/\.git$/i, '') ?? null
 }
 
-function assess(plugin, inspection, remoteCommands, npmVerification) {
-  if (npmVerification.verified === true && plugin.install.profiles.length > 0) {
-    return { outcome: 'automatic-npm-candidate', reason: npmVerification.reason }
-  }
-  if (npmVerification.verified === true) {
-    return { outcome: 'guided-profile-unknown', reason: 'npm-release-verified-but-compatible-profile-is-unknown' }
-  }
-  const github = remoteCommands.some(command => command.source === 'github')
-  const hardLifecycle = (inspection?.lifecycleScripts ?? []).some(name => name !== 'prepare')
-  if (github && inspection?.runtimeArtifactsCommitted === true && !hardLifecycle && !(inspection?.lifecycleScripts ?? []).includes('prepare')) {
-    return { outcome: 'automatic-github-candidate', reason: 'matching-command-and-committed-runtime' }
-  }
-  if (remoteCommands.some(command => command.source === 'npm')) {
-    return { outcome: 'guided-npm-unverified', reason: npmVerification.reason }
-  }
-  if (github && (hardLifecycle || inspection?.runtimeArtifactsCommitted !== true || (inspection?.lifecycleScripts ?? []).includes('prepare'))) {
-    return { outcome: 'guided-build-required', reason: 'github-source-requires-install-time-build-or-lifecycle-script' }
-  }
-  if (remoteCommands.some(command => command.source === 'tarball')) {
-    return { outcome: 'guided-tarball-unverified', reason: 'release-tarball-not-statically-verified' }
-  }
-  if (remoteCommands.length > 0) return { outcome: 'guided-unsupported-source', reason: 'no-verified-automatic-source' }
-  return { outcome: 'guided-no-matching-remote-command', reason: 'readme-does-not-document-a-remote-install-for-this-package' }
-}
-
 function unique(rows) {
   return [...new Map(rows.map(row => [JSON.stringify(row), row])).values()]
+}
+
+async function atomicJson(file, value) {
+  const temporary = file + '.tmp'
+  await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', 'utf8')
+  await rename(temporary, file)
 }

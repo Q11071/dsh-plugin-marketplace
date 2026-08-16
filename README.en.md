@@ -6,6 +6,7 @@
 
 [![Version](https://img.shields.io/github/v/tag/YELEBAI/dsh-plugin-marketplace?label=version&style=flat-square)](https://github.com/YELEBAI/dsh-plugin-marketplace/tags)
 [![Registry Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
+[![Security Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-security-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-security-scan.yml)
 [![License](https://img.shields.io/github/license/YELEBAI/dsh-plugin-marketplace?style=flat-square)](./LICENSE)
 ![DSH Web](https://img.shields.io/badge/DSH-Web-4f46e5?style=flat-square)
 
@@ -22,6 +23,7 @@
 | --- | --- |
 | 🔍 Automatic discovery | Scans `topic:dsh-plugin archived:false` every two hours |
 | ✅ Registry validation | Checks manifests, bundle patches, loader entries, runtime artifacts, and exact install sources |
+| 🛡️ Commit security checks | Statically scans new and changed commits for malicious behavior and probes entries in a read-only, no-network sandbox |
 | ⚡ One-click install | Available only when every automatic-install requirement passes |
 | 🤖 Agent-assisted install | Creates a constrained installation Agent when builds, lifecycle scripts, or human judgment are required |
 | 🧭 Installation Skill | Makes the Agent load a bundled safe workflow that chooses an exact source, isolated build, or hard stop |
@@ -156,10 +158,14 @@ flowchart LR
     A["GitHub topic: dsh-plugin"] --> B["Incremental scan every two hours"]
     B --> C["Resolve default branch to a 40-character commit SHA"]
     C --> D["Statically validate manifests, patches, entries, and npm tarballs"]
-    D -->|"Valid"| E["registry/plugins.json"]
+    D -->|"Valid"| E["Exact-commit security queue"]
+    E --> I["Static rules + isolated entry probe"]
+    I -->|"Passed"| J["registry/security-report.json"]
+    I -->|"Review"| F
+    J --> K["registry/plugins.json"]
     D -->|"Insufficient evidence"| F["Guided-install audit"]
     D -->|"Invalid structure"| G["registry/rejected.json"]
-    E --> H["DSH Plugin Marketplace"]
+    K --> H["DSH Plugin Marketplace"]
     F --> H
 ```
 
@@ -172,6 +178,7 @@ The scanner never installs dependencies, executes third-party code, or evaluates
 | [`registry/plugins.json`](./registry/plugins.json) | Verified plugins and install policies in the public v2 format |
 | [`registry/discovery.json`](./registry/discovery.json) | Categories and seven-day Star growth |
 | [`registry/guided-audit.json`](./registry/guided-audit.json) | Per-scan verification of every guided-install entry |
+| [`registry/security-report.json`](./registry/security-report.json) | Malware indicators and isolated probe results keyed by repository and exact commit |
 | [`registry/install-review.json`](./registry/install-review.json) | Evidence for commands, Profiles, lifecycle scripts, and runtime artifacts |
 | [`registry/rejected.json`](./registry/rejected.json) | Structurally invalid candidates and rejection reasons |
 | [`registry/state.json`](./registry/state.json) | Incremental scan state and daily Star baselines |
@@ -203,7 +210,7 @@ A custom Registry may omit `discovery.json` and `guided-audit.json`:
 
 ## Automated scans and PAT usage
 
-The [Registry Scan workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours and can also be started manually from GitHub Actions.
+The [Registry Scan workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours; the [Security Scan workflow](./.github/workflows/plugin-security-scan.yml) runs at minute 43. Both support manual dispatch and share a concurrency lock so they never write Registry files simultaneously.
 
 Scans prefer the read-only PAT stored in the `REGISTRY_GITHUB_TOKEN` Actions Secret and fall back to the repository-provided `GITHUB_TOKEN`. The PAT is used only for GitHub API reads and never for Registry commits; writes continue to use the credential provided by Actions checkout.
 
@@ -229,6 +236,12 @@ The scanner automatically partitions GitHub Search results beyond the 1,000-resu
 - bundle patch: 64 KiB
 - npm archive: 50 MiB
 - extracted npm content: 150 MiB
+
+Each security run selects at most 100 exact commits, prioritizing changed commits, newly published entries, temporary failures, and finally initial backfill. Work is grouped into batches of five with at most four parallel jobs. An unchanged commit with an existing result is not scanned again. New and changed commits remain guided until a result is available; entries published before enforcement are backfilled gradually without taking the whole marketplace offline.
+
+Static inspection never evaluates plugin code. It looks for reverse shells, destructive system commands, persistence, miner indicators, encoded-payload execution, credential access combined with networking, download/process execution combinations, and bundled native executables. Only entries that do not require static review enter a temporary Docker container with no network, a read-only filesystem, dropped capabilities, CPU/memory/PID limits, and no token. Missing dependencies are reported as inconclusive, not malicious.
+
+Only the final report-merging job receives repository write access. Jobs that run third-party code receive no PAT, do not persist checkout credentials, and cannot modify the host report. The merger accepts a result only after matching it to the planned repository and 40-character commit. Findings are heuristic risk signals: high-risk matches switch the plugin to guided installation and human review rather than treating one rule as a final malware verdict.
 
 ## Security and validation
 

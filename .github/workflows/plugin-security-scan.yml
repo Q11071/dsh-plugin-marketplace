@@ -1,0 +1,137 @@
+name: Verify plugin security
+
+on:
+  schedule:
+    - cron: '43 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      max_plugins:
+        description: Maximum exact commits to scan in this run
+        required: false
+        default: '100'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dsh-plugin-registry-write
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      has_work: ${{ steps.plan.outputs.has_work }}
+      selected: ${{ steps.plan.outputs.selected }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - id: plan
+        name: Select new, changed and backfill commits
+        run: node scripts/security-plan.mjs --limit "${{ inputs.max_plugins || '100' }}" --batch-size 5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: security-plan
+          path: .security-work/plan.json
+          retention-days: 2
+
+  scan:
+    needs: plan
+    if: ${{ needs.plan.outputs.has_work == 'true' }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Pull the disposable sandbox image
+        run: docker pull node:22-bookworm-slim
+      - name: Scan exact commits
+        env:
+          SECURITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
+          SECURITY_SANDBOX: '1'
+        run: node scripts/security-scan.mjs --output ".security-work/result-${{ matrix.batch }}.json"
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: security-result-${{ matrix.batch }}
+          path: .security-work/result-${{ matrix.batch }}.json
+          if-no-files-found: ignore
+          retention-days: 2
+
+  finalize:
+    needs: [plan, scan]
+    if: ${{ always() && needs.plan.result == 'success' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: security-plan
+          path: .security-results/plan
+      - uses: actions/download-artifact@v4
+        if: ${{ needs.plan.outputs.has_work == 'true' }}
+        continue-on-error: true
+        with:
+          pattern: security-result-*
+          path: .security-results/scans
+          merge-multiple: true
+      - id: merge
+        name: Validate and merge unprivileged reports
+        run: node scripts/security-merge.mjs
+      - name: Refresh guided audit after applying security gates
+        if: ${{ steps.merge.outputs.gate_changes != '0' }}
+        run: pnpm registry:audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
+      - name: Verify Registry contracts
+        run: pnpm registry:verify
+      - name: Commit security report
+        shell: bash
+        run: |
+          git add registry/plugins.json registry/state.json registry/install-review.json registry/guided-audit.json registry/security-report.json
+          if git diff --cached --quiet; then
+            echo "Security report is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(security): verify plugin commits"
+          git push

@@ -157,6 +157,9 @@ export function classifyInstall(identity, repository, treePaths, readmeText, ver
     || (hints.declaredManualSteps ?? profiles.length === 0)
   const reviewReasons = []
   const resolvedReasons = []
+  if (hints.declaredManualSteps === true) {
+    reviewReasons.push('manifest-requires-manual-steps')
+  }
   if (readme.directGitHub && !runtimeArtifactsCommitted) {
     reviewReasons.push('readme-documents-github-install-but-runtime-entry-artifacts-are-missing')
   }

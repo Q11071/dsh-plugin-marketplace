@@ -21,6 +21,7 @@ import {
 } from './registry-core.mjs'
 import { verifyExactNpmRelease } from './npm-release.mjs'
 import { classifyPluginCategories, starGrowth7d, updateStarHistory } from './discovery-core.mjs'
+import { applySecurityGate } from './security-core.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 const token = process.env.GITHUB_TOKEN?.trim()
@@ -44,12 +45,14 @@ const pluginsPath = path.join(root, 'registry', 'plugins.json')
 const rejectedPath = path.join(root, 'registry', 'rejected.json')
 const installReviewPath = path.join(root, 'registry', 'install-review.json')
 const discoveryPath = path.join(root, 'registry', 'discovery.json')
+const securityReportPath = path.join(root, 'registry', 'security-report.json')
 const denylistPath = path.join(root, 'policy', 'denylist.json')
 const installOverridesPath = path.join(root, 'policy', 'install-overrides.json')
 
 const previousState = await readJson(statePath)
 const denylistDocument = await readJson(denylistPath)
 const installOverridesDocument = await readJson(installOverridesPath)
+const securityReport = await readJson(securityReportPath)
 const previous = plainObject(previousState.repositories) ? previousState.repositories : {}
 const denylist = new Map((Array.isArray(denylistDocument.repositories) ? denylistDocument.repositories : []).map((entry) => {
   if (typeof entry === 'string') return [entry.toLocaleLowerCase(), 'manually blocked']
@@ -158,6 +161,10 @@ for (const [key, value] of Object.entries(previous)) {
   next[key] = { ...value, status: 'removed', reason: 'topic removed, repository archived, or repository deleted', checkedAt: now }
 }
 
+for (const [key, value] of Object.entries(next)) {
+  next[key] = applySecurityGate(value, securityReport)
+}
+
 const plugins = Object.values(next)
   .filter(row => plainObject(row) && row.status === 'verified' && plainObject(row.plugin))
   .map(row => row.plugin)
@@ -180,12 +187,29 @@ const discovery = Object.values(next)
     starGrowth7d: integer(row.starGrowth7d),
   }))
   .sort((left, right) => left.fullName.localeCompare(right.fullName))
+const publishedNames = new Set(plugins.map(plugin => plugin.fullName.toLocaleLowerCase()))
+const publishedCommits = new Map(plugins.map(plugin => [plugin.fullName.toLocaleLowerCase(), plugin.verifiedCommit]))
+securityReport.results = securityReport.results
+  .filter(row => publishedNames.has(row.repository.toLocaleLowerCase()))
+  .sort((left, right) => left.repository.localeCompare(right.repository))
+const currentSecurity = securityReport.results.filter(row => (
+  publishedCommits.get(row.repository.toLocaleLowerCase()) === row.verifiedCommit
+))
+securityReport.generatedAt = now
+securityReport.total = securityReport.results.length
+securityReport.summary = {
+  passed: currentSecurity.filter(row => row.status === 'passed').length,
+  review: currentSecurity.filter(row => row.status === 'review').length,
+  error: currentSecurity.filter(row => row.status === 'error').length,
+  pending: plugins.length - currentSecurity.length,
+}
 
 await atomicJson(statePath, { schemaVersion: 2, generatedAt: now, repositories: sortObject(next) })
 await atomicJson(pluginsPath, { schemaVersion: 2, generatedAt: now, plugins })
 await atomicJson(rejectedPath, { schemaVersion: 1, generatedAt: now, repositories: rejected })
 await atomicJson(installReviewPath, { schemaVersion: 1, generatedAt: now, repositories: installReview })
 await atomicJson(discoveryPath, { schemaVersion: 1, generatedAt: now, windowDays: 7, plugins: discovery })
+await atomicJson(securityReportPath, securityReport)
 console.log(
   'published ' + String(plugins.length) + ' verified plugins; '
   + String(rejected.length) + ' hidden; '
@@ -290,12 +314,16 @@ async function validateCandidate(candidate, installOverride) {
   let npmRelease = null
   let discoveredNpmOverride
   let npmReviewReasons = []
+  const policyReviewReasons = installOverride?.manualSteps === true
+    ? ['registry-install-policy-requires-manual-steps']
+    : []
   if (installOverride?.source === 'npm'
     || (installOverride?.source !== 'manual' && githubPlugin.install.mode === 'guided')) {
     npmRelease = await verifyExactNpmRelease(classification.identity)
     if (npmRelease.verified) {
       const profiles = classification.identity.installHints.profiles
       npmReviewReasons = relevantNpmReviewReasons(classification.inspection.reviewReasons)
+      npmReviewReasons.push(...policyReviewReasons)
       if (profiles.length === 0) npmReviewReasons.push('npm-release-verified-but-compatible-profile-is-unknown')
       discoveredNpmOverride = {
         source: 'npm',
@@ -316,7 +344,9 @@ async function validateCandidate(candidate, installOverride) {
     plugin: verifiedPlugin(candidate, commit, classification.identity, now, effectiveOverride),
     inspection: {
       ...classification.inspection,
-      reviewReasons: npmRelease?.verified === true ? npmReviewReasons : classification.inspection.reviewReasons,
+      reviewReasons: npmRelease?.verified === true
+        ? [...new Set(npmReviewReasons)]
+        : [...new Set([...classification.inspection.reviewReasons, ...policyReviewReasons])],
       resolvedReasons: npmResolved
         ? [...classification.inspection.resolvedReasons, 'exact-npm-tarball-verified-for-automatic-install']
         : classification.inspection.resolvedReasons,
@@ -327,7 +357,8 @@ async function validateCandidate(candidate, installOverride) {
 }
 
 function relevantNpmReviewReasons(reasons) {
-  return reasons.filter(reason => reason === 'readme-profiles-conflict-with-dsh-marketplace-profiles')
+  return reasons.filter(reason => reason === 'readme-profiles-conflict-with-dsh-marketplace-profiles'
+    || reason === 'manifest-requires-manual-steps')
 }
 
 async function apiJson(url, candidateRequest = false) {

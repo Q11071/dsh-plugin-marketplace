@@ -8,7 +8,16 @@ Registry refresh commits are grouped instead of listed individually.
 
 ## [Unreleased]
 
-No unreleased changes yet.
+### Added
+
+- Added bounded, incremental security verification for exact plugin commits, including static malware indicators and a no-network, read-only Docker entry probe.
+- Added `registry/security-report.json`; new and changed commits remain guided until their security result is available while existing entries are backfilled in batches.
+- Untrusted runtime probes receive neither the Registry PAT nor repository write credentials.
+
+### Fixed
+
+- Guided auditing now reconciles a newly available, fully verified npm tarball into the Registry instead of failing the same workflow with a contradictory classification.
+- Guided auditing now preserves author-required manual steps, conflicting evidence, and security review gates.
 
 ## [0.9.1] - 2026-08-15
 
