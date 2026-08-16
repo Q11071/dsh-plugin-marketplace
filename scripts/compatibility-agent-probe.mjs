@@ -1,6 +1,6 @@
 /** Run one market-owned Agent Loop contract probe against an already-installed Profile. */
 
-import { readFile, realpath } from 'node:fs/promises'
+import { readdir, readFile, realpath } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -15,14 +15,14 @@ const result = await probe().catch(error => ({
 process.stdout.write(`\n__DSH_COMPAT_AGENT__${JSON.stringify(result)}\n`)
 
 async function probe() {
-  const [{ runProfile }, appBoot, llm, session, tools] = await Promise.all([
-    import(pathToFileURL(path.join(dshPackageDir, 'lib', 'profile-boot.js')).href),
+  const [profileBoot, appBoot, llm, session, tools] = await Promise.all([
+    loadProfileBoot(),
     importFromDsh('@deepseek-ai/dsh-app-boot'),
     importFromDsh('@deepseek-ai/dsh-llm'),
     importFromDsh('@deepseek-ai/dsh-session'),
     importFromDsh('@deepseek-ai/dsh-tools'),
   ])
-  const { ctx } = await runProfile({
+  const { ctx } = await profileBoot.runProfile({
     environment: appBoot.loadLayeredEnv('dsh'),
     profile: target.profile,
     patchFiles: [],
@@ -82,6 +82,18 @@ async function probe() {
     }
   }
   return check
+}
+
+async function loadProfileBoot() {
+  const lib = path.join(dshPackageDir, 'lib')
+  const names = (await readdir(lib))
+    .filter(name => /^profile-boot-[A-Za-z0-9_-]+\.js$/.test(name))
+    .sort()
+  for (const name of names) {
+    const module = await import(pathToFileURL(path.join(lib, name)).href)
+    if (typeof module.runProfile === 'function') return module
+  }
+  throw new Error('official DSH package exposes no runProfile implementation in its generated profile-boot chunks')
 }
 
 async function importFromDsh(specifier) {
