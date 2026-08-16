@@ -41,7 +41,7 @@ jobs:
       - id: plan
         name: Select security-cleared exact commits
         run: node scripts/compatibility-plan.mjs --limit "${{ inputs.max_plugins || '20' }}" --batch-size 2
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: compatibility-plan
           path: .compatibility-work/plan.json
@@ -71,7 +71,7 @@ jobs:
           COMPATIBILITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
           DSH_COMPAT_VERSION: 0.1.0-rc.6
         run: node scripts/compatibility-scan.mjs --output ".compatibility-work/result-${{ matrix.batch }}.json"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
           name: compatibility-result-${{ matrix.batch }}
@@ -96,11 +96,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: compatibility-plan
           path: .compatibility-results/plan
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ needs.plan.outputs.has_work == 'true' }}
         continue-on-error: true
         with:

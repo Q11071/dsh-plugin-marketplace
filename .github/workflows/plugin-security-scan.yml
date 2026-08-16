@@ -41,7 +41,7 @@ jobs:
       - id: plan
         name: Select new, changed and backfill commits
         run: node scripts/security-plan.mjs --limit "${{ inputs.max_plugins || '100' }}" --batch-size 5
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: security-plan
           path: .security-work/plan.json
@@ -77,7 +77,7 @@ jobs:
           SECURITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
           SECURITY_SANDBOX: '1'
         run: node scripts/security-scan.mjs --output ".security-work/result-${{ matrix.batch }}.json"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
           name: security-result-${{ matrix.batch }}
@@ -102,11 +102,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: security-plan
           path: .security-results/plan
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: ${{ needs.plan.outputs.has_work == 'true' }}
         continue-on-error: true
         with:
