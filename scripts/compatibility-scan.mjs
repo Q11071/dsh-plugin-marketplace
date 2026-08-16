@@ -100,8 +100,11 @@ async function installExactSource(directory, target) {
     'export PATH=/work/bin:$PATH',
     'mkdir -p /work/runtime /work/dsh-home /work/baseline-home /work/agent-workspace /work/user-home',
     `printf '%s\\n' '{"private":true}' > /work/runtime/package.json`,
-    'pnpm --dir /work/runtime add "@deepseek-ai/dsh@${DSH_VERSION}" "node-pty@1.1.0" --ignore-scripts',
-    'pnpm --dir /work/runtime rebuild node-pty',
+    'pnpm --dir /work/runtime add "@deepseek-ai/dsh@${DSH_VERSION}" "node-pty@1.1.0" "node-gyp@11.4.2" --ignore-scripts',
+    'cd /work/runtime/node_modules/node-pty',
+    'node scripts/prebuild.js || npm_config_nodedir=/usr/local /work/runtime/node_modules/.bin/node-gyp rebuild',
+    'node scripts/post-install.js',
+    'cd /work',
     'DSH_HOME=/work/baseline-home /work/runtime/node_modules/.bin/dsh plugin --profile "$PLUGIN_PROFILE" install --ignore-scripts',
     '/work/runtime/node_modules/.bin/dsh plugin --profile "$PLUGIN_PROFILE" add "$PLUGIN_SPEC" --ignore-scripts',
     'node /harness/compatibility-inspect.mjs',
@@ -122,7 +125,7 @@ async function installExactSource(directory, target) {
       '--env', 'PLUGIN_VERSION=' + target.version,
       '--volume=' + path.resolve(directory) + ':/work:rw',
       '--volume=' + path.join(root, 'scripts') + ':/harness:ro',
-      image(), 'sh', '-c', script,
+      installImage(), 'sh', '-c', script,
     ], 360_000)
     return { status: 'passed', reason: 'official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled' }
   } catch (error) {
@@ -144,7 +147,7 @@ async function runtimeProbe(directory) {
       '--env', 'HOME=/work/user-home', '--env', 'DSH_HOME=/work/dsh-home',
       '--volume=' + path.resolve(directory) + ':/work:rw',
       '--volume=' + path.join(root, 'scripts') + ':/harness:ro',
-      image(), 'node', '/harness/compatibility-probe.mjs',
+      runtimeImage(), 'node', '/harness/compatibility-probe.mjs',
     ], 45_000)
   } catch (error) {
     const report = await readProbe(directory)
@@ -204,8 +207,12 @@ function preferredProfile(plugin) {
   return plugin.hasClient ? 'web' : (plugin.install.profiles[0] ?? 'headless')
 }
 
-function image() {
-  return process.env.COMPATIBILITY_NODE_IMAGE ?? 'node:22-bookworm-slim'
+function installImage() {
+  return process.env.COMPATIBILITY_INSTALL_IMAGE ?? 'node:22-bookworm'
+}
+
+function runtimeImage() {
+  return process.env.COMPATIBILITY_RUNTIME_IMAGE ?? 'node:22-bookworm-slim'
 }
 
 function fullOutput(error) {

@@ -63,7 +63,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Pull disposable DSH runtime image
-        run: docker pull node:22-bookworm-slim
+        run: |
+          docker pull node:22-bookworm
+          docker pull node:22-bookworm-slim
       - name: Install and test exact commits
         env:
           COMPATIBILITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
