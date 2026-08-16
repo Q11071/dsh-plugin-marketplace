@@ -36,8 +36,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
       - name: Audit every guided install classification
         run: pnpm registry:audit
-        env:
-          GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
       - name: Verify generated Registry
         run: pnpm registry:verify
       - name: Commit Registry changes

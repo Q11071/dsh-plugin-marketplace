@@ -9,13 +9,12 @@ import {
   promoteExactNpm,
 } from './guided-audit-core.mjs'
 import { verifyExactNpmRelease } from './npm-release.mjs'
+import { MAX_README_BYTES, encodeRawPath } from './registry-core.mjs'
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 const registry = JSON.parse(await readFile(path.join(root, 'registry', 'plugins.json'), 'utf8'))
 const state = JSON.parse(await readFile(path.join(root, 'registry', 'state.json'), 'utf8'))
 const installReview = JSON.parse(await readFile(path.join(root, 'registry', 'install-review.json'), 'utf8'))
-const token = process.env.GITHUB_TOKEN?.trim()
-if (!token) throw new Error('GITHUB_TOKEN is required for the guided audit')
 
 const guided = registry.plugins.filter(plugin => plugin.install.mode === 'guided')
 const audited = new Array(guided.length)
@@ -78,7 +77,7 @@ console.log(JSON.stringify({ total: rows.length, promoted, groups }, null, 2))
 
 async function audit(plugin) {
   const inspection = state.repositories[plugin.fullName.toLocaleLowerCase()]?.inspection ?? null
-  const readme = await githubReadme(plugin.fullName, plugin.verifiedCommit)
+  const readme = await githubReadme(plugin.fullName, plugin.verifiedCommit, inspection?.readme?.path)
   const commands = readme === null ? [] : installCommands(readme.text)
   const targetedCommands = commands.filter(command => targetsPlugin(command, plugin))
   const remoteCommands = targetedCommands.filter(command => command.source !== 'local' && command.source !== 'unknown')
@@ -106,33 +105,34 @@ async function audit(plugin) {
   }
 }
 
-async function githubReadme(repository, commit) {
-  const url = 'https://api.github.com/repos/' + repository + '/readme?ref=' + commit
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    let response
-    try {
-      response = await fetch(url, {
-        headers: {
-          accept: 'application/vnd.github.raw+json',
-          authorization: 'Bearer ' + token,
-          'user-agent': 'dsh-plugin-registry-audit',
-          'x-github-api-version': '2022-11-28',
-        },
-        signal: AbortSignal.timeout(20_000),
-      })
-    } catch (error) {
-      if (attempt === 3) throw new Error(repository + ' README request failed: ' + messageOf(error))
+async function githubReadme(repository, commit, knownPath) {
+  const candidates = [...new Set([
+    ...(typeof knownPath === 'string' && knownPath !== '' ? [knownPath] : []),
+    'README.md', 'README.MD', 'readme.md', 'Readme.md', 'README',
+  ])]
+  for (const candidate of candidates) {
+    const url = 'https://raw.githubusercontent.com/' + repository + '/' + commit + '/' + encodeRawPath(candidate)
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      let response
+      try {
+        response = await fetch(url, {
+          headers: { 'user-agent': 'dsh-plugin-registry-audit' },
+          signal: AbortSignal.timeout(20_000),
+        })
+      } catch (error) {
+        if (attempt === 2) throw new Error(repository + ' README request failed: ' + messageOf(error))
+        await retryDelay(attempt)
+        continue
+      }
+      if (response.status === 404) break
+      if (response.ok) return { path: candidate, text: await boundedText(response, MAX_README_BYTES, repository) }
+      const retryable = response.status === 408 || response.status === 429 || response.status >= 500
+      await response.body?.cancel()
+      if (!retryable || attempt === 2) throw new Error(repository + ' README returned HTTP ' + response.status)
       await retryDelay(attempt)
-      continue
     }
-    if (response.status === 404) return null
-    if (response.ok) return { path: response.headers.get('content-location'), text: await response.text() }
-    const retryable = response.status === 408 || response.status === 429 || response.status >= 500
-    await response.body?.cancel()
-    if (!retryable || attempt === 3) throw new Error(repository + ' README returned HTTP ' + response.status)
-    await retryDelay(attempt)
   }
-  throw new Error(repository + ' README retry budget exhausted')
+  return null
 }
 
 function retryDelay(attempt) {
@@ -141,6 +141,26 @@ function retryDelay(attempt) {
 
 function messageOf(error) {
   return error instanceof Error ? error.message : String(error)
+}
+
+async function boundedText(response, maximum, repository) {
+  const declared = Number(response.headers.get('content-length') ?? '0')
+  if (declared > maximum) throw new Error(repository + ' README exceeds the size limit')
+  if (response.body === null) throw new Error(repository + ' README returned no body')
+  const reader = response.body.getReader()
+  const chunks = []
+  let length = 0
+  for (;;) {
+    const part = await reader.read()
+    if (part.done) break
+    length += part.value.byteLength
+    if (length > maximum) {
+      await reader.cancel()
+      throw new Error(repository + ' README exceeds the size limit')
+    }
+    chunks.push(Buffer.from(part.value.buffer, part.value.byteOffset, part.value.byteLength))
+  }
+  return new TextDecoder('utf-8', { fatal: false }).decode(Buffer.concat(chunks, length))
 }
 
 function installCommands(text) {

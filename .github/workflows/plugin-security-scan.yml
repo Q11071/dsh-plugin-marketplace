@@ -119,8 +119,6 @@ jobs:
       - name: Refresh guided audit after applying security gates
         if: ${{ steps.merge.outputs.gate_changes != '0' }}
         run: pnpm registry:audit
-        env:
-          GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
       - name: Verify Registry contracts
         run: pnpm registry:verify
       - name: Commit security report

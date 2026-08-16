@@ -18,6 +18,8 @@ Registry refresh commits are grouped instead of listed individually.
 
 - Guided auditing now reconciles a newly available, fully verified npm tarball into the Registry instead of failing the same workflow with a contradictory classification.
 - Guided auditing now preserves author-required manual steps, conflicting evidence, and security review gates.
+- Exhausting the GitHub API allowance during candidate validation now checkpoints completed work and defers the rest instead of discarding the entire run.
+- Guided audits read READMEs from exact-commit Raw URLs and no longer consume the discovery PAT's API allowance.
 
 ## [0.9.1] - 2026-08-15
 

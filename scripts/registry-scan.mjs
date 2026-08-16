@@ -344,6 +344,7 @@ async function validateCandidate(candidate, installOverride) {
     plugin: verifiedPlugin(candidate, commit, classification.identity, now, effectiveOverride),
     inspection: {
       ...classification.inspection,
+      readme: { ...classification.inspection.readme, path: readmePath },
       reviewReasons: npmRelease?.verified === true
         ? [...new Set(npmReviewReasons)]
         : [...new Set([...classification.inspection.reviewReasons, ...policyReviewReasons])],
@@ -363,7 +364,12 @@ function relevantNpmReviewReasons(reasons) {
 
 async function apiJson(url, candidateRequest = false) {
   for (let rateAttempt = 0; rateAttempt < 4; rateAttempt += 1) {
-    await waitForApiWindow()
+    try {
+      await waitForApiWindow()
+    } catch (error) {
+      if (candidateRequest) throw new RetryCandidateError(messageOf(error))
+      throw error
+    }
     let response
     try {
       response = await fetchWithRetry(url, { headers: apiHeaders }, 3)
