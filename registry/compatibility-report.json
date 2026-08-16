@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T16:34:44.884Z",
+  "generatedAt": "2026-08-16T16:38:46.824Z",
   "total": 6,
   "summary": {
     "passed": 0,
-    "partial": 4,
-    "failed": 2,
+    "partial": 3,
+    "failed": 3,
     "timeout": 0,
     "unsupported": 0,
     "error": 0,
@@ -145,8 +145,8 @@
       "packageName": "@0xsline/dsh-spotlight",
       "version": "0.0.2",
       "profile": "web",
-      "harnessVersion": 5,
-      "checkedAt": "2026-08-16T16:17:20.733Z",
+      "harnessVersion": 8,
+      "checkedAt": "2026-08-16T16:36:40.327Z",
       "result": "failed",
       "scope": "compatibility",
       "checks": {
@@ -187,8 +187,8 @@
       "packageName": "dsh-turn-diff",
       "version": "0.1.1",
       "profile": "web",
-      "harnessVersion": 5,
-      "checkedAt": "2026-08-16T16:18:04.936Z",
+      "harnessVersion": 8,
+      "checkedAt": "2026-08-16T16:37:27.548Z",
       "result": "failed",
       "scope": "compatibility",
       "checks": {
@@ -205,8 +205,8 @@
           "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "unsupported",
-          "reason": "client-platform-runtime-is-incomplete: Cannot find module 'react'\nRequire stack:\n- /work/runtime/package.json"
+          "status": "failed",
+          "reason": "client-bundle-check-failed: undeclared client platform module: @deepseek-ai/dsh-client-runtime/client"
         },
         "dispose": {
           "status": "passed",
@@ -229,9 +229,9 @@
       "packageName": "dsh-web-plugin-explain",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 5,
-      "checkedAt": "2026-08-16T16:19:19.674Z",
-      "result": "partial",
+      "harnessVersion": 8,
+      "checkedAt": "2026-08-16T16:36:41.962Z",
+      "result": "failed",
       "scope": "compatibility",
       "checks": {
         "install": {
@@ -247,8 +247,8 @@
           "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "unsupported",
-          "reason": "client-platform-runtime-is-incomplete: Cannot find module 'react'\nRequire stack:\n- /work/runtime/package.json"
+          "status": "failed",
+          "reason": "client-bundle-check-failed: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
         },
         "dispose": {
           "status": "passed",
