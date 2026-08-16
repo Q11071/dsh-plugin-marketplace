@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T16:02:15.027Z",
+  "generatedAt": "2026-08-16T16:05:03.131Z",
   "total": 1,
   "summary": {
     "passed": 0,
-    "partial": 0,
-    "failed": 1,
+    "partial": 1,
+    "failed": 0,
     "timeout": 0,
     "unsupported": 0,
     "error": 0,
@@ -19,41 +19,41 @@
       "packageName": "dsh-telemetry-redactor",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 1,
-      "checkedAt": "2026-08-16T16:01:28.952Z",
-      "result": "failed",
+      "harnessVersion": 2,
+      "checkedAt": "2026-08-16T16:04:13.768Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
-          "status": "failed",
-          "reason": "exact-source-install-failed: \ndsh: initialized profile web at /work/baseline-home/profiles/web\ndsh: initialized profile web at /work/dsh-home/profiles/web\nchmod: changing permissions of '/work': Operation not permitted\nchmod: changing permissions of '/work/target.json': Operation not permitted\nchmod: changing permissions of '/work/user-home': Operation not permitted\nchmod: changing permissions of '/work/agent-workspace': Operation not permitted\n"
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "skipped",
-          "reason": "install-did-not-complete"
+          "status": "inconclusive",
+          "reason": "13:10)\n          at Module.load (node:internal/modules/cjs/loader:1505:32)\n          at Function._load (node:internal/modules/cjs/loader:1309:12)\n          at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n          at Module.require (node:internal/modules/cjs/loader:1527:12)\n          at require (node:internal/modules/helpers:147:16)\n          at Object.<anonymous> (/work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/index.js:15:20)\n    }\n  }\n}\n\nNode.js v22.23.2\n"
         },
         "agentLoop": {
           "status": "skipped",
-          "reason": "install-did-not-complete"
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
           "status": "skipped",
-          "reason": "install-did-not-complete"
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
           "status": "skipped",
-          "reason": "install-did-not-complete"
+          "reason": "host-exited-before-disposal-probe"
         },
         "update": {
-          "status": "skipped",
-          "reason": "install-did-not-complete"
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
         },
         "networkIsolation": {
-          "status": "skipped",
-          "reason": "install-did-not-complete"
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "exact-source-install-failed: \ndsh: initialized profile web at /work/baseline-home/profiles/web\ndsh: initialized profile web at /work/dsh-home/profiles/web\nchmod: changing permissions of '/work': Operation not permitted\nchmod: changing permissions of '/work/target.json': Operation not permitted\nchmod: changing permissions of '/work/user-home': Operation not permitted\nchmod: changing permissions of '/work/agent-workspace': Operation not permitted\n"
+      "log": "dules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/index.js\n      at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n      at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n      at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {\n    [cause]: Error: failed to import loader entry subprocess (@deepseek-ai/dsh-subprocess-local): Failed to load native module: pty.node, checked: build/Release, build/Debug, prebuilds/linux-x64: Error: Cannot find module './prebuilds/linux-x64//pty.node'\n    Require stack:\n    - /work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/utils.js\n    - /work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/index.js\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:514:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 22)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: Error: Failed to load native module: pty.node, checked: build/Release, build/Debug, prebuilds/linux-x64: Error: Cannot find module './prebuilds/linux-x64//pty.node'\n      Require stack:\n      - /work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/utils.js\n      - /work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/index.js\n          at Object.loadNativeModule (/work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/utils.js:36:11)\n          at Object.<anonymous> (/work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/unixTerminal.js:27:22)\n          at Module._compile (node:internal/modules/cjs/loader:1781:14)\n          at Object..js (node:internal/modules/cjs/loader:1913:10)\n          at Module.load (node:internal/modules/cjs/loader:1505:32)\n          at Function._load (node:internal/modules/cjs/loader:1309:12)\n          at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)\n          at Module.require (node:internal/modules/cjs/loader:1527:12)\n          at require (node:internal/modules/helpers:147:16)\n          at Object.<anonymous> (/work/runtime/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty/lib/index.js:15:20)\n    }\n  }\n}\n\nNode.js v22.23.2\n"
     }
   ]
 }
