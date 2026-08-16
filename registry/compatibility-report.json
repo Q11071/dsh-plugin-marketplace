@@ -1,16 +1,59 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T00:00:00.000Z",
-  "total": 0,
+  "generatedAt": "2026-08-16T16:02:15.027Z",
+  "total": 1,
   "summary": {
     "passed": 0,
     "partial": 0,
-    "failed": 0,
+    "failed": 1,
     "timeout": 0,
     "unsupported": 0,
     "error": 0,
-    "pending": 3012
+    "pending": 3011
   },
-  "results": []
+  "results": [
+    {
+      "repository": "030611/dsh-telemetry-redactor",
+      "verifiedCommit": "811b0b1abf424e57045ab5a5eaa203660ca43908",
+      "packageName": "dsh-telemetry-redactor",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 1,
+      "checkedAt": "2026-08-16T16:01:28.952Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "failed",
+          "reason": "exact-source-install-failed: \ndsh: initialized profile web at /work/baseline-home/profiles/web\ndsh: initialized profile web at /work/dsh-home/profiles/web\nchmod: changing permissions of '/work': Operation not permitted\nchmod: changing permissions of '/work/target.json': Operation not permitted\nchmod: changing permissions of '/work/user-home': Operation not permitted\nchmod: changing permissions of '/work/agent-workspace': Operation not permitted\n"
+        },
+        "hostLoad": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "update": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "networkIsolation": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        }
+      },
+      "log": "exact-source-install-failed: \ndsh: initialized profile web at /work/baseline-home/profiles/web\ndsh: initialized profile web at /work/dsh-home/profiles/web\nchmod: changing permissions of '/work': Operation not permitted\nchmod: changing permissions of '/work/target.json': Operation not permitted\nchmod: changing permissions of '/work/user-home': Operation not permitted\nchmod: changing permissions of '/work/agent-workspace': Operation not permitted\n"
+    }
+  ]
 }
