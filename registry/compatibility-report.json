@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T16:38:46.824Z",
+  "generatedAt": "2026-08-16T16:52:59.381Z",
   "total": 6,
   "summary": {
     "passed": 0,
-    "partial": 3,
-    "failed": 3,
+    "partial": 5,
+    "failed": 1,
     "timeout": 0,
     "unsupported": 0,
     "error": 0,
@@ -19,8 +19,8 @@
       "packageName": "dsh-telemetry-redactor",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 8,
-      "checkedAt": "2026-08-16T16:32:36.608Z",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T16:40:47.198Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -61,8 +61,8 @@
       "packageName": "dsh-verification-receipt",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 8,
-      "checkedAt": "2026-08-16T16:33:25.002Z",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T16:41:33.743Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -103,8 +103,8 @@
       "packageName": "qiushi-dsh-evidence-audit",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 8,
-      "checkedAt": "2026-08-16T16:32:26.674Z",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T16:40:46.244Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -145,8 +145,8 @@
       "packageName": "@0xsline/dsh-spotlight",
       "version": "0.0.2",
       "profile": "web",
-      "harnessVersion": 8,
-      "checkedAt": "2026-08-16T16:36:40.327Z",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T16:41:42.500Z",
       "result": "failed",
       "scope": "compatibility",
       "checks": {
@@ -164,15 +164,15 @@
         },
         "clientLoad": {
           "status": "inconclusive",
-          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-harness-v1"
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
         },
         "dispose": {
           "status": "skipped",
           "reason": "host-exited-before-disposal-probe"
         },
         "update": {
-          "status": "failed",
-          "reason": "update-or-state-preservation-failed: update re-enabled a disabled bundle"
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
           "status": "passed",
@@ -187,9 +187,9 @@
       "packageName": "dsh-turn-diff",
       "version": "0.1.1",
       "profile": "web",
-      "harnessVersion": 8,
-      "checkedAt": "2026-08-16T16:37:27.548Z",
-      "result": "failed",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T16:42:56.675Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
@@ -205,16 +205,16 @@
           "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "failed",
-          "reason": "client-bundle-check-failed: undeclared client platform module: @deepseek-ai/dsh-client-runtime/client"
+          "status": "inconclusive",
+          "reason": "official-client-graph-dependency-is-not-materialized-by-node-harness: undeclared client platform module: @deepseek-ai/dsh-client-runtime/client"
         },
         "dispose": {
           "status": "passed",
           "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "failed",
-          "reason": "update-or-state-preservation-failed: update re-enabled a disabled bundle"
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
           "status": "passed",
@@ -229,9 +229,9 @@
       "packageName": "dsh-web-plugin-explain",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 8,
-      "checkedAt": "2026-08-16T16:36:41.962Z",
-      "result": "failed",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-16T16:43:47.445Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
@@ -247,8 +247,8 @@
           "reason": "plugin-is-not-classified-as-an-agent-extension"
         },
         "clientLoad": {
-          "status": "failed",
-          "reason": "client-bundle-check-failed: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
         },
         "dispose": {
           "status": "passed",
