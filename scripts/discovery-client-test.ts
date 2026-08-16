@@ -11,7 +11,7 @@ const root = path.resolve(import.meta.dirname, '..')
 const registry = JSON.parse(readFileSync(path.join(root, 'registry', 'plugins.json'), 'utf8')) as {
   schemaVersion: 2
   generatedAt: string
-  plugins: Array<{ fullName: string }>
+  plugins: Array<{ fullName: string, verifiedCommit: string }>
 }
 assert(registry.plugins.length >= 3)
 const plugins = registry.plugins.slice(0, 3)
@@ -29,6 +29,24 @@ try {
       { fullName: plugins[2]!.fullName, categories: ['ui', 'developer-tools'], starGrowth7d: 5 },
     ],
   }), 'utf8')
+  writeFileSync(path.join(dir, 'security-report.json'), JSON.stringify({
+    schemaVersion: 1,
+    results: [{
+      repository: plugins[0]!.fullName,
+      verifiedCommit: plugins[0]!.verifiedCommit,
+      scannedAt: registry.generatedAt,
+      status: 'passed',
+    }],
+  }), 'utf8')
+  writeFileSync(path.join(dir, 'compatibility-report.json'), JSON.stringify({
+    schemaVersion: 1,
+    results: [{
+      repository: plugins[0]!.fullName,
+      verifiedCommit: plugins[0]!.verifiedCommit,
+      checkedAt: registry.generatedAt,
+      result: 'partial',
+    }],
+  }), 'utf8')
   const source = pathToFileURL(path.join(dir, 'plugins.json')).href
   const client = new RegistryClient(source, source, 60_000, 10_000)
   const trending = await client.search('', 1, 'trending', 'all')
@@ -36,6 +54,9 @@ try {
   const ui = await client.search('', 1, 'stars', 'ui')
   assert.equal(ui.totalCount, 2)
   assert(ui.items.every(plugin => plugin.categories.includes('ui')))
+  const verified = trending.items.find(plugin => plugin.fullName === plugins[0]!.fullName)
+  assert.equal(verified?.verification.security.status, 'passed')
+  assert.equal(verified?.verification.compatibility.status, 'partial')
   rmSync(path.join(dir, 'discovery.json'))
   const fallback = new RegistryClient(source, source, 60_000, 10_000)
   const withoutSidecar = await fallback.search('', 1, 'trending', 'all')

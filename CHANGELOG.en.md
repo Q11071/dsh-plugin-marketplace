@@ -10,6 +10,8 @@ Registry refresh commits are grouped instead of listed individually.
 
 ### Added
 
+- Added a separate runtime compatibility workflow and `registry/compatibility-report.json`. It uses the official DSH CLI with lifecycle scripts disabled for security-cleared exact automatic sources, then checks Host startup and disposal in an offline temporary Profile.
+- Marketplace cards now distinguish static-check and runtime-compatibility states. Agent, browser, and update/rollback checks that were not actually executed remain explicitly partial instead of sharing an ambiguous Verified badge.
 - Added bounded, incremental security verification for exact plugin commits, including static malware indicators and a no-network, read-only Docker entry probe.
 - Added `registry/security-report.json`; new and changed commits remain guided until their security result is available while existing entries are backfilled in batches.
 - Untrusted runtime probes receive neither the Registry PAT nor repository write credentials.

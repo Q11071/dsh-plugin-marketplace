@@ -14,6 +14,10 @@ import {
   validSecurityReportRoot,
   validSecurityResult,
 } from './security-core.mjs'
+import {
+  validCompatibilityReportRoot,
+  validCompatibilityResult,
+} from './compatibility-core.mjs'
 
 const require = createRequire(import.meta.url)
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -89,6 +93,7 @@ if (pkg.exports?.['./client'] === undefined) throw new Error('./client export mi
 if (pkg.exports?.['./typert'] === undefined) throw new Error('./typert export missing')
 if (!pkg.files?.includes('skills/**')) throw new Error('packaged Skill files missing from package manifest')
 if (!pkg.files?.includes('registry/security-report.json')) throw new Error('packaged security report missing from package manifest')
+if (!pkg.files?.includes('registry/compatibility-report.json')) throw new Error('packaged compatibility report missing from package manifest')
 const installSkill = readFileSync(path.join(root, 'skills', 'install-dsh-plugin', 'SKILL.md'), 'utf8')
 if (!installSkill.startsWith('---\nname: install-dsh-plugin\n')
   || installSkill.includes('[TODO')
@@ -262,5 +267,31 @@ for (const [key, value] of Object.entries(expectedSecuritySummary)) {
   if (securityReport.summary?.[key] !== value) throw new Error('security report summary mismatch: ' + key)
 }
 console.log('security report contract valid: ' + currentSecurity.length + ' current exact-commit results; ' + expectedSecuritySummary.pending + ' pending')
+
+// Runtime compatibility is a separate, explicitly scoped claim. A partial
+// result must never be presented as a security certificate or a full pass.
+const compatibilityReport = JSON.parse(readFileSync(path.join(root, 'registry', 'compatibility-report.json'), 'utf8'))
+if (!validCompatibilityReportRoot(compatibilityReport) || compatibilityReport.total !== compatibilityReport.results.length) {
+  throw new Error('compatibility report root contract invalid')
+}
+const compatibilityNames = new Set()
+const currentCompatibility = []
+for (const row of compatibilityReport.results) {
+  if (!validCompatibilityResult(row)) throw new Error('compatibility report result invalid: ' + String(row?.repository))
+  const key = row.repository.toLocaleLowerCase()
+  if (!registryNames.has(key)) throw new Error('compatibility report references an unpublished repository: ' + row.repository)
+  if (compatibilityNames.has(key)) throw new Error('compatibility report repeats repository ' + row.repository)
+  compatibilityNames.add(key)
+  const plugin = registry.plugins.find(candidate => candidate.fullName.toLocaleLowerCase() === key)
+  if (plugin.verifiedCommit === row.verifiedCommit) currentCompatibility.push(row)
+}
+const compatibilityStatuses = ['passed', 'partial', 'failed', 'timeout', 'unsupported', 'error']
+for (const status of compatibilityStatuses) {
+  const expected = currentCompatibility.filter(row => row.result === status).length
+  if (compatibilityReport.summary?.[status] !== expected) throw new Error('compatibility report summary mismatch: ' + status)
+}
+const compatibilityPending = registry.plugins.length - currentCompatibility.length
+if (compatibilityReport.summary?.pending !== compatibilityPending) throw new Error('compatibility report summary mismatch: pending')
+console.log('compatibility report contract valid: ' + currentCompatibility.length + ' current exact-commit results; ' + compatibilityPending + ' pending')
 
 console.log('VERIFY OK')

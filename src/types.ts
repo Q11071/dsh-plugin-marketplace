@@ -62,6 +62,21 @@ export interface MarketplaceRepoSummary {
 export type MarketplaceInstallSource = 'github' | 'npm' | 'tarball' | 'manual'
 export type MarketplaceInstallMode = 'automatic' | 'guided'
 
+export type MarketplaceSecurityStatus = 'passed' | 'review' | 'error' | 'pending'
+export type MarketplaceCompatibilityStatus = 'passed' | 'partial' | 'failed' | 'timeout' | 'unsupported' | 'error' | 'pending'
+
+/** Exact-commit verification sidecars maintained independently from Registry inclusion. */
+export interface MarketplaceVerificationStatus {
+  security: {
+    status: MarketplaceSecurityStatus
+    checkedAt: string | null
+  }
+  compatibility: {
+    status: MarketplaceCompatibilityStatus
+    checkedAt: string | null
+  }
+}
+
 /** Centrally verified instructions used by the UI and installer. */
 export interface MarketplaceInstallMetadata {
   /** Automatic entries may be executed by the marketplace; guided entries only link to instructions. */
@@ -85,6 +100,7 @@ export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
   hasClient: boolean
   verifiedAt: string
   install: MarketplaceInstallMetadata
+  verification: MarketplaceVerificationStatus
 }
 
 /** Signed-content payload before an optional detached signature is added. */

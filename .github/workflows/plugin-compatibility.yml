@@ -1,0 +1,123 @@
+name: Verify plugin compatibility
+
+on:
+  schedule:
+    - cron: '13 1-23/2 * * *'
+  workflow_dispatch:
+    inputs:
+      max_plugins:
+        description: Maximum exact commits to test in this run
+        required: false
+        default: '20'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dsh-plugin-registry-write
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      has_work: ${{ steps.plan.outputs.has_work }}
+      selected: ${{ steps.plan.outputs.selected }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - id: plan
+        name: Select security-cleared exact commits
+        run: node scripts/compatibility-plan.mjs --limit "${{ inputs.max_plugins || '20' }}" --batch-size 2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-plan
+          path: .compatibility-work/plan.json
+          retention-days: 2
+
+  scan:
+    needs: plan
+    if: ${{ needs.plan.outputs.has_work == 'true' }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Pull disposable DSH runtime image
+        run: docker pull node:22-bookworm-slim
+      - name: Install and test exact commits
+        env:
+          COMPATIBILITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
+          DSH_COMPAT_VERSION: 0.1.0-rc.6
+        run: node scripts/compatibility-scan.mjs --output ".compatibility-work/result-${{ matrix.batch }}.json"
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: compatibility-result-${{ matrix.batch }}
+          path: .compatibility-work/result-${{ matrix.batch }}.json
+          if-no-files-found: ignore
+          retention-days: 2
+
+  finalize:
+    needs: [plan, scan]
+    if: ${{ always() && needs.plan.result == 'success' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: compatibility-plan
+          path: .compatibility-results/plan
+      - uses: actions/download-artifact@v4
+        if: ${{ needs.plan.outputs.has_work == 'true' }}
+        continue-on-error: true
+        with:
+          pattern: compatibility-result-*
+          path: .compatibility-results/scans
+          merge-multiple: true
+      - name: Validate and merge unprivileged reports
+        run: node scripts/compatibility-merge.mjs
+      - name: Verify Registry contracts
+        run: pnpm registry:verify
+      - name: Commit compatibility report
+        shell: bash
+        run: |
+          git add registry/compatibility-report.json
+          if git diff --cached --quiet; then
+            echo "Compatibility report is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(compatibility): verify plugin commits"
+          git push

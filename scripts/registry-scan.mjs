@@ -46,6 +46,7 @@ const rejectedPath = path.join(root, 'registry', 'rejected.json')
 const installReviewPath = path.join(root, 'registry', 'install-review.json')
 const discoveryPath = path.join(root, 'registry', 'discovery.json')
 const securityReportPath = path.join(root, 'registry', 'security-report.json')
+const compatibilityReportPath = path.join(root, 'registry', 'compatibility-report.json')
 const denylistPath = path.join(root, 'policy', 'denylist.json')
 const installOverridesPath = path.join(root, 'policy', 'install-overrides.json')
 
@@ -53,6 +54,7 @@ const previousState = await readJson(statePath)
 const denylistDocument = await readJson(denylistPath)
 const installOverridesDocument = await readJson(installOverridesPath)
 const securityReport = await readJson(securityReportPath)
+const compatibilityReport = await readJson(compatibilityReportPath)
 const previous = plainObject(previousState.repositories) ? previousState.repositories : {}
 const denylist = new Map((Array.isArray(denylistDocument.repositories) ? denylistDocument.repositories : []).map((entry) => {
   if (typeof entry === 'string') return [entry.toLocaleLowerCase(), 'manually blocked']
@@ -203,6 +205,23 @@ securityReport.summary = {
   error: currentSecurity.filter(row => row.status === 'error').length,
   pending: plugins.length - currentSecurity.length,
 }
+compatibilityReport.results = compatibilityReport.results
+  .filter(row => publishedNames.has(row.repository.toLocaleLowerCase()))
+  .sort((left, right) => left.repository.localeCompare(right.repository))
+const currentCompatibility = compatibilityReport.results.filter(row => (
+  publishedCommits.get(row.repository.toLocaleLowerCase()) === row.verifiedCommit
+))
+compatibilityReport.generatedAt = now
+compatibilityReport.total = compatibilityReport.results.length
+compatibilityReport.summary = {
+  passed: currentCompatibility.filter(row => row.result === 'passed').length,
+  partial: currentCompatibility.filter(row => row.result === 'partial').length,
+  failed: currentCompatibility.filter(row => row.result === 'failed').length,
+  timeout: currentCompatibility.filter(row => row.result === 'timeout').length,
+  unsupported: currentCompatibility.filter(row => row.result === 'unsupported').length,
+  error: currentCompatibility.filter(row => row.result === 'error').length,
+  pending: plugins.length - currentCompatibility.length,
+}
 
 await atomicJson(statePath, { schemaVersion: 2, generatedAt: now, repositories: sortObject(next) })
 await atomicJson(pluginsPath, { schemaVersion: 2, generatedAt: now, plugins })
@@ -210,6 +229,7 @@ await atomicJson(rejectedPath, { schemaVersion: 1, generatedAt: now, repositorie
 await atomicJson(installReviewPath, { schemaVersion: 1, generatedAt: now, repositories: installReview })
 await atomicJson(discoveryPath, { schemaVersion: 1, generatedAt: now, windowDays: 7, plugins: discovery })
 await atomicJson(securityReportPath, securityReport)
+await atomicJson(compatibilityReportPath, compatibilityReport)
 console.log(
   'published ' + String(plugins.length) + ' verified plugins; '
   + String(rejected.length) + ' hidden; '
