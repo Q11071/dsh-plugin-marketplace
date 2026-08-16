@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T16:30:33.227Z",
+  "generatedAt": "2026-08-16T16:34:44.884Z",
   "total": 6,
   "summary": {
     "passed": 0,
-    "partial": 2,
-    "failed": 4,
+    "partial": 4,
+    "failed": 2,
     "timeout": 0,
     "unsupported": 0,
     "error": 0,
@@ -19,8 +19,8 @@
       "packageName": "dsh-telemetry-redactor",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 7,
-      "checkedAt": "2026-08-16T16:28:32.187Z",
+      "harnessVersion": 8,
+      "checkedAt": "2026-08-16T16:32:36.608Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -61,9 +61,9 @@
       "packageName": "dsh-verification-receipt",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 7,
-      "checkedAt": "2026-08-16T16:29:19.188Z",
-      "result": "failed",
+      "harnessVersion": 8,
+      "checkedAt": "2026-08-16T16:33:25.002Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
@@ -75,8 +75,8 @@
           "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "failed",
-          "reason": "market-mock-agent-loop-failed: Cannot find module '/work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot.js' imported from /harness/compatibility-agent-probe.mjs"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
           "status": "skipped",
@@ -103,9 +103,9 @@
       "packageName": "qiushi-dsh-evidence-audit",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 7,
-      "checkedAt": "2026-08-16T16:28:35.569Z",
-      "result": "failed",
+      "harnessVersion": 8,
+      "checkedAt": "2026-08-16T16:32:26.674Z",
+      "result": "partial",
       "scope": "compatibility",
       "checks": {
         "install": {
@@ -117,8 +117,8 @@
           "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
-          "status": "failed",
-          "reason": "market-mock-agent-loop-failed: Cannot find module '/work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot.js' imported from /harness/compatibility-agent-probe.mjs"
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
         },
         "clientLoad": {
           "status": "skipped",
