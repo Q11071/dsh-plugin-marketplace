@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-16T14:07:16.931Z",
-  "total": 969,
+  "generatedAt": "2026-08-16T14:16:51.276Z",
+  "total": 967,
   "groups": {
-    "local-or-unparsed-command-only": 416,
-    "remote-command-found": 426,
+    "local-or-unparsed-command-only": 415,
+    "remote-command-found": 425,
     "no-install-command-found": 127
   },
   "rows": [
@@ -1527,84 +1527,6 @@
           "prepare"
         ],
         "runtimeArtifactsCommitted": true,
-        "reviewReasons": [
-          "security-scan-requires-manual-review"
-        ]
-      }
-    },
-    {
-      "repository": "a792883583/dsh-cron-panel",
-      "packageName": "dsh-cron-panel",
-      "version": "0.1.0",
-      "verifiedCommit": "3f2480086041bf072de0265c929b7fe7578412d9",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-cron-panel",
-          "profile": "web",
-          "spec": "dsh-cron-panel",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add link:/path/to/dsh-cron-panel` 以链接方式安装，修改源码后 `npm run build` 并刷新页面即可生效。",
-          "profile": "web",
-          "spec": "link:/path/to/dsh-cron-panel",
-          "source": "local"
-        }
-      ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-cron-panel",
-          "profile": "web",
-          "spec": "dsh-cron-panel",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-cron-panel",
-          "profile": "web",
-          "spec": "dsh-cron-panel",
-          "source": "npm"
-        }
-      ],
-      "npmVerification": {
-        "verified": true,
-        "reason": "exact-npm-tarball-verified",
-        "spec": "dsh-cron-panel@0.1.0",
-        "integrity": "sha512-5U366lBhnNJk83rTmgWf67Ub0qyWAae9rjJEFDJesLDihpZw0RxEOSdYACNgo83rdhtBxeinQiLKIqVbH1uA5w==",
-        "tarball": "https://registry.npmjs.org/dsh-cron-panel/-/dsh-cron-panel-0.1.0.tgz",
-        "gitHead": "3f2480086041bf072de0265c929b7fe7578412d9",
-        "artifactGroups": [
-          {
-            "label": "host",
-            "paths": [
-              "lib/index.js"
-            ],
-            "found": "lib/index.js"
-          },
-          {
-            "label": "client",
-            "paths": [
-              "lib/client.js"
-            ],
-            "found": "lib/client.js"
-          }
-        ]
-      },
-      "assessment": {
-        "outcome": "guided-security-review",
-        "reason": "security-scan-requires-manual-review"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "web"
-        ],
-        "requiresBuildApproval": false,
-        "manualSteps": true,
-        "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
         "reviewReasons": [
           "security-scan-requires-manual-review"
         ]
@@ -28876,9 +28798,28 @@
         }
       ],
       "npmVerification": {
-        "verified": false,
+        "verified": true,
+        "reason": "exact-npm-tarball-verified",
         "spec": "dsh-layered-memory@0.5.3",
-        "reason": "npm-version-not-published"
+        "integrity": "sha512-ThBH7XVQFVK89jgs9XJPTNcrT/cp0z28mKascXoqBH6a8sDEyPEV6KHp3D180BZf5NCbPTdB1W8FyhOBpByyMg==",
+        "tarball": "https://registry.npmjs.org/dsh-layered-memory/-/dsh-layered-memory-0.5.3.tgz",
+        "gitHead": "d3d371579cd99ea80c30dd5d6ddf70f921fa7b2b",
+        "artifactGroups": [
+          {
+            "label": "host",
+            "paths": [
+              "dist/index.js"
+            ],
+            "found": "dist/index.js"
+          },
+          {
+            "label": "client",
+            "paths": [
+              "dist/client.js"
+            ],
+            "found": "dist/client.js"
+          }
+        ]
       },
       "assessment": {
         "outcome": "guided-security-review",
@@ -42608,9 +42549,21 @@
         }
       ],
       "npmVerification": {
-        "verified": false,
+        "verified": true,
+        "reason": "exact-npm-tarball-verified",
         "spec": "dsh-code-checker@0.1.0",
-        "reason": "npm-version-not-published"
+        "integrity": "sha512-/PgmbxBcsVwjWUejxEaK9gT8eP2p6GE8wuOGoeKfI6pn2wufkpJDNwk82/wrXYy9vxT2Rbv54L+HEK9ivLsKDQ==",
+        "tarball": "https://registry.npmjs.org/dsh-code-checker/-/dsh-code-checker-0.1.0.tgz",
+        "gitHead": "e26bf0ead3ece09f8e2ff12e19ae389873d3b814",
+        "artifactGroups": [
+          {
+            "label": "host",
+            "paths": [
+              "lib/src/index.js"
+            ],
+            "found": "lib/src/index.js"
+          }
+        ]
       },
       "assessment": {
         "outcome": "guided-security-review",
@@ -42669,9 +42622,28 @@
         }
       ],
       "npmVerification": {
-        "verified": false,
+        "verified": true,
+        "reason": "exact-npm-tarball-verified",
         "spec": "@nonamelego/dsh-catppuccin@0.2.1",
-        "reason": "npm-version-not-published"
+        "integrity": "sha512-VDICMopj7mnLh29tJ1vRa+RZDFxvmBDlfW9dL7wU6bJ0xwgY2B3Prf1UxjgojhQKsZ3ckDSUyPUg1lzXe4A5wQ==",
+        "tarball": "https://registry.npmjs.org/@nonamelego/dsh-catppuccin/-/dsh-catppuccin-0.2.1.tgz",
+        "gitHead": "cbc79977e36c15b8a529ae5657676b58e6c4a14b",
+        "artifactGroups": [
+          {
+            "label": "host",
+            "paths": [
+              "lib/index.js"
+            ],
+            "found": "lib/index.js"
+          },
+          {
+            "label": "client",
+            "paths": [
+              "lib/client.js"
+            ],
+            "found": "lib/client.js"
+          }
+        ]
       },
       "assessment": {
         "outcome": "guided-security-review",
@@ -54643,57 +54615,6 @@
           "prepare"
         ],
         "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
-      "repository": "zoahdev/dsh-poison-guard",
-      "packageName": "dsh-poison-guard",
-      "version": "0.2.0",
-      "verifiedCommit": "b4aa124e8163139149fd0b8a16e64a33c515ab6e",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin add` it —",
-          "profile": null,
-          "spec": "it",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add github:zoahdev/dsh-poison-guard",
-          "profile": "web",
-          "spec": "github:zoahdev/dsh-poison-guard",
-          "source": "unknown"
-        },
-        {
-          "raw": "dsh plugin add` 之前跑三层检测：",
-          "profile": null,
-          "spec": "之前跑三层检测：",
-          "source": "unknown"
-        }
-      ],
-      "targetedCommands": [],
-      "remoteCommands": [],
-      "npmVerification": {
-        "verified": false,
-        "spec": "dsh-poison-guard@0.2.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-no-matching-remote-command",
-        "reason": "readme-does-not-document-a-remote-install-for-this-package"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [
-          "prepare"
-        ],
-        "runtimeArtifactsCommitted": true,
         "reviewReasons": []
       }
     },

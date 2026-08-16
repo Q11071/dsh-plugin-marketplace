@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-16T14:07:16.931Z",
+  "generatedAt": "2026-08-16T14:16:51.276Z",
   "repositories": {
     "01virex/dsh-foxy-jumpscare": {
       "repository": "01Virex/dsh-foxy-jumpscare",
@@ -13587,7 +13587,7 @@
         "bundlePatch": "./cordis.patch.yml",
         "hasClient": true,
         "install": {
-          "mode": "guided",
+          "mode": "automatic",
           "source": "npm",
           "spec": "dsh-cron-panel@0.1.0",
           "profiles": [
@@ -13595,7 +13595,7 @@
           ],
           "requiresBuildApproval": false,
           "requiresRestart": true,
-          "manualSteps": true,
+          "manualSteps": false,
           "instructionsUrl": "https://github.com/a792883583/dsh-cron-panel#readme"
         },
         "verifiedAt": "2026-08-16T13:56:30.158Z"
@@ -13643,11 +13643,10 @@
           "unverifiedGitHubRepositories": [],
           "path": "README.md"
         },
-        "reviewReasons": [
-          "security-scan-requires-manual-review"
-        ],
+        "reviewReasons": [],
         "resolvedReasons": [
-          "exact-npm-tarball-verified-for-automatic-install"
+          "exact-npm-tarball-verified-for-automatic-install",
+          "guided-audit-second-pass-promoted-exact-npm-release"
         ],
         "npmRelease": {
           "verified": true,
@@ -373114,15 +373113,15 @@
         "bundlePatch": "./cordis.patch.yml",
         "hasClient": false,
         "install": {
-          "mode": "guided",
-          "source": "github",
-          "spec": "github:zoahdev/dsh-poison-guard#b4aa124e8163139149fd0b8a16e64a33c515ab6e",
+          "mode": "automatic",
+          "source": "npm",
+          "spec": "dsh-poison-guard@0.2.0",
           "profiles": [
             "web"
           ],
-          "requiresBuildApproval": true,
+          "requiresBuildApproval": false,
           "requiresRestart": true,
-          "manualSteps": true,
+          "manualSteps": false,
           "instructionsUrl": "https://github.com/zoahdev/dsh-poison-guard#readme"
         },
         "verifiedAt": "2026-08-16T10:41:56.595Z"
@@ -373165,11 +373164,26 @@
           "unverifiedGitHubRepositories": []
         },
         "reviewReasons": [],
-        "resolvedReasons": [],
+        "resolvedReasons": [
+          "exact-npm-tarball-verified-for-automatic-install",
+          "guided-audit-second-pass-promoted-exact-npm-release"
+        ],
         "npmRelease": {
-          "verified": false,
+          "verified": true,
+          "reason": "exact-npm-tarball-verified",
           "spec": "dsh-poison-guard@0.2.0",
-          "reason": "npm-version-not-published"
+          "integrity": "sha512-rJrSZj4cHycjv1PM9jK2SaZmWpB1sCG7NQ23d1DQvQUs2t/m1EtBF0nQt0jgMxWBTQno2Q5F/7xK98pzTYbXTA==",
+          "tarball": "https://registry.npmjs.org/dsh-poison-guard/-/dsh-poison-guard-0.2.0.tgz",
+          "gitHead": null,
+          "artifactGroups": [
+            {
+              "label": "host",
+              "paths": [
+                "lib/index.js"
+              ],
+              "found": "lib/index.js"
+            }
+          ]
         },
         "treeTruncated": false
       },
