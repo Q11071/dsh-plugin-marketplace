@@ -12,7 +12,7 @@ const inspection = JSON.parse(await readFile('/work/install-inspection.json', 'u
 const checks = {
   hostLoad: check('inconclusive', 'host-start-not-attempted'),
   agentLoop: target.agentCategory === true
-    ? check('unsupported', 'mock-agent-loop-not-yet-available-in-harness-v1')
+    ? check('inconclusive', 'market-mock-agent-loop-not-attempted')
     : check('skipped', 'plugin-is-not-classified-as-an-agent-extension'),
   clientLoad: await clientCheck(target, inspection),
   dispose: check('inconclusive', 'host-disposal-not-attempted'),
@@ -37,11 +37,45 @@ try {
   const outcome = await observeHost(executable, target.profile, '/work/dsh-home')
   checks.hostLoad = outcome.hostLoad
   checks.dispose = outcome.dispose
+  if (target.agentCategory === true && outcome.hostLoad.status === 'passed') {
+    checks.agentLoop = await agentLoopCheck()
+  }
   await writeFile('/work/runtime-probe.json', JSON.stringify({ checks, log: outcome.log }, null, 2) + '\n', 'utf8')
 } catch (error) {
   checks.hostLoad = check('failed', 'dsh-host-probe-failed-before-start: ' + reason(error))
   checks.dispose = check('skipped', 'host-never-started')
   await writeFile('/work/runtime-probe.json', JSON.stringify({ checks, log: reason(error) }, null, 2) + '\n', 'utf8')
+}
+
+async function agentLoopCheck() {
+  const result = await run(process.execPath, [
+    '--expose-internals',
+    '/harness/compatibility-agent-probe.mjs',
+  ], 20_000, {
+    cwd: '/work/agent-workspace',
+    env: {
+      PATH: process.env.PATH ?? '/usr/local/bin:/usr/bin:/bin',
+      HOME: '/work/user-home',
+      DSH_HOME: '/work/dsh-home',
+      DSH_TELEMETRY_DISABLED: '1',
+      CI: '1',
+      NO_COLOR: '1',
+    },
+  })
+  const marker = '__DSH_COMPAT_AGENT__'
+  const line = result.output.split('\n').findLast(value => value.startsWith(marker))
+  if (line === undefined) {
+    if (result.timedOut) return check('timeout', 'market-mock-agent-loop-timed-out')
+    return check('failed', 'market-mock-agent-loop-produced-no-result: ' + bounded(result.output, 420))
+  }
+  try {
+    const value = JSON.parse(line.slice(marker.length))
+    if (!['passed', 'failed', 'timeout', 'unsupported', 'inconclusive'].includes(value.status)
+      || typeof value.reason !== 'string') throw new Error('invalid result shape')
+    return check(value.status, value.reason)
+  } catch (error) {
+    return check('failed', 'market-mock-agent-loop-result-is-invalid: ' + reason(error))
+  }
 }
 
 async function clientCheck(target, inspection) {
@@ -57,9 +91,14 @@ async function clientCheck(target, inspection) {
     if (source.length > 5 * 1024 * 1024) return check('unsupported', 'client-bundle-exceeds-five-mib-probe-limit')
     const modules = await platformModules(source)
     const definitions = []
-    const window = { __ModuleLoader__: { load: definition => { definitions.push(definition) } } }
+    const document = mockDocument()
+    const window = { document, __ModuleLoader__: { load: definition => { definitions.push(definition) } } }
+    window.window = window
+    window.self = window
     const context = vm.createContext({
       window,
+      self: window,
+      document,
       globalThis: window,
       console,
       URL,
@@ -79,8 +118,10 @@ async function clientCheck(target, inspection) {
       if (!modules.has(specifier)) throw new Error('undeclared client platform module: ' + specifier)
       return modules.get(specifier)
     })
-    if (exported === null || (typeof exported !== 'object' && typeof exported !== 'function')) {
-      return check('failed', 'client-module-factory-returned-no-plugin-exports')
+    const plugin = exported?.default ?? exported
+    if (plugin === null || (typeof plugin !== 'object' && typeof plugin !== 'function')
+      || (typeof plugin !== 'function' && typeof plugin.apply !== 'function')) {
+      return check('failed', 'client-module-factory-returned-no-cordis-plugin-exports')
     }
     return check('inconclusive', 'client-module-factory-loaded-browser-react-mount-not-executed-by-harness-v1')
   } catch (error) {
@@ -92,14 +133,29 @@ async function clientCheck(target, inspection) {
 }
 
 async function platformModules(source) {
-  const require = createRequire('/work/runtime/package.json')
+  const runtimeRequire = createRequire('/work/runtime/package.json')
+  const clientRequire = createRequire(runtimeRequire.resolve('@deepseek-ai/dsh-client-web/package.json'))
+  const allowed = new Set([
+    'react', 'react/jsx-runtime', 'react-dom', 'react-dom/client', '@deepseek-ai/cordis',
+    '@deepseek-ai/dsh-client-ui-slots', '@deepseek-ai/dsh-client-web-react',
+    '@deepseek-ai/dsh-client-ui-primitives', '@deepseek-ai/dsh-client-ui-attachment',
+    '@deepseek-ai/dsh-client-schema-form',
+  ])
   const specifiers = [...new Set([...source.matchAll(/require\(["']([^"']+)["']\)/g)].map(match => match[1]))]
   const modules = new Map()
   for (const specifier of specifiers) {
-    const resolved = require.resolve(specifier)
+    if (!allowed.has(specifier)) throw new Error('undeclared client platform module: ' + specifier)
+    let owner = runtimeRequire
+    let resolved
+    try {
+      resolved = owner.resolve(specifier)
+    } catch {
+      owner = clientRequire
+      resolved = owner.resolve(specifier)
+    }
     let value
     try {
-      value = require(specifier)
+      value = owner(specifier)
     } catch (error) {
       if (error?.code !== 'ERR_REQUIRE_ESM') throw error
       value = await import(pathToFileURL(resolved).href)
@@ -107,6 +163,33 @@ async function platformModules(source) {
     modules.set(specifier, value)
   }
   return modules
+}
+
+function mockDocument() {
+  const nodes = []
+  const createElement = tagName => ({
+    tagName: String(tagName).toUpperCase(),
+    attributes: new Map(),
+    children: [],
+    parentNode: null,
+    textContent: '',
+    innerHTML: '',
+    setAttribute(name, value) { this.attributes.set(name, String(value)) },
+    getAttribute(name) { return this.attributes.get(name) ?? null },
+    appendChild(child) { child.parentNode = this; this.children.push(child); nodes.push(child); return child },
+    append(...children) { for (const child of children) this.appendChild(child) },
+    remove() { if (this.parentNode) this.parentNode.children = this.parentNode.children.filter(value => value !== this) },
+    addEventListener() {},
+    removeEventListener() {},
+  })
+  const head = createElement('head')
+  return {
+    head,
+    body: createElement('body'),
+    createElement,
+    querySelectorAll() { return [] },
+    getElementById() { return null },
+  }
 }
 
 async function updateCheck() {
@@ -179,15 +262,23 @@ function configurationLimited(text) {
   return /(?:missing|required|configure|configuration|credential|api[ _-]?key|token|account|login|no provider)/iu.test(text)
 }
 
-function run(file, args, timeout) {
+function run(file, args, timeout, options = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(file, args, { stdio: ['ignore', 'pipe', 'pipe'] })
+    const child = spawn(file, args, { ...options, stdio: ['ignore', 'pipe', 'pipe'] })
     let output = ''
+    let timedOut = false
     child.stdout.on('data', chunk => { output = bounded(output + chunk.toString('utf8')) })
     child.stderr.on('data', chunk => { output = bounded(output + chunk.toString('utf8')) })
     child.once('error', reject)
-    child.once('exit', code => resolve({ code, output }))
-    setTimeout(() => { child.kill('SIGKILL') }, timeout).unref()
+    const timer = setTimeout(() => {
+      timedOut = true
+      child.kill('SIGKILL')
+    }, timeout)
+    timer.unref()
+    child.once('exit', code => {
+      clearTimeout(timer)
+      resolve({ code, output, timedOut })
+    })
   })
 }
 

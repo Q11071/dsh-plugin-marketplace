@@ -100,7 +100,7 @@ async function installExactSource(directory, target) {
     'export PATH=/work/bin:$PATH',
     'mkdir -p /work/runtime /work/dsh-home /work/baseline-home /work/agent-workspace /work/user-home',
     `printf '%s\\n' '{"private":true}' > /work/runtime/package.json`,
-    'pnpm --dir /work/runtime add "@deepseek-ai/dsh@${DSH_VERSION}" "node-pty@1.1.0" "node-gyp@11.4.2" --ignore-scripts',
+    'pnpm --dir /work/runtime add "@deepseek-ai/dsh@${DSH_VERSION}" "@deepseek-ai/dsh-client-web@${DSH_VERSION}" "node-pty@1.1.0" "node-gyp@11.4.2" --ignore-scripts',
     'cd /work/runtime/node_modules/node-pty',
     'node scripts/prebuild.js || npm_config_nodedir=/usr/local /work/runtime/node_modules/.bin/node-gyp rebuild',
     'node scripts/post-install.js',
