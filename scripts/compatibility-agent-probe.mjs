@@ -1,12 +1,12 @@
 /** Run one market-owned Agent Loop contract probe against an already-installed Profile. */
 
-import { readFile } from 'node:fs/promises'
+import { readFile, realpath } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const target = JSON.parse(await readFile('/work/target.json', 'utf8'))
-const dshPackageDir = '/work/runtime/node_modules/@deepseek-ai/dsh'
+const dshPackageDir = await realpath('/work/runtime/node_modules/@deepseek-ai/dsh')
 const requireFromDsh = createRequire(path.join(dshPackageDir, 'package.json'))
 const result = await probe().catch(error => ({
   status: 'failed',
