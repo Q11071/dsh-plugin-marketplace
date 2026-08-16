@@ -1,7 +1,7 @@
 /** Install exact plugin sources without lifecycle scripts, then probe DSH in a no-network container. */
 
 import { execFile } from 'node:child_process'
-import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { promisify } from 'node:util'
@@ -54,7 +54,6 @@ async function scanPlugin(plugin, categories) {
     scope: 'compatibility',
   }
   try {
-    await chmod(temporary, 0o777)
     await mkdir(path.join(temporary, 'agent-workspace'), { recursive: true })
     await mkdir(path.join(temporary, 'user-home'), { recursive: true })
     const target = {
@@ -95,8 +94,10 @@ async function scanPlugin(plugin, categories) {
 async function installExactSource(directory, target) {
   const script = [
     'set -eu',
-    'corepack enable',
+    'mkdir -p /work/bin /work/corepack',
+    'corepack enable --install-directory /work/bin',
     'corepack prepare pnpm@11.1.2 --activate',
+    'export PATH=/work/bin:$PATH',
     'mkdir -p /work/runtime /work/dsh-home /work/baseline-home /work/agent-workspace /work/user-home',
     `printf '%s\\n' '{"private":true}' > /work/runtime/package.json`,
     'pnpm --dir /work/runtime add "@deepseek-ai/dsh@${DSH_VERSION}" --ignore-scripts',
@@ -104,12 +105,13 @@ async function installExactSource(directory, target) {
     '/work/runtime/node_modules/.bin/dsh plugin --profile "$PLUGIN_PROFILE" add "$PLUGIN_SPEC" --ignore-scripts',
     'node /harness/compatibility-inspect.mjs',
     'if [ "$PLUGIN_SOURCE" = npm ]; then node /harness/compatibility-update.mjs; fi',
-    'chmod -R a+rwX /work',
   ].join('\n')
   try {
     await docker([
       'run', '--rm', '--network=bridge', '--cap-drop=ALL', '--security-opt=no-new-privileges',
+      '--user=' + dockerUser(),
       '--pids-limit=256', '--memory=1536m', '--cpus=2', '--workdir=/work',
+      '--env', 'HOME=/work/user-home', '--env', 'COREPACK_HOME=/work/corepack',
       '--env', 'DSH_HOME=/work/dsh-home',
       '--env', 'DSH_VERSION=' + (process.env.DSH_COMPAT_VERSION ?? '0.1.0-rc.6'),
       '--env', 'PLUGIN_PROFILE=' + target.profile,
@@ -136,7 +138,7 @@ async function runtimeProbe(directory) {
   try {
     await docker([
       'run', '--rm', '--network=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges',
-      '--pids-limit=128', '--memory=1024m', '--cpus=1', '--user=65534:65534',
+      '--pids-limit=128', '--memory=1024m', '--cpus=1', '--user=' + dockerUser(),
       '--workdir=/work/agent-workspace', '--tmpfs=/tmp:rw,noexec,nosuid,size=96m',
       '--env', 'HOME=/work/user-home', '--env', 'DSH_HOME=/work/dsh-home',
       '--volume=' + path.resolve(directory) + ':/work:rw',
@@ -157,6 +159,12 @@ async function runtimeProbe(directory) {
   const report = await readProbe(directory)
   if (report === null) throw new Error('runtime probe produced no report')
   return report
+}
+
+function dockerUser() {
+  const uid = typeof process.getuid === 'function' ? process.getuid() : 1000
+  const gid = typeof process.getgid === 'function' ? process.getgid() : 1000
+  return String(uid) + ':' + String(gid)
 }
 
 async function readProbe(directory) {
