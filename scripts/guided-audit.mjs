@@ -77,12 +77,30 @@ console.log(JSON.stringify({ total: rows.length, promoted, groups }, null, 2))
 
 async function audit(plugin) {
   const inspection = state.repositories[plugin.fullName.toLocaleLowerCase()]?.inspection ?? null
-  const readme = await githubReadme(plugin.fullName, plugin.verifiedCommit, inspection?.readme?.path)
+  const auditErrors = []
+  let readme = null
+  try {
+    readme = await githubReadme(plugin.fullName, plugin.verifiedCommit, inspection?.readme?.path)
+  } catch (error) {
+    auditErrors.push('readme-audit-failed: ' + messageOf(error))
+  }
   const commands = readme === null ? [] : installCommands(readme.text)
   const targetedCommands = commands.filter(command => targetsPlugin(command, plugin))
   const remoteCommands = targetedCommands.filter(command => command.source !== 'local' && command.source !== 'unknown')
-  const npmVerification = await verifyExactNpmRelease(plugin, { userAgent: 'dsh-plugin-registry-audit' })
-  const assessment = assessGuidedInstall(plugin, inspection, remoteCommands, npmVerification)
+  let npmVerification
+  try {
+    npmVerification = await verifyExactNpmRelease(plugin, { userAgent: 'dsh-plugin-registry-audit' })
+  } catch (error) {
+    auditErrors.push('npm-audit-failed: ' + messageOf(error))
+    npmVerification = {
+      verified: false,
+      spec: plugin.packageName + '@' + plugin.version,
+      reason: 'temporary-audit-error',
+    }
+  }
+  const assessment = auditErrors.length > 0
+    ? { outcome: 'guided-audit-incomplete', reason: auditErrors[0] }
+    : assessGuidedInstall(plugin, inspection, remoteCommands, npmVerification)
   return {
     repository: plugin.fullName,
     packageName: plugin.packageName,
@@ -94,6 +112,7 @@ async function audit(plugin) {
     remoteCommands,
     npmVerification,
     assessment,
+    auditErrors,
     current: {
       profiles: plugin.install.profiles,
       requiresBuildApproval: plugin.install.requiresBuildApproval,
@@ -125,7 +144,10 @@ async function githubReadme(repository, commit, knownPath) {
         continue
       }
       if (response.status === 404) break
-      if (response.ok) return { path: candidate, text: await boundedText(response, MAX_README_BYTES, repository) }
+      if (response.ok) {
+        const text = await boundedText(response, MAX_README_BYTES)
+        return text === null ? null : { path: candidate, text }
+      }
       const retryable = response.status === 408 || response.status === 429 || response.status >= 500
       await response.body?.cancel()
       if (!retryable || attempt === 2) throw new Error(repository + ' README returned HTTP ' + response.status)
@@ -143,10 +165,13 @@ function messageOf(error) {
   return error instanceof Error ? error.message : String(error)
 }
 
-async function boundedText(response, maximum, repository) {
+async function boundedText(response, maximum) {
   const declared = Number(response.headers.get('content-length') ?? '0')
-  if (declared > maximum) throw new Error(repository + ' README exceeds the size limit')
-  if (response.body === null) throw new Error(repository + ' README returned no body')
+  if (declared > maximum) {
+    await response.body?.cancel()
+    return null
+  }
+  if (response.body === null) return null
   const reader = response.body.getReader()
   const chunks = []
   let length = 0
@@ -156,7 +181,7 @@ async function boundedText(response, maximum, repository) {
     length += part.value.byteLength
     if (length > maximum) {
       await reader.cancel()
-      throw new Error(repository + ' README exceeds the size limit')
+      return null
     }
     chunks.push(Buffer.from(part.value.buffer, part.value.byteOffset, part.value.byteLength))
   }
