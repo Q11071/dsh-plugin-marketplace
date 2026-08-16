@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T16:10:59.110Z",
+  "generatedAt": "2026-08-16T16:15:33.816Z",
   "total": 1,
   "summary": {
     "passed": 0,
@@ -19,8 +19,8 @@
       "packageName": "dsh-telemetry-redactor",
       "version": "0.1.0",
       "profile": "web",
-      "harnessVersion": 4,
-      "checkedAt": "2026-08-16T16:10:15.314Z",
+      "harnessVersion": 5,
+      "checkedAt": "2026-08-16T16:14:25.430Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -29,8 +29,8 @@
           "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
         },
         "hostLoad": {
-          "status": "inconclusive",
-          "reason": "execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n      at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n      at file:///work/baseline-home/profiles/web/#afb2ad04\n}\n\nNode.js v22.23.2\n"
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
         },
         "agentLoop": {
           "status": "skipped",
@@ -41,8 +41,8 @@
           "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
-          "status": "skipped",
-          "reason": "host-exited-before-disposal-probe"
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
           "status": "unsupported",
@@ -53,7 +53,7 @@
           "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "dsh web: http://127.0.0.1:3080\nfile:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299\n return new Error(`failed to ${stage} loader entry ${options.id} (${options.name}): ${detail}`, { cause });\n        ^\n\nError: failed to apply loader entry afb2ad04 (@deepseek-ai/cordis-plugin-hmr): --expose-internals is required for HMR service\n    at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n    at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n    at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n    at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n    at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n    at async Proxy.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:217:14)\n    at async runProfile (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:259:4)\n    at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n  [cause]: Error: --expose-internals is required for HMR service\n      at new Hmr (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-hmr@1.0.16_@deepseek-ai+cordis-plugin-timer@1.1.3_@deepseek-_71398ee4d287b85b929aa05975553153/node_modules/@deepseek-ai/cordis-plugin-hmr/lib/index.js:107:40)\n      at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n      at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n      at file:///work/baseline-home/profiles/web/#afb2ad04\n}\n\nNode.js v22.23.2\n"
+      "log": "dsh web: http://127.0.0.1:3080\n"
     }
   ]
 }
