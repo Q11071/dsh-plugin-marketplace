@@ -1,14 +1,3591 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-16T13:56:30.158Z",
+  "generatedAt": "2026-08-16T14:06:43.531Z",
   "enforcementStartedAt": "2026-08-16T13:25:35.612Z",
-  "total": 0,
+  "total": 100,
   "summary": {
-    "passed": 0,
-    "review": 0,
+    "passed": 82,
+    "review": 18,
     "error": 0,
-    "pending": 3018
+    "pending": 2918
   },
-  "results": []
+  "results": [
+    {
+      "repository": "030611/dsh-telemetry-redactor",
+      "verifiedCommit": "811b0b1abf424e57045ab5a5eaa203660ca43908",
+      "packageName": "dsh-telemetry-redactor",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:49.012Z",
+      "status": "passed",
+      "riskScore": 40,
+      "static": {
+        "scannedFiles": 12,
+        "scannedBytes": 34937,
+        "archiveFiles": 33,
+        "archiveBytes": 234556,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/official-head-smoke.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/official-patch-smoke.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/packed-clean-environment-smoke.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/packed-install-smoke.mjs",
+            "line": 1
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-6ut5yd/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-6ut5yd/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "030611/dsh-verification-receipt",
+      "verifiedCommit": "92f63a9022e1840b147152ae340276ad5ff5d98b",
+      "packageName": "dsh-verification-receipt",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:49.326Z",
+      "status": "passed",
+      "riskScore": 12,
+      "static": {
+        "scannedFiles": 9,
+        "scannedBytes": 36997,
+        "archiveFiles": 26,
+        "archiveBytes": 694020,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/release-smoke.mjs",
+            "line": 1
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-7zZbgY/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-7zZbgY/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "030611/qiushi-dsh-evidence-audit",
+      "verifiedCommit": "94fae130b2845309e1dcabac14696fddb18f8f3a",
+      "packageName": "qiushi-dsh-evidence-audit",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:49.558Z",
+      "status": "passed",
+      "riskScore": 32,
+      "static": {
+        "scannedFiles": 16,
+        "scannedBytes": 47236,
+        "archiveFiles": 32,
+        "archiveBytes": 250549,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/tarball-smoke.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/upstream-smoke.mjs",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/concurrency.spec.ts",
+            "line": 1
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-VuQ4w0/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-VuQ4w0/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "0xsline/dsh-spotlight",
+      "verifiedCommit": "dd7ef5ed160aa1a624559de16eafd4ea9406d7ed",
+      "packageName": "@0xsline/dsh-spotlight",
+      "version": "0.0.2",
+      "scannedAt": "2026-08-16T14:03:49.677Z",
+      "status": "passed",
+      "riskScore": 22,
+      "static": {
+        "scannedFiles": 26,
+        "scannedBytes": 83698,
+        "archiveFiles": 58,
+        "archiveBytes": 197735,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/extract-patch.mjs",
+            "line": 30
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/prepare.mjs",
+            "line": 5
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-4bOWt3/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-4bOWt3/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "1052326311/dsh-goal-quiescence",
+      "verifiedCommit": "660fff29a7ebc19dedd52e2dbaf14e9fa696730b",
+      "packageName": "dsh-goal-quiescence",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:49.963Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 15730,
+        "archiveFiles": 10,
+        "archiveBytes": 83256,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-633QWC/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-633QWC/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "1052326311/dsh-instruction-audit",
+      "verifiedCommit": "8548400c1932a6a05d004189d5a9cf8deab3edd2",
+      "packageName": "dsh-instruction-audit",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:03:52.315Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 5,
+        "scannedBytes": 12480,
+        "archiveFiles": 12,
+        "archiveBytes": 49559,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-2hgTTF/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-2hgTTF/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "1052326311/dsh-plan-lattice",
+      "verifiedCommit": "fc55e593c03f99c0ef62ba5948d3e4f719059cdc",
+      "packageName": "dsh-plan-lattice",
+      "version": "0.3.0",
+      "scannedAt": "2026-08-16T14:03:52.551Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 19,
+        "scannedBytes": 153461,
+        "archiveFiles": 32,
+        "archiveBytes": 236238,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "eval/grade.mjs",
+            "line": 2
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-P15kAu/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-P15kAu/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "1304836815/dsh-auto-memory",
+      "verifiedCommit": "f43d772a3a898eccad79a94f3ef460fddcee6980",
+      "packageName": "@dsh-external/dsh-auto-memory",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:52.715Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 27095,
+        "archiveFiles": 10,
+        "archiveBytes": 36045,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-8e14e4e67adadfc2 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-mrQwPu:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "1473382/dsh-popper",
+      "verifiedCommit": "d6130c052068147af9b9ac87b9f8c3729bb02f5b",
+      "packageName": "@deepseek-ai/dsh-popper",
+      "version": "0.1.0-rc.7",
+      "scannedAt": "2026-08-16T14:03:53.624Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 37,
+        "scannedBytes": 139223,
+        "archiveFiles": 63,
+        "archiveBytes": 279149,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/types/wiring.js",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/wiring.ts",
+            "line": 4
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-33dc6cbb27db55bf --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-8Q17qp:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "1479650473/dsh-question-composer",
+      "verifiedCommit": "589a537c362659ea2ea7aa132558913edd8c9d8d",
+      "packageName": "dsh-question-composer",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:53.967Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 17,
+        "scannedBytes": 54081,
+        "archiveFiles": 28,
+        "archiveBytes": 307940,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-h6rWfg/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-h6rWfg/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "1479650473/dsh-todo-panel",
+      "verifiedCommit": "9b9e2e17e9af99f14b9b61e64de1f4e6eddb7f91",
+      "packageName": "dsh-todo-panel",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:58.306Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 15,
+        "scannedBytes": 24448,
+        "archiveFiles": 25,
+        "archiveBytes": 269030,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-6FZ2YH/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-6FZ2YH/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "16480000/dsh-plugin-memory",
+      "verifiedCommit": "41520e2e3f7e179d431e24efe20756fcad398251",
+      "packageName": "dsh-plugin-memory",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:58.684Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 13,
+        "scannedBytes": 109277,
+        "archiveFiles": 21,
+        "archiveBytes": 172972,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-PlCp6M/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-PlCp6M/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "1e0zj/dsh-plugin-mall",
+      "verifiedCommit": "07235ed7a02815d3c2f3248120590869dff69c11",
+      "packageName": "@1e0zj/dsh-plugin-mall",
+      "version": "0.1.12",
+      "scannedAt": "2026-08-16T14:03:58.898Z",
+      "status": "review",
+      "riskScore": 80,
+      "static": {
+        "scannedFiles": 5,
+        "scannedBytes": 103492,
+        "archiveFiles": 9,
+        "archiveBytes": 112803,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/github.js",
+            "line": 45
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "src/github.js",
+            "line": 32
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/index.js",
+            "line": 326
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/index.js",
+            "line": 20
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/installer.js",
+            "line": 9
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "21hbguo/dsh-mobile-ui",
+      "verifiedCommit": "a1b5991b5e6889bde0713b17c41d4a904fb3875d",
+      "packageName": "@dsh-external/dsh-mobile-ui",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:59.091Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 13,
+        "scannedBytes": 76889,
+        "archiveFiles": 21,
+        "archiveBytes": 368003,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-Sq1kxN/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-Sq1kxN/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "21hbguo/dsh-sysmon",
+      "verifiedCommit": "17c42bb6d58b27cb4b41d7ccb735835dec2ad61a",
+      "packageName": "@dsh-external/dsh-sysmon",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:59.340Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 14,
+        "scannedBytes": 93054,
+        "archiveFiles": 22,
+        "archiveBytes": 196733,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/metrics.ts",
+            "line": 25
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-sGxE42/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-sGxE42/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "2421873411a-rgb/dsh-usage-stats",
+      "verifiedCommit": "3c41b1ba82e2617ffa0ee64f7171b074da95d94b",
+      "packageName": "@dsh-external/dsh-usage-stats",
+      "version": "0.3.1",
+      "scannedAt": "2026-08-16T14:03:45.200Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 4,
+        "scannedBytes": 33414,
+        "archiveFiles": 10,
+        "archiveBytes": 163613,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-ae521c44d61784ec --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-kDgkKw:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "2436238575/dsh-turn-diff",
+      "verifiedCommit": "a0d1af141de240805df2d1a46a702ae6bbc697c2",
+      "packageName": "dsh-turn-diff",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:03:45.672Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 11,
+        "scannedBytes": 41038,
+        "archiveFiles": 17,
+        "archiveBytes": 51609,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-0MoNqt/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-0MoNqt/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "245678000000/dsh-autopilot",
+      "verifiedCommit": "6d84f2a46c08c17fef93bbc6bf2e45433bba0302",
+      "packageName": "dsh-autopilot",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:45.776Z",
+      "status": "passed",
+      "riskScore": 20,
+      "static": {
+        "scannedFiles": 64,
+        "scannedBytes": 194619,
+        "archiveFiles": 81,
+        "archiveBytes": 325967,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/evaluators/command-runner.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/evaluators/http-git-agent.test.ts",
+            "line": 2
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-DGgrvC/dist/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-DGgrvC/dist/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find "
+      }
+    },
+    {
+      "repository": "245678000000/dsh-shield",
+      "verifiedCommit": "a9102445fa3b638aba1c7a2891a50b79dccd4cf4",
+      "packageName": "dsh-shield",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:03:45.923Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 75,
+        "scannedBytes": 165981,
+        "archiveFiles": 111,
+        "archiveBytes": 281511,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "fixtures/plugins/clean/index.js",
+            "line": 9
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "fixtures/plugins/false-positive/docs.js",
+            "line": 1
+          },
+          {
+            "rule": "encoded-payload-execution",
+            "severity": "high",
+            "path": "fixtures/plugins/obfuscated/payload.js",
+            "line": 1
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "fixtures/plugins/obfuscated/payload.js",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "fixtures/plugins/process/src/setup.ts",
+            "line": 1
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "fixtures/plugins/secret-access/src/creds.ts",
+            "line": 10
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "packages/core/src/classify-tool.ts",
+            "line": 158
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "packages/core/src/injection.ts",
+            "line": 25
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/core/src/rules.ts",
+            "line": 25
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "packages/core/src/secrets.ts",
+            "line": 48
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "packages/scanner/src/ast.ts",
+            "line": 29
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "packages/scanner/src/ast.ts",
+            "line": 181
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/scanner/src/ast.ts",
+            "line": 25
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "tests/runtime/injection.spec.ts",
+            "line": 26
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/scanner/archive.spec.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/scanner/false-positives.spec.ts",
+            "line": 5
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/scanner/scan.spec.ts",
+            "line": 19
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "2672243194/dsh-read-url",
+      "verifiedCommit": "8687c729fe52893552fe83661b41f6c64745b02d",
+      "packageName": "dsh-read-url",
+      "version": "0.4.0",
+      "scannedAt": "2026-08-16T14:03:46.080Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 5,
+        "scannedBytes": 61935,
+        "archiveFiles": 13,
+        "archiveBytes": 102881,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-97956cb6ee8603da --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-pXBc3J:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/index.js\").then(() => process.exit(0)) node:internal/"
+      }
+    },
+    {
+      "repository": "2710165659/dsh-web-plugin-explain",
+      "verifiedCommit": "ac9ebf8fd0ad65342d827c20965573c8b5bfe51b",
+      "packageName": "dsh-web-plugin-explain",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:17.115Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 8,
+        "scannedBytes": 31935,
+        "archiveFiles": 16,
+        "archiveBytes": 285836,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-OENNmZ/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-OENNmZ/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "2768651338/dsh-effort-slider",
+      "verifiedCommit": "3e79d1b56715d4882b9b7ddee12cd6bc706c4657",
+      "packageName": "dsh-effort-slider",
+      "version": "0.2.5",
+      "scannedAt": "2026-08-16T14:04:17.415Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 15,
+        "scannedBytes": 139202,
+        "archiveFiles": 24,
+        "archiveBytes": 270985,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "test/client.smoke.mjs",
+            "line": 41
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-baf0edfc48ae170b --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-goaBMS:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "305037991x-pixel/dsh-balance",
+      "verifiedCommit": "e7622f79725e8fb25675f22b410d87a357a8501c",
+      "packageName": "dsh-balance",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:17.800Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 14111,
+        "archiveFiles": 7,
+        "archiveBytes": 17217,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-a821ce7f62954107 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-8U0zPa:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "305037991x-pixel/dsh-opencode-go",
+      "verifiedCommit": "70b60f9eb817f6a9864e4de12b31727a044fb537",
+      "packageName": "dsh-opencode-go",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:18.082Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 19048,
+        "archiveFiles": 7,
+        "archiveBytes": 22831,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-e5a841b72d433d00 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-MZYRLr:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "3274375092/dsh-voice",
+      "verifiedCommit": "706361394eea3ae1f16262d8d00e1347c6afd3c6",
+      "packageName": "@nn12138/dsh-voice",
+      "version": "0.2.5",
+      "scannedAt": "2026-08-16T14:04:18.456Z",
+      "status": "passed",
+      "riskScore": 12,
+      "static": {
+        "scannedFiles": 37,
+        "scannedBytes": 108705,
+        "archiveFiles": 48,
+        "archiveBytes": 185629,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tools/download-models.cjs",
+            "line": 9
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-tEANkJ/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-tEANkJ/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "342949145/dsh-vision-bridge",
+      "verifiedCommit": "da4ef0ca14bcff2cd2c877bca8eaa27f59d414bd",
+      "packageName": "dsh-vision-bridge",
+      "version": "1.0.0",
+      "scannedAt": "2026-08-16T14:04:20.650Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 12,
+        "scannedBytes": 61643,
+        "archiveFiles": 18,
+        "archiveBytes": 72649,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/vision.js",
+            "line": 21
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-78fc1b0d7b80a6e5 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-w1uSxC:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "4mForAI/dsh-plain-plugin-menu",
+      "verifiedCommit": "8612e71e6b868ab6d1b7c72e3640e14bbcd0dfa3",
+      "packageName": "dsh-plain-plugin-menu",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:04:21.129Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 27,
+        "scannedBytes": 145278,
+        "archiveFiles": 45,
+        "archiveBytes": 1467106,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "lib/catalog.js",
+            "line": 178
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "lib/catalog.js",
+            "line": 161
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/profile.js",
+            "line": 1
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "scripts/build-snapshot.mjs",
+            "line": 12
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "scripts/build-snapshot.mjs",
+            "line": 3
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/catalog.ts",
+            "line": 224
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "src/catalog.ts",
+            "line": 206
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/profile.ts",
+            "line": 1
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "5102a/dsh-plugin-hot-toggle",
+      "verifiedCommit": "15b5f24250b72b9028e89a5eed37d13cf7ce37e0",
+      "packageName": "dsh-plugin-hot-toggle",
+      "version": "0.1.4",
+      "scannedAt": "2026-08-16T14:04:21.555Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 11,
+        "scannedBytes": 76948,
+        "archiveFiles": 23,
+        "archiveBytes": 756249,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/debug-dom.mjs",
+            "line": 6
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/debug-dom.mjs",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/screenshot.mjs",
+            "line": 7
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/screenshot.mjs",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/verify-render.mjs",
+            "line": 2
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/verify-render.mjs",
+            "line": 2
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "534119219/chicheng-cron",
+      "verifiedCommit": "87a262f02d83d3439dcab9055f7f91ef97809fdb",
+      "packageName": "chicheng-cron",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:22.011Z",
+      "status": "review",
+      "riskScore": 50,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 102371,
+        "archiveFiles": 7,
+        "archiveBytes": 106141,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 17
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 17
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "534119219/chicheng-gate",
+      "verifiedCommit": "155dbf6c6a793ac2c74f2e0e4fcafaf7ebb95876",
+      "packageName": "chicheng-gate",
+      "version": "1.0.2",
+      "scannedAt": "2026-08-16T14:04:22.133Z",
+      "status": "review",
+      "riskScore": 50,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 66877,
+        "archiveFiles": 12,
+        "archiveBytes": 531101,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 5
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 5
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "534119219/chicheng-push",
+      "verifiedCommit": "5094c17e716a64c53ac7e187c8a6badea55614f8",
+      "packageName": "chicheng-push",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:23.245Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 4,
+        "scannedBytes": 69240,
+        "archiveFiles": 7,
+        "archiveBytes": 77738,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-212285d3bd58a025 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-5IIn4c:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "534119219/chicheng-stats",
+      "verifiedCommit": "88bdf53b535d7ff4ee65f8ca28d7bd4d0b4672fc",
+      "packageName": "chicheng-stats",
+      "version": "0.5.4",
+      "scannedAt": "2026-08-16T14:04:23.683Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 4,
+        "scannedBytes": 99279,
+        "archiveFiles": 7,
+        "archiveBytes": 105765,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-fbfacfd1cd2e0578 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-UF3tdY:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "54xkeee/dsh-vision",
+      "verifiedCommit": "f8b26198aff85bc72c3bb12a2e843ebec68c04d1",
+      "packageName": "dsh-vision-web",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:23.983Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 10,
+        "scannedBytes": 104775,
+        "archiveFiles": 19,
+        "archiveBytes": 162802,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "build.mjs",
+            "line": 17
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/ide-channels.ts",
+            "line": 16
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 1
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-loCMsx/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-loCMsx/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "54xkeee/dsh-youreyes",
+      "verifiedCommit": "5ac3cab88d21ef0bb1b26f5b9b9e3a8b3801f208",
+      "packageName": "dsh-youreyes",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:24.251Z",
+      "status": "passed",
+      "riskScore": 20,
+      "static": {
+        "scannedFiles": 8,
+        "scannedBytes": 92539,
+        "archiveFiles": 15,
+        "archiveBytes": 125868,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "build.mjs",
+            "line": 17
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/channels.ts",
+            "line": 12
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-XgJaKU/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-XgJaKU/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "6-debug-6/dsh-thinking-notifier",
+      "verifiedCommit": "07a9249bb488de857f52527daf9565c0d41ec138",
+      "packageName": "dsh-thinking-notifier",
+      "version": "1.2.0",
+      "scannedAt": "2026-08-16T14:04:24.353Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 20538,
+        "archiveFiles": 11,
+        "archiveBytes": 36734,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 13
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-96fedf1e0ffbe93f --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-FQa21s:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "609476965/dsh-LorebookMD",
+      "verifiedCommit": "4bc4110efbfb4888286b81aaf53191705dade9dd",
+      "packageName": "dsh-lorebookmd",
+      "version": "1.0.0",
+      "scannedAt": "2026-08-16T14:04:28.299Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 21,
+        "scannedBytes": 151706,
+        "archiveFiles": 28,
+        "archiveBytes": 180245,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": ".dsh-tools/install-deps.mjs",
+            "line": 13
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": ".dsh-tools/tsdown/run.mjs",
+            "line": 5
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 20
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-nWniJV/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-nWniJV/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "610la/dsh-notification-center",
+      "verifiedCommit": "f26f01b981589415c99b1df8e9edac71055d0b27",
+      "packageName": "@lyhalal/dsh-notification-center",
+      "version": "0.1.34",
+      "scannedAt": "2026-08-16T14:04:28.563Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 4,
+        "scannedBytes": 65052,
+        "archiveFiles": 8,
+        "archiveBytes": 72092,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-GivvwB/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-GivvwB/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "6pofx/dsh-go",
+      "verifiedCommit": "dc35b1adc8cb68fee15cefb5aac9b21cd6518484",
+      "packageName": "dsh-go-usage",
+      "version": "0.1.14",
+      "scannedAt": "2026-08-16T14:04:28.652Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 6,
+        "scannedBytes": 88429,
+        "archiveFiles": 13,
+        "archiveBytes": 260416,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-19ea04f1e4d9770a --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-29QRLe:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/index.js\").then(() => process.exit(0)) node:internal/"
+      }
+    },
+    {
+      "repository": "781316853/dsh-provider-quota",
+      "verifiedCommit": "43290f85efc8eb45e000d36357274e71245a99e5",
+      "packageName": "@guyunli/dsh-provider-quota",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:29.017Z",
+      "status": "passed",
+      "riskScore": 12,
+      "static": {
+        "scannedFiles": 15,
+        "scannedBytes": 79536,
+        "archiveFiles": 22,
+        "archiveBytes": 237204,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/watch.mjs",
+            "line": 6
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-PTh4BG/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-PTh4BG/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "7A7K/DSH-Timeline-Navigator",
+      "verifiedCommit": "77e5e8273d4156df3427cf45bfe660470a352be9",
+      "packageName": "@deepseek-ai/dsh-client-ui-timeline-navigator",
+      "version": "0.3.4",
+      "scannedAt": "2026-08-16T14:04:29.121Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 16,
+        "scannedBytes": 146005,
+        "archiveFiles": 28,
+        "archiveBytes": 297170,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-befcf5090630941e --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-IgTvlV:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "a179-sanae/dsh-code-check",
+      "verifiedCommit": "bb7c76fbbb6ecfc665cccc0c1df7e9b698ea327a",
+      "packageName": "@a179-sanae/dsh-code-check",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:53.932Z",
+      "status": "passed",
+      "riskScore": 42,
+      "static": {
+        "scannedFiles": 21,
+        "scannedBytes": 133872,
+        "archiveFiles": 54,
+        "archiveBytes": 273413,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/extract-patch.mjs",
+            "line": 30
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/prepare.mjs",
+            "line": 5
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/diagnostics.ts",
+            "line": 10
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/adversarial/engine-paths.spec.ts",
+            "line": 10
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-ofNFPy/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-ofNFPy/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "a1swg1159-pixel/dsh-prompt-shield",
+      "verifiedCommit": "f85b9190b12c40c870b937a53a4dae3af6883b4a",
+      "packageName": "dsh-prompt-shield",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:54.259Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 6,
+        "scannedBytes": 21010,
+        "archiveFiles": 14,
+        "archiveBytes": 74497,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-wWcC4N/dist/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-wWcC4N/dist/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find "
+      }
+    },
+    {
+      "repository": "A3Boy/dsh-web-tools",
+      "verifiedCommit": "6b12d71265166e4a48881b7eddf15bde37a21130",
+      "packageName": "dsh-web-tools",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:54.438Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 104,
+        "scannedBytes": 627556,
+        "archiveFiles": 123,
+        "archiveBytes": 5237765,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/host/fetch-proxy.js",
+            "line": 26
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/host/fetch-proxy.js",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/dev.mjs",
+            "line": 19
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/setup-hmr.mjs",
+            "line": 17
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/fetch-proxy.ts",
+            "line": 26
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "src/host/fetch-proxy.ts",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/fetch-proxy.test.mjs",
+            "line": 20
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "a792883583/dsh-chat-toc",
+      "verifiedCommit": "61e6753a6622d3e21afb0c24a160d8d0b4a0e0e4",
+      "packageName": "dsh-chat-toc",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:54.937Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 6,
+        "scannedBytes": 20975,
+        "archiveFiles": 21,
+        "archiveBytes": 269242,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-al6tzh/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-al6tzh/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "a792883583/dsh-cron-panel",
+      "verifiedCommit": "3f2480086041bf072de0265c929b7fe7578412d9",
+      "packageName": "dsh-cron-panel",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:55.260Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 12,
+        "scannedBytes": 59585,
+        "archiveFiles": 27,
+        "archiveBytes": 271552,
+        "findings": [
+          {
+            "rule": "persistence-installation",
+            "severity": "high",
+            "path": "src/client/Panel.tsx",
+            "line": 3
+          },
+          {
+            "rule": "persistence-installation",
+            "severity": "high",
+            "path": "src/client/index.ts",
+            "line": 3
+          },
+          {
+            "rule": "persistence-installation",
+            "severity": "high",
+            "path": "src/core/types.ts",
+            "line": 17
+          },
+          {
+            "rule": "persistence-installation",
+            "severity": "high",
+            "path": "src/host/cron-service.ts",
+            "line": 2
+          },
+          {
+            "rule": "persistence-installation",
+            "severity": "high",
+            "path": "src/host/routes.ts",
+            "line": 2
+          },
+          {
+            "rule": "persistence-installation",
+            "severity": "high",
+            "path": "src/index.ts",
+            "line": 2
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "a792883583/dsh-git-panel",
+      "verifiedCommit": "9f11ef61cfed9afb8dc54ff9bf70533b8562c2d9",
+      "packageName": "dsh-git-panel",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:58.387Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 16,
+        "scannedBytes": 109866,
+        "archiveFiles": 32,
+        "archiveBytes": 360023,
+        "findings": [
+          {
+            "rule": "destructive-system-command",
+            "severity": "critical",
+            "path": "scripts/test-e2e.sh",
+            "line": 8
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/test-host.ts",
+            "line": 5
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/test-ops.ts",
+            "line": 1
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "AbcdefgXW/dsh-msg-hub",
+      "verifiedCommit": "6b9bbe189a43079c4b181205692db37c0b141682",
+      "packageName": "dsh-msg-hub",
+      "version": "0.1.3",
+      "scannedAt": "2026-08-16T14:04:58.712Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 43,
+        "scannedBytes": 236466,
+        "archiveFiles": 50,
+        "archiveBytes": 295054,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/setup.mjs",
+            "line": 17
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-463dbe17267b94c8 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-SAMeNI:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/index.js\").then(() => process.exit(0)) node:internal/"
+      }
+    },
+    {
+      "repository": "AbcdefgXW/dsh-toolbox-web",
+      "verifiedCommit": "6b949fffb135851b9f3fe5dc95056e8cc4412572",
+      "packageName": "dsh-toolbox-web",
+      "version": "0.1.3",
+      "scannedAt": "2026-08-16T14:04:59.543Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 14,
+        "scannedBytes": 226496,
+        "archiveFiles": 25,
+        "archiveBytes": 1301227,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-0269c8fe96c090e5 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-PhJ5zz:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/index.js\").then(() => process.exit(0)) node:internal/"
+      }
+    },
+    {
+      "repository": "acefun29/dsh-file-mount",
+      "verifiedCommit": "ff6c7b67f366099bb4f3d7f42de56ea95f0d34cf",
+      "packageName": "dsh-file-mount",
+      "version": "0.5.0",
+      "scannedAt": "2026-08-16T14:04:59.947Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 36,
+        "scannedBytes": 238615,
+        "archiveFiles": 45,
+        "archiveBytes": 497415,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-ssb9F1/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-ssb9F1/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "AcidGr/dsh-web-lan-access",
+      "verifiedCommit": "e27e909f2f079d2213c13823f56fe9ade4726f80",
+      "packageName": "dsh-web-lan-access",
+      "version": "1.1.0",
+      "scannedAt": "2026-08-16T14:05:00.119Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 2,
+        "scannedBytes": 3241,
+        "archiveFiles": 8,
+        "archiveBytes": 318262,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-08b73dc80fdf334e --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-4yVCJG:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "AcidGr/dsh-web-mobile-fix",
+      "verifiedCommit": "015d905b5f9196b5d442878e5682d8aaa598aa3f",
+      "packageName": "dsh-web-mobile-fix",
+      "version": "1.0.2",
+      "scannedAt": "2026-08-16T14:04:55.727Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 10789,
+        "archiveFiles": 10,
+        "archiveBytes": 495629,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-d53d7df0d491f2e5 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-UMUxj4:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "Ackerman0/Dsh-Prompt-Enhancement",
+      "verifiedCommit": "34ec6a27ded58711e795d25254ddcbd25bc49274",
+      "packageName": "dsh-prompt-enhance",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:56.232Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 91309,
+        "archiveFiles": 7,
+        "archiveBytes": 99813,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-c5a6ed56c8cf82a7 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-NfkSEP:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "acnlabs/dsh-plugin-acn",
+      "verifiedCommit": "13f2f93d5159372cb8282545bfad45e8335e9274",
+      "packageName": "@acnlabs/dsh-plugin-acn",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:04:56.516Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 15,
+        "scannedBytes": 45152,
+        "archiveFiles": 22,
+        "archiveBytes": 61866,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-7d258ba42f4d6714 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-8Q2M76:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/dist/index.js\").then(() => process.exit(0)) node:inte"
+      }
+    },
+    {
+      "repository": "acosmi/dsh-session-supervisor",
+      "verifiedCommit": "b4aea0b5244795313f88479e1c5ba0787ccb1a1c",
+      "packageName": "dsh-session-supervisor",
+      "version": "0.1.0-beta.0",
+      "scannedAt": "2026-08-16T14:04:56.810Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 27,
+        "scannedBytes": 251584,
+        "archiveFiles": 43,
+        "archiveBytes": 688209,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/profile-install-smoke.mjs",
+            "line": 11
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-DCH9ic/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-DCH9ic/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "Adkid-Zephyr/Liltloom",
+      "verifiedCommit": "514f853c8f072d892aee59b12f54b8ee56f5a6c5",
+      "packageName": "liltloom",
+      "version": "0.2.0",
+      "scannedAt": "2026-08-16T14:04:56.959Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 27,
+        "scannedBytes": 185104,
+        "archiveFiles": 81,
+        "archiveBytes": 700287,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-C4POxf/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-C4POxf/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "Adonis511/enhance-provider-config",
+      "verifiedCommit": "b7d5edf2314eb006b6bc4f594bad168996597a67",
+      "packageName": "enhance-provider-config",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:02.907Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 7,
+        "scannedBytes": 20963,
+        "archiveFiles": 14,
+        "archiveBytes": 34610,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/build.mjs",
+            "line": 13
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-W0wWeu/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-W0wWeu/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "af2000-tech/dsh-taskboard-plugin",
+      "verifiedCommit": "f11f46a6f3fe6408352f332b5e279a7cf30528ee",
+      "packageName": "dsh-taskboard-plugin",
+      "version": "0.4.0",
+      "scannedAt": "2026-08-16T14:05:03.212Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 134,
+        "scannedBytes": 5382028,
+        "archiveFiles": 160,
+        "archiveBytes": 6491833,
+        "findings": [
+          {
+            "rule": "encoded-payload-execution",
+            "severity": "high",
+            "path": "app/dist/web/assets/c4Diagram-5PPSVZJV-CEnipz5k.js",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "app/server/agent-turn-owner.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "app/server/agent-turn-process.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "app/server/app.mjs",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "app/shared/process-tree.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "dist/host.js",
+            "line": 2
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "dist/host.js",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host.ts",
+            "line": 4
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "src/host.ts",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/e2e.mjs",
+            "line": 22
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "test/e2e.mjs",
+            "line": 22
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "AFAP/dsh-input-file-ref",
+      "verifiedCommit": "6ed6fb4dcca8bb211f4125509599fe32ced2c517",
+      "packageName": "dsh-input-file-ref",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:05:04.428Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 44417,
+        "archiveFiles": 8,
+        "archiveBytes": 68787,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-293ace74e23440da --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-vgR6aU:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "AHGGG/dsh-side-chat",
+      "verifiedCommit": "81864e0cdce8e85a5c2ae1bcc82267eafda0be41",
+      "packageName": "@ahggg/dsh-side-chat",
+      "version": "0.6.0",
+      "scannedAt": "2026-08-16T14:05:04.850Z",
+      "status": "passed",
+      "riskScore": 20,
+      "static": {
+        "scannedFiles": 59,
+        "scannedBytes": 333729,
+        "archiveFiles": 80,
+        "archiveBytes": 1216178,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/clean-profile-e2e.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/verify-package.mjs",
+            "line": 1
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-dmNIVP/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-dmNIVP/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "ahikl/dsh-desktop",
+      "verifiedCommit": "113fe14dff912601d69bdc3221050917b79e06ba",
+      "packageName": "@ahikl/dsh-desktop",
+      "version": "0.3.2",
+      "scannedAt": "2026-08-16T14:05:05.128Z",
+      "status": "passed",
+      "riskScore": 20,
+      "static": {
+        "scannedFiles": 10,
+        "scannedBytes": 44784,
+        "archiveFiles": 23,
+        "archiveBytes": 112783,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 13
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/launcher.ts",
+            "line": 9
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-4LO0EL/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-4LO0EL/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "ai-eks/dsh-auth-tunnel",
+      "verifiedCommit": "e4793a1a153d5ba95dbc98eda799bfe01379751c",
+      "packageName": "dsh-auth-tunnel",
+      "version": "0.1.0-rc.6",
+      "scannedAt": "2026-08-16T14:05:29.028Z",
+      "status": "review",
+      "riskScore": 62,
+      "static": {
+        "scannedFiles": 11,
+        "scannedBytes": 76956,
+        "archiveFiles": 19,
+        "archiveBytes": 265422,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 19
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "tests/auth-tunnel.spec.ts",
+            "line": 830
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "tests/auth-tunnel.spec.ts",
+            "line": 258
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "Aik358/dsh-auto-memory",
+      "verifiedCommit": "f4d2df1f119bfcd036864b06b2b7a1a9a5f46e8c",
+      "packageName": "@a9i5k4/dsh-auto-memory",
+      "version": "0.1.23",
+      "scannedAt": "2026-08-16T14:05:29.270Z",
+      "status": "review",
+      "riskScore": 50,
+      "static": {
+        "scannedFiles": 6,
+        "scannedBytes": 287559,
+        "archiveFiles": 28,
+        "archiveBytes": 2387289,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 22
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 22
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "AikenFra/dsh-alive",
+      "verifiedCommit": "b89e53b51e5380900d0b298cbe1e768b5b940a84",
+      "packageName": "dsh-alive",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:05:29.712Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 4124,
+        "archiveFiles": 9,
+        "archiveBytes": 63547,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-aaf2b5861a205425 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-Pn4qVl:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/dsh/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "Aisland-SJL/dsh-reminder",
+      "verifiedCommit": "bd1b64f7056297d07ae49baecb90f1584c11f415",
+      "packageName": "dsh-reminder",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:30.179Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 19,
+        "scannedBytes": 83136,
+        "archiveFiles": 32,
+        "archiveBytes": 105642,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "build.mjs",
+            "line": 17
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "tests/unit/bundle.smoke.cjs",
+            "line": 25
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "tests/unit/client-wiring.test.cjs",
+            "line": 78
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-0BIauj/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-0BIauj/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "Aisland-SJL/dsh-usage",
+      "verifiedCommit": "4b9a9522cfd9f07b054f96525cbff95faaf03a59",
+      "packageName": "dsh-usage",
+      "version": "0.2.0",
+      "scannedAt": "2026-08-16T14:05:30.338Z",
+      "status": "passed",
+      "riskScore": 20,
+      "static": {
+        "scannedFiles": 17,
+        "scannedBytes": 236276,
+        "archiveFiles": 27,
+        "archiveBytes": 382612,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "scripts/test-client.mjs",
+            "line": 174
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "scripts/test-e2e.mjs",
+            "line": 162
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-363636d55738fa05 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-Aqd1AA:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "AITabby/dockyard-dsh",
+      "verifiedCommit": "bbc7c56c05c349f1ae531a17fbbdf91cd52678f2",
+      "packageName": "@dockyard-dsh/plugin",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:35.673Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 64,
+        "scannedBytes": 1626168,
+        "archiveFiles": 84,
+        "archiveBytes": 1877399,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "apps/local-page/server.mjs",
+            "line": 19
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "apps/local-page/server.mjs",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "modules/provider-antigravity/src/driver.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "modules/provider-antigravity/src/native-transport.mjs",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "modules/provider-cursor/src/driver.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "modules/provider-cursor/src/native-transport.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/dsh-plugin/dist/index.mjs",
+            "line": 1073
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "packages/dsh-plugin/dist/index.mjs",
+            "line": 1073
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/dsh-plugin/src/dockyard-service.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/oauth/src/cli-oauth-authorizer.mjs",
+            "line": 5
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/oauth/src/cli-status-authorizer.mjs",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/providers/src/cli-agent-transport.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/vault/src/index.mjs",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/build.mjs",
+            "line": 1
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "aka-danielZhang/dsh-mcp-settings",
+      "verifiedCommit": "2340cb427508a25fd5a56631ec7691deca4a7e8a",
+      "packageName": "dsh-mcp-settings",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:36.327Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 23,
+        "scannedBytes": 118333,
+        "archiveFiles": 36,
+        "archiveBytes": 225313,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-fsPrvA/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-fsPrvA/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "AKS1st/dsh-archived-conversations",
+      "verifiedCommit": "a2432df393d147d4bf3a9366f15d38ee790a5d9c",
+      "packageName": "@dsh-external/dsh-archived-conversations",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:36.509Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 8,
+        "scannedBytes": 53480,
+        "archiveFiles": 15,
+        "archiveBytes": 115408,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-48ed792fb3422a4f --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-nvXNFe:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "AKS1st/dsh-mermaid",
+      "verifiedCommit": "4d829634ff9a424db8ed52655278473138c8087a",
+      "packageName": "@dsh-external/dsh-mermaid",
+      "version": "0.4.2",
+      "scannedAt": "2026-08-16T14:05:36.916Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 29,
+        "scannedBytes": 237813,
+        "archiveFiles": 42,
+        "archiveBytes": 977062,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-67b9e82364fe0716 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-6zaDcX:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "AKS1st/dsh-sysmon",
+      "verifiedCommit": "2ddc860b4a7449930527a55eda617a6fb9543059",
+      "packageName": "@dsh-external/dsh-sysmon",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:05:37.331Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 23,
+        "scannedBytes": 51191,
+        "archiveFiles": 31,
+        "archiveBytes": 151377,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-20b2017c28ca9bb4 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-Qvz4jr:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "akslcw/dsh-negative-ledger",
+      "verifiedCommit": "f0ecad5ec8e2769c22c8f28cee0f9b9e5e754489",
+      "packageName": "@akslcw/dsh-negative-ledger",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:05:38.272Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 33,
+        "scannedBytes": 307981,
+        "archiveFiles": 59,
+        "archiveBytes": 439836,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "benchmark/run.ts",
+            "line": 15
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "smoke/packed-consumer.mjs",
+            "line": 8
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/m4-acceptance.test.ts",
+            "line": 11
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-zjjNV7/dist/index.mjs node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-zjjNV7/dist/index.mjs'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot fin"
+      }
+    },
+    {
+      "repository": "AlexShang1992/dsh-offpeak",
+      "verifiedCommit": "b0ee68bcc25f544b1f056fea279bfc8130b8c8ba",
+      "packageName": "dsh-offpeak",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:38.649Z",
+      "status": "passed",
+      "riskScore": 12,
+      "static": {
+        "scannedFiles": 22,
+        "scannedBytes": 76104,
+        "archiveFiles": 61,
+        "archiveBytes": 1530616,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "build.mjs",
+            "line": 13
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-3W7nA1/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-3W7nA1/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "AlfredChaos/dsh-usage-panel",
+      "verifiedCommit": "e9cb28b354b9e122a22a67b0065dcb160da8d97e",
+      "packageName": "dsh-usage-panel",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:38.934Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 41298,
+        "archiveFiles": 13,
+        "archiveBytes": 817111,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-4766ad62ba7e7f94 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-TgH95P:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "alingalingling/ui-status-label",
+      "verifiedCommit": "a1621413a4700cb489655ad3ebf7fa8484c3645f",
+      "packageName": "dsh-ui-status-label",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:39.787Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 37,
+        "scannedBytes": 61557,
+        "archiveFiles": 66,
+        "archiveBytes": 214005,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-0780bf4cd4db444f --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-aFoVIn:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "alison-xx/deepseek-harness-flow",
+      "verifiedCommit": "880e9277e1c9c77265b41593b49c1cce17cee147",
+      "packageName": "deepseek-harness-flow",
+      "version": "0.1.0-beta.2",
+      "scannedAt": "2026-08-16T14:05:40.168Z",
+      "status": "passed",
+      "riskScore": 12,
+      "static": {
+        "scannedFiles": 53,
+        "scannedBytes": 164057,
+        "archiveFiles": 143,
+        "archiveBytes": 801316,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/pack-release.mjs",
+            "line": 2
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-fwzNJo/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-fwzNJo/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "Alyosha28/dsh-plugin-updater",
+      "verifiedCommit": "d412bfdf76bc5189ad5fef0fbc9cf801a88f3271",
+      "packageName": "@dsh-external/dsh-plugin-updater",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:05:38.740Z",
+      "status": "review",
+      "riskScore": 70,
+      "static": {
+        "scannedFiles": 17,
+        "scannedBytes": 124579,
+        "archiveFiles": 23,
+        "archiveBytes": 141533,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 43
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/service.ts",
+            "line": 202
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/updater.ts",
+            "line": 8
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "src/updater.ts",
+            "line": 8
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "amlyczz/dsh-lark-link",
+      "verifiedCommit": "4265ddbb6f4292d2cd430f9207ae384663243b67",
+      "packageName": "dsh-lark-link",
+      "version": "0.3.0",
+      "scannedAt": "2026-08-16T14:05:39.164Z",
+      "status": "review",
+      "riskScore": 50,
+      "static": {
+        "scannedFiles": 64,
+        "scannedBytes": 401353,
+        "archiveFiles": 76,
+        "archiveBytes": 1830609,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 1365
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "src/index.ts",
+            "line": 1365
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "AnacondaKC/dsh-custom-css",
+      "verifiedCommit": "d1e2ee86b223775947eb5e26c62291a45df2fdcd",
+      "packageName": "dsh-custom-css",
+      "version": "0.2.0",
+      "scannedAt": "2026-08-16T14:05:39.659Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 18,
+        "scannedBytes": 82965,
+        "archiveFiles": 29,
+        "archiveBytes": 465351,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-LEGqUq/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-LEGqUq/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "AnacondaKC/dsh-stock-market",
+      "verifiedCommit": "02278af12330102c534c843a668d1c8407dbde1b",
+      "packageName": "dsh-stock-market",
+      "version": "0.2.0",
+      "scannedAt": "2026-08-16T14:05:40.028Z",
+      "status": "passed",
+      "riskScore": 20,
+      "static": {
+        "scannedFiles": 63,
+        "scannedBytes": 591372,
+        "archiveFiles": 82,
+        "archiveBytes": 3112987,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/build.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/verify-package.mjs",
+            "line": 4
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-9vPsmb/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-9vPsmb/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "AnakinCao/dsh-chat-width",
+      "verifiedCommit": "e38406ce130f81950d62d02abb7bda4a970570f5",
+      "packageName": "dsh-chat-width",
+      "version": "1.2.0",
+      "scannedAt": "2026-08-16T14:05:40.457Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 5317,
+        "archiveFiles": 7,
+        "archiveBytes": 14280,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-3baeed9a05e03128 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-G5Z5y6:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "AnakinCao/dsh-cost-meter",
+      "verifiedCommit": "01e5e969e456750c0e4fe7aab612b56800ef6a9d",
+      "packageName": "dsh-cost-meter",
+      "version": "0.6.6",
+      "scannedAt": "2026-08-16T14:06:04.870Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 32433,
+        "archiveFiles": 7,
+        "archiveBytes": 42245,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-05a4589d04115820 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-lSc90E:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "andiven/dsh-messaging",
+      "verifiedCommit": "26c983a2aab35aa503c31a25e6b218c87bea5a40",
+      "packageName": "@dsh-messaging/messaging",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:06:05.344Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 9,
+        "scannedBytes": 84274,
+        "archiveFiles": 17,
+        "archiveBytes": 133446,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-8LvS2D/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-8LvS2D/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "Andrietteprotective835/dsh-mcp-lens",
+      "verifiedCommit": "116daea3a876840fc40f76a04cd3a93e911de000",
+      "packageName": "dsh-mcp-lens",
+      "version": "0.1.0-rc.9",
+      "scannedAt": "2026-08-16T14:06:05.464Z",
+      "status": "passed",
+      "riskScore": 52,
+      "static": {
+        "scannedFiles": 23,
+        "scannedBytes": 432108,
+        "archiveFiles": 53,
+        "archiveBytes": 722995,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "benchmark/search-cache.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/run-bench.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/run-verify.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/action.spec.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/pool.spec.ts",
+            "line": 1
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-yB7w4D/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-yB7w4D/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "Andyqwe44/dsh-notify-win",
+      "verifiedCommit": "bf569c72a112353eeebb1e46a772236ce9b1cfae",
+      "packageName": "dsh-notify-win",
+      "version": "0.2.0",
+      "scannedAt": "2026-08-16T14:06:05.826Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 8,
+        "scannedBytes": 56297,
+        "archiveFiles": 33,
+        "archiveBytes": 25857464,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-e102993ad72b721c --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-wXAz8g:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "Anestis271/dsh-desktop",
+      "verifiedCommit": "1f55ceb520957a8cdf46edd324333d2299f41ef2",
+      "packageName": "@anestis271/dsh-desktop",
+      "version": "1.0.1",
+      "scannedAt": "2026-08-16T14:06:07.293Z",
+      "status": "passed",
+      "riskScore": 32,
+      "static": {
+        "scannedFiles": 30,
+        "scannedBytes": 131831,
+        "archiveFiles": 47,
+        "archiveBytes": 742273,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/runtime.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/shortcuts.ts",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/shortcuts.spec.ts",
+            "line": 9
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-Fegx4r/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-Fegx4r/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "ang-XWBWZ/dsh-approval-ai",
+      "verifiedCommit": "ad7c84d5f3598771ce5fd320b6dd4b0f04b5053e",
+      "packageName": "@llangtop/dsh-approval-ai",
+      "version": "0.1.0-rc.7",
+      "scannedAt": "2026-08-16T14:06:10.372Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 13,
+        "scannedBytes": 37329,
+        "archiveFiles": 25,
+        "archiveBytes": 227125,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-k6kYBV/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-k6kYBV/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "Anionex/dsh-vision-toolkit",
+      "verifiedCommit": "57e831720fe5fcdc99979fa3184f941fdf9067c1",
+      "packageName": "@anionex/dsh-vision-toolkit",
+      "version": "0.1.11",
+      "scannedAt": "2026-08-16T14:06:10.669Z",
+      "status": "passed",
+      "riskScore": 70,
+      "static": {
+        "scannedFiles": 106,
+        "scannedBytes": 1857193,
+        "archiveFiles": 250,
+        "archiveBytes": 7474215,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/run-ui-restoration-example.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/sync-upstream.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/ui-restoration-example.ts",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/verify-portable.mjs",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/ui-restoration-example.spec.ts",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "workers/moondream-openai-proxy/scripts/deploy.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "workers/moondream-openai-proxy/scripts/types.mjs",
+            "line": 4
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-307bbdad6b33aac5 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-ocByU0:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "AnothetLoice/dsh-hotplug-engine",
+      "verifiedCommit": "ec783423e6caaeb50135bd02d75d764d9238081b",
+      "packageName": "dsh-hotplug-engine",
+      "version": "0.1.5",
+      "scannedAt": "2026-08-16T14:06:11.726Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 41,
+        "scannedBytes": 367620,
+        "archiveFiles": 76,
+        "archiveBytes": 815187,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/real-pnpm-e2e.cjs",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/installer.ts",
+            "line": 18
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 48
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-Lvtd6o/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-Lvtd6o/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "anweat/dsh-assistant-message-forge",
+      "verifiedCommit": "0f05362ef4cd62733a48efbe39907c11dc5122b1",
+      "packageName": "dsh-assistant-message-forge",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:06:11.941Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 15,
+        "scannedBytes": 138654,
+        "archiveFiles": 23,
+        "archiveBytes": 336704,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-NeIivL/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-NeIivL/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "anweat/dsh-browser",
+      "verifiedCommit": "570ac8b54bd152b3f1be26cc0cc068f1a4eeb001",
+      "packageName": "@anweat/dsh-browser",
+      "version": "0.1.3",
+      "scannedAt": "2026-08-16T14:06:12.078Z",
+      "status": "passed",
+      "riskScore": 32,
+      "static": {
+        "scannedFiles": 17,
+        "scannedBytes": 83032,
+        "archiveFiles": 29,
+        "archiveBytes": 150426,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/deps.js",
+            "line": 18
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/install-browser.mjs",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/deps.ts",
+            "line": 19
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-2d7bacbb8b463024 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-cTff4X:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "anweat/dsh-restart",
+      "verifiedCommit": "8d9f4947530a08e9a2967a7847ae2f906c2d7b5b",
+      "packageName": "dsh-restart",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:06:07.081Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 22,
+        "scannedBytes": 112403,
+        "archiveFiles": 30,
+        "archiveBytes": 311529,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 25
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 25
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 33
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "src/index.ts",
+            "line": 33
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "anweat/dsh-voice-webspeech",
+      "verifiedCommit": "eb6a51ff9428c051304d978cc238a54aff782e19",
+      "packageName": "dsh-voice-webspeech",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:06:07.299Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 42,
+        "scannedBytes": 104384,
+        "archiveFiles": 53,
+        "archiveBytes": 4435373,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-eb369a97b176a0c3 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-nLn3lP:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "anweat/dsh-web-search-pro",
+      "verifiedCommit": "f8f388c75d11a5fbee673a4ab010c166098a989b",
+      "packageName": "dsh-web-search-pro",
+      "version": "0.1.2",
+      "scannedAt": "2026-08-16T14:06:07.827Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 43,
+        "scannedBytes": 302919,
+        "archiveFiles": 68,
+        "archiveBytes": 521770,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/util.js",
+            "line": 8
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/util.js",
+            "line": 8
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/save-login.mjs",
+            "line": 16
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/util.ts",
+            "line": 9
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "src/util.ts",
+            "line": 9
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "anysearch-team/anysearch-dsh",
+      "verifiedCommit": "be7d8e8e6505e925a02416c48ce41ba6bca66225",
+      "packageName": "@anysearch/anysearch-dsh",
+      "version": "0.1.1",
+      "scannedAt": "2026-08-16T14:06:07.985Z",
+      "status": "passed",
+      "riskScore": 12,
+      "static": {
+        "scannedFiles": 16,
+        "scannedBytes": 123190,
+        "archiveFiles": 34,
+        "archiveBytes": 240319,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/check-package.mjs",
+            "line": 3
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-Q6KLr3/lib/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-Q6KLr3/lib/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find mo"
+      }
+    },
+    {
+      "repository": "aokamoaki/dsh-notify",
+      "verifiedCommit": "87272389a90141649c91d2d6da0b3d241974fa59",
+      "packageName": "dsh-notify",
+      "version": "1.0.0",
+      "scannedAt": "2026-08-16T14:06:08.106Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 6,
+        "scannedBytes": 52887,
+        "archiveFiles": 16,
+        "archiveBytes": 73514,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 43
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-fa040e23d0bea910 --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-9jD1dF:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "Apageoflove/DSH-arena",
+      "verifiedCommit": "cb0a2c1e4130c23d96a80fd6959b510b533a8b60",
+      "packageName": "dsh-arena",
+      "version": "0.1.19",
+      "scannedAt": "2026-08-16T14:06:12.965Z",
+      "status": "review",
+      "riskScore": 82,
+      "static": {
+        "scannedFiles": 29,
+        "scannedBytes": 120288,
+        "archiveFiles": 37,
+        "archiveBytes": 666696,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/push-to-github.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/run-experiment.mjs",
+            "line": 22
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/run-experiment.mjs",
+            "line": 22
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/core/runner.ts",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/dsh/plugin.ts",
+            "line": 5
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "Apageoflove/DSH-changeproof",
+      "verifiedCommit": "e048c8f710ec57b293ad20b0cceda10985476926",
+      "packageName": "dsh-changeproof",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:06:13.570Z",
+      "status": "passed",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 90,
+        "scannedBytes": 369148,
+        "archiveFiles": 108,
+        "archiveBytes": 499952,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "fixtures/fake-runner.mjs",
+            "line": 63
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/benchmark-cases.ts",
+            "line": 176
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/check-upstream-clean.ts",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/push-to-github.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/verify-package.ts",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/adapters/dsh/capabilities.ts",
+            "line": 68
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/adapters/dsh/subprocess-port.ts",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/execution/process-tree.ts",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/e2e/headless.e2e.test.ts",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/helpers/workspace.ts",
+            "line": 8
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "tests/security/subprocess.security.test.ts",
+            "line": 15
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/security/subprocess.security.test.ts",
+            "line": 55
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-RZhIlu/dist/host/cordis-plugin.mjs node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-RZhIlu/dist/host/cordis-plugin.mjs'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw "
+      }
+    },
+    {
+      "repository": "apheli0os/deepseek-harness-orchestrate",
+      "verifiedCommit": "6a1863dfabafa565bf7af160ce60e2749f4bad17",
+      "packageName": "dsh-tool-orchestrate",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:06:13.848Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 11,
+        "scannedBytes": 88348,
+        "archiveFiles": 21,
+        "archiveBytes": 155383,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/check-package.mjs",
+            "line": 1
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "runtime-entry-syntax-invalid: Command failed: /opt/hostedtoolcache/node/22.23.2/x64/bin/node --check /tmp/dsh-security-DKRZi8/dist/index.js node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find module '/tmp/dsh-security-DKRZi8/dist/index.js'     at node:internal/modules/cjs/loader:1430:15     at node:internal/main/check_syntax:33:20 {   code: 'MODULE_NOT_FOUND',   requireStack: [] } Node.js v22.23.2  | node:internal/modules/cjs/loader:1433   throw err;   ^ Error: Cannot find "
+      }
+    },
+    {
+      "repository": "apodemakeles/dsh-token-dashboard",
+      "verifiedCommit": "dbd1c97ce8b316fa51172f52f78384c821d70a57",
+      "packageName": "@apodemakeles/dsh-token-dashboard",
+      "version": "0.2.0",
+      "scannedAt": "2026-08-16T14:06:13.998Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 72,
+        "scannedBytes": 377592,
+        "archiveFiles": 152,
+        "archiveBytes": 2214766,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/real-sessions.test.ts",
+            "line": 6
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-60ea7b69db3e504b --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-KVPrwR:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    },
+    {
+      "repository": "aqsk-BLG/dsh-memory",
+      "verifiedCommit": "e348da8693f76081513dbf4d960ea4b93162450e",
+      "packageName": "dsh-memory",
+      "version": "0.1.0",
+      "scannedAt": "2026-08-16T14:06:14.671Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 9,
+        "scannedBytes": 33595,
+        "archiveFiles": 16,
+        "archiveBytes": 59886,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "failed",
+        "reason": "sandbox-import-failed: Command failed: docker run --name dsh-security-9dd888c37c73014d --rm --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=128 --memory=512m --cpus=1 --user=65534:65534 --workdir=/plugin --tmpfs=/tmp:rw,noexec,nosuid,size=64m --env=HOME=/tmp --volume=/tmp/dsh-security-eqkZLD:/plugin:ro node:22-bookworm-slim timeout --signal=KILL 20s node --input-type=module --eval import(\"file:///plugin/lib/index.js\").then(() => process.exit(0)) node:inter"
+      }
+    }
+  ]
 }
