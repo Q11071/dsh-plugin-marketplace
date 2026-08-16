@@ -5,9 +5,7 @@
 **A verified DSH plugin marketplace backed by a centrally maintained Registry.**
 
 [![Version](https://img.shields.io/github/v/tag/YELEBAI/dsh-plugin-marketplace?label=version&style=flat-square)](https://github.com/YELEBAI/dsh-plugin-marketplace/tags)
-[![Registry Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
-[![Security Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-security-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-security-scan.yml)
-[![Compatibility](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-compatibility.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/plugin-compatibility.yml)
+[![Registry Verification](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
 [![License](https://img.shields.io/github/license/YELEBAI/dsh-plugin-marketplace?style=flat-square)](./LICENSE)
 ![DSH Web](https://img.shields.io/badge/DSH-Web-4f46e5?style=flat-square)
 
@@ -162,7 +160,7 @@ flowchart LR
     C --> D["Statically validate manifests, patches, entries, and npm tarballs"]
     D -->|"Valid"| E["Exact-commit security queue"]
     E --> I["Static rules + isolated entry probe"]
-    I -->|"Passed"| J["registry/security-report.json"]
+    I -->|"Passed; continue in this run"| J["registry/security-report.json"]
     I -->|"Review"| F
     J --> L["Runtime compatibility queue"]
     L --> M["Official CLI install + offline DSH Profile"]
@@ -217,7 +215,7 @@ A custom Registry may omit `discovery.json`, `guided-audit.json`, `security-repo
 
 ## Automated scans and PAT usage
 
-The [Registry Scan workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours; the [Security Scan workflow](./.github/workflows/plugin-security-scan.yml) runs at minute 43; and the [Compatibility workflow](./.github/workflows/plugin-compatibility.yml) follows at minute 13 of odd UTC hours. All support manual dispatch and share one Registry write lock.
+The [aggregated verification workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours. One run discovers and classifies repositories, security-scans exact commits, immediately runtime-tests entries cleared in that same run, and finally merges both evidence reports. Manual dispatch exposes `max_plugins`, which limits each of the security and compatibility stages and defaults to 100.
 
 Scans prefer the read-only PAT stored in the `REGISTRY_GITHUB_TOKEN` Actions Secret and fall back to the repository-provided `GITHUB_TOKEN`. The PAT is used only for GitHub API reads and never for Registry commits; writes continue to use the credential provided by Actions checkout.
 
@@ -244,7 +242,7 @@ The scanner automatically partitions GitHub Search results beyond the 1,000-resu
 - npm archive: 50 MiB
 - extracted npm content: 150 MiB
 
-Each security run selects at most 100 exact commits, prioritizing changed commits, newly published entries, temporary failures, and finally initial backfill. Work is grouped into batches of five with at most four parallel jobs. An unchanged commit with an existing result is not scanned again. New and changed commits remain guided until a result is available; entries published before enforcement are backfilled gradually without taking the whole marketplace offline.
+Each security stage selects at most 100 exact commits. Classifier-approved automatic sources come first; within that group, changed commits, newly published entries, temporary failures, and initial backfill are prioritized in that order. Work is grouped into batches of five with at most four parallel jobs. An unchanged commit with an existing result is not scanned again. New and changed commits remain temporarily guided while the result is pending, but their classifier decision is preserved; a same-run pass restores that decision and immediately feeds the compatibility stage. Pre-enforcement entries continue to backfill gradually.
 
 Compatibility runs select only automatic exact sources whose current commit passed static checks. The install phase uses the official DSH CLI with `--ignore-scripts`; only the allowlisted official DSH runtime dependency `node-pty@1.1.0` is rebuilt, while plugin and plugin-dependency lifecycle scripts remain disabled. Only a disposable directory is mounted. The runtime phase has no network, tokens, extra capabilities, Docker socket, or maintainer workspace. It starts a clean DSH baseline before the plugin Profile and verifies bounded startup and SIGTERM disposal. Agent-classified plugins also run through a market-owned offline Mock Agent turn that performs a tool call, receives `tool/result`, produces a final reply, and verifies the call ID, error flag, and message content. Client bundles receive only the official DSH platform modules and execute their ModuleLoader factory; a real browser React mount is still `inconclusive`, never a fabricated full pass.
 

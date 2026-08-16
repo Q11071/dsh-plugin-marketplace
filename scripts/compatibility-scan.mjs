@@ -189,9 +189,8 @@ function validateTarget(target, plugin) {
     || plugin.verifiedCommit !== target.verifiedCommit
     || plugin.packageName !== target.packageName
     || plugin.version !== target.version
-    || plugin.install.mode !== 'automatic'
     || plugin.install.spec !== target.install?.spec) {
-    throw new Error('compatibility target is not the current automatic Registry source: ' + String(target.repository))
+    throw new Error('compatibility target is not the current exact Registry source: ' + String(target.repository))
   }
 }
 

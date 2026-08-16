@@ -31,13 +31,14 @@ const SECURITY_REASONS = new Set([
 ])
 
 /** Select exact commits which do not already have a reusable result. */
-export function planSecurityScan(registry, report, limit = 100, batchSize = 5) {
+export function planSecurityScan(registry, report, limit = 100, batchSize = 5, state = undefined) {
   if (!plainObject(registry) || !Array.isArray(registry.plugins)) throw new Error('Registry root is invalid')
   if (!validSecurityReportRoot(report)) throw new Error('security report root is invalid')
   if (!Number.isInteger(limit) || limit < 1 || limit > 500) throw new Error('security scan limit must be between 1 and 500')
   if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 20) throw new Error('security batch size must be between 1 and 20')
 
   const existing = new Map(report.results.map(row => [row.repository.toLocaleLowerCase(), row]))
+  const stateRows = plainObject(state?.repositories) ? state.repositories : {}
   const queued = []
   for (const plugin of registry.plugins) {
     if (!validPluginIdentity(plugin)) continue
@@ -58,10 +59,13 @@ export function planSecurityScan(registry, report, limit = 100, batchSize = 5) {
       repository: plugin.fullName,
       verifiedCommit: plugin.verifiedCommit,
       priority,
+      runtimePriority: runtimeInstallMode(plugin, stateRows[plugin.fullName.toLocaleLowerCase()]) === 'automatic' ? 0 : 1,
     })
   }
-  queued.sort((left, right) => left.priority - right.priority || left.repository.localeCompare(right.repository))
-  const selected = queued.slice(0, limit).map(({ priority: _priority, ...row }) => row)
+  queued.sort((left, right) => left.runtimePriority - right.runtimePriority
+    || left.priority - right.priority
+    || left.repository.localeCompare(right.repository))
+  const selected = queued.slice(0, limit).map(({ priority: _priority, runtimePriority: _runtimePriority, ...row }) => row)
   const batches = []
   for (let index = 0; index < selected.length; index += batchSize) {
     batches.push({ id: Math.floor(index / batchSize), repositories: selected.slice(index, index + batchSize) })
@@ -91,16 +95,25 @@ export function securityGateReason(plugin, report) {
 export function applySecurityGate(stateRow, report) {
   if (!plainObject(stateRow?.plugin) || !plainObject(stateRow?.inspection)) return stateRow
   const reason = securityGateReason(stateRow.plugin, report)
+  const savedInstall = plainObject(stateRow.inspection.securityBaseInstall)
+    ? stateRow.inspection.securityBaseInstall
+    : null
   const previousReasons = Array.isArray(stateRow.inspection.reviewReasons)
     ? stateRow.inspection.reviewReasons.filter(value => !SECURITY_REASONS.has(value))
     : []
   if (reason === null) {
-    if (previousReasons.length === stateRow.inspection.reviewReasons.length) return stateRow
+    if (previousReasons.length === stateRow.inspection.reviewReasons.length && savedInstall === null) return stateRow
+    const inspection = { ...stateRow.inspection, reviewReasons: previousReasons }
+    delete inspection.securityBaseInstall
     return {
       ...stateRow,
-      inspection: { ...stateRow.inspection, reviewReasons: previousReasons },
+      plugin: savedInstall === null
+        ? stateRow.plugin
+        : { ...stateRow.plugin, install: savedInstall },
+      inspection,
     }
   }
+  const baseInstall = savedInstall ?? stateRow.plugin.install
   return {
     ...stateRow,
     plugin: {
@@ -113,9 +126,15 @@ export function applySecurityGate(stateRow, report) {
     },
     inspection: {
       ...stateRow.inspection,
+      securityBaseInstall: baseInstall,
       reviewReasons: [...new Set([...previousReasons, reason])],
     },
   }
+}
+
+function runtimeInstallMode(plugin, stateRow) {
+  const saved = stateRow?.inspection?.securityBaseInstall
+  return plainObject(saved) && typeof saved.mode === 'string' ? saved.mode : plugin.install?.mode
 }
 
 export function isSecurityReviewReason(value) {

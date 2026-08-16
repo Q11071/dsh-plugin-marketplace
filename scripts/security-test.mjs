@@ -15,6 +15,7 @@ import {
   securityGateReason,
   validSecurityResult,
 } from './security-core.mjs'
+import { planCompatibilityScan } from './compatibility-core.mjs'
 import { assessGuidedInstall, promoteExactNpm } from './guided-audit-core.mjs'
 
 const harmless = analyzePluginFiles([
@@ -76,6 +77,43 @@ const gated = applySecurityGate(stateRow, report)
 assert.equal(gated.plugin.install.mode, 'guided')
 assert.equal(gated.plugin.install.manualSteps, true)
 assert.deepEqual(gated.inspection.reviewReasons, [SECURITY_REASON_PENDING])
+assert.deepEqual(gated.inspection.securityBaseInstall, stateRow.plugin.install)
+
+const passedReport = securityReport([result('owner/new', 'c', 'passed')])
+const restored = applySecurityGate(gated, passedReport)
+assert.equal(restored.plugin.install.mode, 'automatic')
+assert.equal(restored.plugin.install.manualSteps, false)
+assert.equal(restored.inspection.securityBaseInstall, undefined)
+assert.deepEqual(restored.inspection.reviewReasons, [])
+const sameRunCompatibility = planCompatibilityScan(
+  { plugins: [{ ...restored.plugin, hasClient: false }] },
+  passedReport,
+  {
+    schemaVersion: 1,
+    policyVersion: 1,
+    generatedAt: '2026-08-16T00:00:00Z',
+    total: 0,
+    summary: { passed: 0, partial: 0, failed: 0, timeout: 0, unsupported: 0, error: 0, pending: 1 },
+    results: [],
+  },
+  10,
+  2,
+)
+assert.deepEqual(sameRunCompatibility.selected.map(row => row.repository), ['owner/new'])
+
+const prioritizedState = {
+  repositories: {
+    'owner/backfill': {
+      plugin: registry.plugins[3],
+      inspection: { securityBaseInstall: { mode: 'automatic' } },
+    },
+  },
+}
+const prioritized = planSecurityScan({ plugins: [
+  plugin('owner/guided-backfill', '1', '2026-08-15T00:00:00Z'),
+  registry.plugins[3],
+] }, securityReport([]), 1, 1, prioritizedState)
+assert.deepEqual(prioritized.selected.map(row => row.repository), ['owner/backfill'])
 
 const auditPlugin = {
   packageName: 'test-plugin',

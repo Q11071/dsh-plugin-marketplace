@@ -1,19 +1,27 @@
-name: Refresh verified plugin Registry
+name: Refresh and verify plugin Registry
 
 on:
   schedule:
     - cron: '17 */2 * * *'
   workflow_dispatch:
+    inputs:
+      max_plugins:
+        description: Maximum exact commits per verification stage (1-100)
+        required: false
+        default: '100'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: dsh-plugin-registry-write
   cancel-in-progress: false
 
 jobs:
-  scan:
+  refresh:
+    name: Discover and classify repositories
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -27,6 +35,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:test
+      - run: pnpm security:test
       - run: pnpm compatibility:test
       - run: pnpm discovery:test
       - run: pnpm profile:test
@@ -39,16 +48,230 @@ jobs:
         run: pnpm registry:audit
       - name: Verify generated Registry
         run: pnpm registry:verify
-      - name: Commit Registry changes
+      - name: Commit discovery changes
         shell: bash
         run: |
           git add registry/plugins.json registry/discovery.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json registry/security-report.json registry/compatibility-report.json
           if git diff --cached --quiet; then
-            echo "Registry is already current."
+            echo "Registry discovery is already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(registry): refresh verified plugins"
+          git pull --rebase origin main
+          git push
+
+  security_plan:
+    name: Plan exact-commit security checks
+    needs: refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      has_work: ${{ steps.plan.outputs.has_work }}
+      selected: ${{ steps.plan.outputs.selected }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - id: plan
+        name: Select new, changed and backfill commits
+        run: node scripts/security-plan.mjs --limit "${{ inputs.max_plugins || '100' }}" --batch-size 5
+      - uses: actions/upload-artifact@v7
+        with:
+          name: security-plan
+          path: .security-work/plan.json
+          retention-days: 2
+
+  security_scan:
+    name: Security scan
+    needs: security_plan
+    if: ${{ needs.security_plan.outputs.has_work == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.security_plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Pull disposable sandbox image
+        run: docker pull node:22-bookworm-slim
+      - name: Scan exact commits
+        env:
+          SECURITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
+          SECURITY_SANDBOX: '1'
+        run: node scripts/security-scan.mjs --output ".security-work/result-${{ matrix.batch }}.json"
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: security-result-${{ matrix.batch }}
+          path: .security-work/result-${{ matrix.batch }}.json
+          if-no-files-found: ignore
+          retention-days: 2
+
+  compatibility_plan:
+    name: Apply security gate and plan runtime checks
+    needs: [security_plan, security_scan]
+    if: ${{ always() && needs.security_plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      has_work: ${{ steps.plan.outputs.has_work }}
+      selected: ${{ steps.plan.outputs.selected }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v8
+        with:
+          name: security-plan
+          path: .security-results/plan
+      - uses: actions/download-artifact@v8
+        if: ${{ needs.security_plan.outputs.has_work == 'true' }}
+        continue-on-error: true
+        with:
+          pattern: security-result-*
+          path: .security-results/scans
+          merge-multiple: true
+      - name: Apply this run's security results locally
+        run: node scripts/security-merge.mjs
+      - id: plan
+        name: Select security-cleared exact commits
+        run: node scripts/compatibility-plan.mjs --limit "${{ inputs.max_plugins || '100' }}" --batch-size 5
+      - uses: actions/upload-artifact@v7
+        with:
+          name: compatibility-plan
+          path: .compatibility-work/plan.json
+          retention-days: 2
+
+  compatibility_scan:
+    name: Runtime compatibility scan
+    needs: compatibility_plan
+    if: ${{ needs.compatibility_plan.outputs.has_work == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.compatibility_plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Pull disposable DSH runtime images
+        run: |
+          docker pull node:22-bookworm
+          docker pull node:22-bookworm-slim
+      - name: Install and test exact commits
+        env:
+          COMPATIBILITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
+          DSH_COMPAT_VERSION: 0.1.0-rc.6
+        run: node scripts/compatibility-scan.mjs --output ".compatibility-work/result-${{ matrix.batch }}.json"
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: compatibility-result-${{ matrix.batch }}
+          path: .compatibility-work/result-${{ matrix.batch }}.json
+          if-no-files-found: ignore
+          retention-days: 2
+
+  finalize:
+    name: Merge verification evidence
+    needs: [security_plan, security_scan, compatibility_plan, compatibility_scan]
+    if: ${{ always() && needs.security_plan.result == 'success' && needs.compatibility_plan.result == 'success' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v8
+        with:
+          name: security-plan
+          path: .security-results/plan
+      - uses: actions/download-artifact@v8
+        if: ${{ needs.security_plan.outputs.has_work == 'true' }}
+        continue-on-error: true
+        with:
+          pattern: security-result-*
+          path: .security-results/scans
+          merge-multiple: true
+      - id: security_merge
+        name: Validate and merge security evidence
+        run: node scripts/security-merge.mjs
+      - name: Refresh guided audit after applying security gates
+        if: ${{ steps.security_merge.outputs.gate_changes != '0' }}
+        run: pnpm registry:audit
+      - uses: actions/download-artifact@v8
+        with:
+          name: compatibility-plan
+          path: .compatibility-results/plan
+      - uses: actions/download-artifact@v8
+        if: ${{ needs.compatibility_plan.outputs.has_work == 'true' }}
+        continue-on-error: true
+        with:
+          pattern: compatibility-result-*
+          path: .compatibility-results/scans
+          merge-multiple: true
+      - name: Validate and merge runtime evidence
+        run: node scripts/compatibility-merge.mjs
+      - name: Verify Registry contracts
+        run: pnpm registry:verify
+      - name: Commit aggregated verification reports
+        shell: bash
+        run: |
+          git add registry/plugins.json registry/state.json registry/install-review.json registry/guided-audit.json registry/security-report.json registry/compatibility-report.json
+          if git diff --cached --quiet; then
+            echo "Verification reports are already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(verification): verify plugin commits"
           git pull --rebase origin main
           git push

@@ -11,7 +11,8 @@ const batchSize = positiveInteger(argument('--batch-size') ?? process.env.SECURI
 const output = path.resolve(root, argument('--output') ?? '.security-work/plan.json')
 const registry = JSON.parse(await readFile(path.join(root, 'registry', 'plugins.json'), 'utf8'))
 const report = JSON.parse(await readFile(path.join(root, 'registry', 'security-report.json'), 'utf8'))
-const plan = planSecurityScan(registry, report, limit, batchSize)
+const state = JSON.parse(await readFile(path.join(root, 'registry', 'state.json'), 'utf8'))
+const plan = planSecurityScan(registry, report, limit, batchSize, state)
 
 await mkdir(path.dirname(output), { recursive: true })
 await writeFile(output, JSON.stringify({
