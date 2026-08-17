@@ -8,6 +8,10 @@ Registry refresh commits are grouped instead of listed individually.
 
 ## [Unreleased]
 
+No unreleased changes yet.
+
+## [0.9.2] - 2026-08-17
+
 ### Fixed and reverted
 
 - Removed the unfinished malware and Agent Loop runtime checks from the stable marketplace path;
