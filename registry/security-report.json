@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-17T01:56:27.844Z",
+  "generatedAt": "2026-08-17T02:27:53.316Z",
   "enforcementStartedAt": "2026-08-16T13:25:35.612Z",
-  "total": 1198,
+  "total": 1239,
   "summary": {
-    "passed": 488,
-    "review": 92,
+    "passed": 560,
+    "review": 120,
     "error": 541,
-    "pending": 2377
+    "pending": 2277
   },
   "results": [
     {
@@ -271,6 +271,28 @@
         "scannedBytes": 27095,
         "archiveFiles": 10,
         "archiveBytes": 36045,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "1321928757/dsh-prompt-polish",
+      "verifiedCommit": "dd8eb8995116934aebcec916d44b835dbab793ed",
+      "packageName": "dsh-prompt-polish",
+      "version": "0.1.1",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:06:44.778Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 7,
+        "scannedBytes": 77018,
+        "archiveFiles": 14,
+        "archiveBytes": 244954,
         "findings": [],
         "truncatedFindings": false
       },
@@ -883,24 +905,59 @@
     },
     {
       "repository": "2768651338/dsh-effort-slider",
-      "verifiedCommit": "ff939f22ad7a593ce191d40a75a99b60136751ad",
+      "verifiedCommit": "b95d997a787ddfc2dfe05e167f59229ccd8bafb2",
       "packageName": "dsh-effort-slider",
       "version": "0.2.5",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:33:08.652Z",
+      "scannedAt": "2026-08-17T02:05:18.943Z",
       "status": "passed",
       "riskScore": 10,
       "static": {
         "scannedFiles": 15,
         "scannedBytes": 139202,
-        "archiveFiles": 27,
-        "archiveBytes": 1341426,
+        "archiveFiles": 28,
+        "archiveBytes": 1354484,
         "findings": [
           {
             "rule": "dynamic-code-execution",
             "severity": "medium",
             "path": "test/client.smoke.mjs",
             "line": 41
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "2768651338/dsh-plugin-manager",
+      "verifiedCommit": "ffd03a66afd268687356843606fe396270a863b9",
+      "packageName": "@2768651338/dsh-plugin-manager",
+      "version": "0.4.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:06:51.133Z",
+      "status": "passed",
+      "riskScore": 20,
+      "static": {
+        "scannedFiles": 21,
+        "scannedBytes": 463139,
+        "archiveFiles": 36,
+        "archiveBytes": 874855,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "lib/client.js",
+            "line": 781
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "lib/typert.host.js",
+            "line": 139
           }
         ],
         "truncatedFindings": false
@@ -983,6 +1040,28 @@
             "detail": "prepare"
           }
         ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "33moren33/dsh-memory-pyramid",
+      "verifiedCommit": "71832af455cbb6d040086349d07fe80fafe9cffe",
+      "packageName": "dsh-memory-pyramid",
+      "version": "0.1.1",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:06:51.668Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 6,
+        "scannedBytes": 98027,
+        "archiveFiles": 13,
+        "archiveBytes": 164591,
+        "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
@@ -1937,6 +2016,57 @@
       }
     },
     {
+      "repository": "a903067276-rgb/dsh-file-mentions",
+      "verifiedCommit": "07067ecef997f00eb351cb07437fcac3ed6a5994",
+      "packageName": "dsh-file-mentions",
+      "version": "1.0.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:06:51.953Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 27809,
+        "archiveFiles": 12,
+        "archiveBytes": 304827,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 14
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "a903067276-rgb/dsh-hud",
+      "verifiedCommit": "9758c0d719c4645b9084a9d730638ffc26f11055",
+      "packageName": "dsh-hud",
+      "version": "1.0.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:06:52.250Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 44151,
+        "archiveFiles": 12,
+        "archiveBytes": 222191,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
       "repository": "Aaaaamadeus/dsh-gui",
       "verifiedCommit": "e04e8b3224e973bb490b28fd0a5cf179783f97b7",
       "packageName": "dsh-gui",
@@ -2450,18 +2580,18 @@
     },
     {
       "repository": "AFAP/dsh-token-usage",
-      "verifiedCommit": "a6dbd63d848ed25a5e21ac39ec9f53efcbbdb886",
+      "verifiedCommit": "08da0b99ffbc7e30c4c82698d8318cd3b837e49f",
       "packageName": "dsh-token-usage",
-      "version": "0.5.1",
+      "version": "0.6.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:34:43.173Z",
+      "scannedAt": "2026-08-17T02:05:19.747Z",
       "status": "passed",
       "riskScore": 0,
       "static": {
         "scannedFiles": 4,
-        "scannedBytes": 79608,
+        "scannedBytes": 84992,
         "archiveFiles": 11,
-        "archiveBytes": 870013,
+        "archiveBytes": 875397,
         "findings": [],
         "truncatedFindings": false
       },
@@ -2471,19 +2601,48 @@
       }
     },
     {
-      "repository": "AHGGG/dsh-side-chat",
-      "verifiedCommit": "81864e0cdce8e85a5c2ae1bcc82267eafda0be41",
-      "packageName": "@ahggg/dsh-side-chat",
-      "version": "0.6.0",
+      "repository": "AgentConnect/dsh-awiki",
+      "verifiedCommit": "d8b8dcc2ef2cb7e99e915a674728b95569d67b17",
+      "packageName": "dsh-awiki",
+      "version": "0.1.3",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T14:14:27.911Z",
+      "scannedAt": "2026-08-17T02:06:52.508Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 132,
+        "scannedBytes": 1446850,
+        "archiveFiles": 192,
+        "archiveBytes": 2944411,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "lib/client.js",
+            "line": 151
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "AHGGG/dsh-side-chat",
+      "verifiedCommit": "81d62a07c35d6a301eeeaa27b793c868a6572fe6",
+      "packageName": "@ahggg/dsh-side-chat",
+      "version": "0.6.1",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:05:20.192Z",
       "status": "passed",
       "riskScore": 20,
       "static": {
-        "scannedFiles": 59,
-        "scannedBytes": 333729,
-        "archiveFiles": 80,
-        "archiveBytes": 1216178,
+        "scannedFiles": 60,
+        "scannedBytes": 339192,
+        "archiveFiles": 81,
+        "archiveBytes": 1223824,
         "findings": [
           {
             "rule": "process-spawn",
@@ -2646,6 +2805,41 @@
       }
     },
     {
+      "repository": "Airmetro/dsh-update-checker",
+      "verifiedCommit": "688d0d07d22443070ac49f3c5d8b789120c586cc",
+      "packageName": "dsh-update-checker",
+      "version": "1.3.2",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:06.925Z",
+      "status": "review",
+      "riskScore": 50,
+      "static": {
+        "scannedFiles": 11,
+        "scannedBytes": 124518,
+        "archiveFiles": 22,
+        "archiveBytes": 265093,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 26
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 26
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
       "repository": "Aisland-SJL/dsh-reminder",
       "verifiedCommit": "bd1b64f7056297d07ae49baecb90f1584c11f415",
       "packageName": "dsh-reminder",
@@ -2723,30 +2917,24 @@
     },
     {
       "repository": "AITabby/dockyard-dsh",
-      "verifiedCommit": "bbc7c56c05c349f1ae531a17fbbdf91cd52678f2",
+      "verifiedCommit": "d00af5462bf91bc0ae0106dc98fb3be505a55a4f",
       "packageName": "@dockyard-dsh/plugin",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T14:15:03.162Z",
+      "scannedAt": "2026-08-17T02:05:20.651Z",
       "status": "review",
       "riskScore": 100,
       "static": {
-        "scannedFiles": 64,
-        "scannedBytes": 1626168,
-        "archiveFiles": 84,
-        "archiveBytes": 1877399,
+        "scannedFiles": 68,
+        "scannedBytes": 1880319,
+        "archiveFiles": 103,
+        "archiveBytes": 3014578,
         "findings": [
           {
-            "rule": "sensitive-credential-access",
-            "severity": "medium",
-            "path": "apps/local-page/server.mjs",
-            "line": 19
-          },
-          {
-            "rule": "process-spawn",
-            "severity": "medium",
-            "path": "apps/local-page/server.mjs",
-            "line": 6
+            "rule": "destructive-system-command",
+            "severity": "critical",
+            "path": "apps/macos/build-dmg.sh",
+            "line": 31
           },
           {
             "rule": "process-spawn",
@@ -2763,12 +2951,6 @@
           {
             "rule": "process-spawn",
             "severity": "medium",
-            "path": "modules/provider-cursor/src/driver.mjs",
-            "line": 1
-          },
-          {
-            "rule": "process-spawn",
-            "severity": "medium",
             "path": "modules/provider-cursor/src/native-transport.mjs",
             "line": 1
           },
@@ -2776,13 +2958,13 @@
             "rule": "process-spawn",
             "severity": "medium",
             "path": "packages/dsh-plugin/dist/index.mjs",
-            "line": 1073
+            "line": 1091
           },
           {
             "rule": "download-and-execute-primitives",
             "severity": "high",
             "path": "packages/dsh-plugin/dist/index.mjs",
-            "line": 1073
+            "line": 1091
           },
           {
             "rule": "process-spawn",
@@ -2819,13 +3001,6 @@
             "severity": "medium",
             "path": "scripts/build.mjs",
             "line": 1
-          },
-          {
-            "rule": "install-lifecycle-script",
-            "severity": "low",
-            "path": "package.json",
-            "line": 1,
-            "detail": "prepare"
           }
         ],
         "truncatedFindings": false
@@ -3621,11 +3796,11 @@
     },
     {
       "repository": "Andrietteprotective835/dsh-mcp-lens",
-      "verifiedCommit": "03b714d7ed7925ddfe8a6c9d9a399708de8ce8f0",
+      "verifiedCommit": "f1bfc13a845c320302ef50a777414ec166f94e53",
       "packageName": "dsh-mcp-lens",
       "version": "0.1.0-rc.9",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:33:19.112Z",
+      "scannedAt": "2026-08-17T02:05:21.221Z",
       "status": "passed",
       "riskScore": 52,
       "static": {
@@ -3905,18 +4080,18 @@
     },
     {
       "repository": "Anionex/dsh-vision-toolkit",
-      "verifiedCommit": "2ad06820b848e3075e1ab8b74d152c870e43d31c",
+      "verifiedCommit": "507619c1993e68b74c4e010d98d45f074b65c1db",
       "packageName": "@anionex/dsh-vision-toolkit",
-      "version": "0.1.17",
+      "version": "0.1.20",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:13.886Z",
+      "scannedAt": "2026-08-17T02:05:13.644Z",
       "status": "review",
       "riskScore": 100,
       "static": {
-        "scannedFiles": 111,
-        "scannedBytes": 2061822,
-        "archiveFiles": 257,
-        "archiveBytes": 9223107,
+        "scannedFiles": 114,
+        "scannedBytes": 2074913,
+        "archiveFiles": 268,
+        "archiveBytes": 9334768,
         "findings": [
           {
             "rule": "process-spawn",
@@ -3935,6 +4110,12 @@
             "severity": "medium",
             "path": "scripts/run-ui-restoration-example.mjs",
             "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/sync-skill.mjs",
+            "line": 4
           },
           {
             "rule": "process-spawn",
@@ -4952,18 +5133,18 @@
     },
     {
       "repository": "astra3294/dsh-doctor",
-      "verifiedCommit": "b05239b3b7cf9eeb8000da08e92d331f39e024cc",
+      "verifiedCommit": "6d9cb77fe6b29a7d0b4337ec3e898a0a0e6ea51b",
       "packageName": "dsh-doctor",
       "version": "0.4.3",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T19:53:38.380Z",
+      "scannedAt": "2026-08-17T02:05:14.518Z",
       "status": "review",
       "riskScore": 100,
       "static": {
         "scannedFiles": 36,
         "scannedBytes": 251866,
-        "archiveFiles": 60,
-        "archiveBytes": 1092984,
+        "archiveFiles": 61,
+        "archiveBytes": 1093178,
         "findings": [
           {
             "rule": "process-spawn",
@@ -5069,6 +5250,41 @@
       "sandbox": {
         "status": "inconclusive",
         "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "AwesomeHou/dsh-plugin-marketplace",
+      "verifiedCommit": "bc04d32aacb1f35409deea23132c5b0edc83342d",
+      "packageName": "dsh-plugin-marketplace",
+      "version": "0.2.2",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:07.336Z",
+      "status": "review",
+      "riskScore": 50,
+      "static": {
+        "scannedFiles": 6,
+        "scannedBytes": 156368,
+        "archiveFiles": 14,
+        "archiveBytes": 601427,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 46
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 46
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
@@ -5530,6 +5746,28 @@
         "scannedBytes": 20655,
         "archiveFiles": 5,
         "archiveBytes": 21816,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "BananaSoldier01/dsh-tidychat",
+      "verifiedCommit": "3742b4e2c50ce26136da212f8d14741f2e286f4e",
+      "packageName": "@bananasoldier01/dsh-tidychat",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:07.496Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 7,
+        "scannedBytes": 57718,
+        "archiveFiles": 17,
+        "archiveBytes": 1852025,
         "findings": [],
         "truncatedFindings": false
       },
@@ -6639,18 +6877,18 @@
     },
     {
       "repository": "bitxeno/dsh-at-github",
-      "verifiedCommit": "119ffc542209c00942e66788b782a5d2c2265f0e",
+      "verifiedCommit": "4cddfec5dafbe9f8e5d764176708d6ddcf94daf2",
       "packageName": "dsh-at-github",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:35:25.058Z",
+      "scannedAt": "2026-08-17T02:05:14.673Z",
       "status": "passed",
       "riskScore": 70,
       "static": {
-        "scannedFiles": 68,
-        "scannedBytes": 1392137,
-        "archiveFiles": 82,
-        "archiveBytes": 3776957,
+        "scannedFiles": 60,
+        "scannedBytes": 1377710,
+        "archiveFiles": 74,
+        "archiveBytes": 3762533,
         "findings": [
           {
             "rule": "process-spawn",
@@ -7079,18 +7317,18 @@
     },
     {
       "repository": "bowenliang123/dsh-context",
-      "verifiedCommit": "a4deb93e21104be439b8ca789c38445d37cabd4f",
+      "verifiedCommit": "19733b9a4dce76b4cd7697e9a2edc41b77b79a47",
       "packageName": "dsh-context",
-      "version": "0.10.1",
+      "version": "0.10.2",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:33:42.884Z",
+      "scannedAt": "2026-08-17T02:05:15.357Z",
       "status": "passed",
       "riskScore": 42,
       "static": {
-        "scannedFiles": 32,
-        "scannedBytes": 202745,
-        "archiveFiles": 50,
-        "archiveBytes": 2956157,
+        "scannedFiles": 33,
+        "scannedBytes": 211467,
+        "archiveFiles": 51,
+        "archiveBytes": 2964879,
         "findings": [
           {
             "rule": "dynamic-code-execution",
@@ -7168,18 +7406,18 @@
     },
     {
       "repository": "bradeGithub/DSH-Plugins-Marketplace",
-      "verifiedCommit": "a22839e99a3cb898d0f2bb49e3102247713a4857",
+      "verifiedCommit": "b3955db79e14d0c5e8b08e9cfeba753e2490c095",
       "packageName": "dsh-plugin-marketplace",
       "version": "1.5.1",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:14.727Z",
+      "scannedAt": "2026-08-17T02:05:15.959Z",
       "status": "review",
       "riskScore": 100,
       "static": {
         "scannedFiles": 50,
         "scannedBytes": 823929,
         "archiveFiles": 90,
-        "archiveBytes": 21140019,
+        "archiveBytes": 21175600,
         "findings": [
           {
             "rule": "sensitive-credential-access",
@@ -8143,18 +8381,18 @@
     },
     {
       "repository": "ccch1mneyyy/dsh-TUI",
-      "verifiedCommit": "dc73aca7ad1e8d32b157db9c1ef858812396a9b8",
+      "verifiedCommit": "c9d89664a1fc1b3faee6899add0c040b40fdfc2b",
       "packageName": "@deepseek-harness-tui/dsh-tui",
-      "version": "0.7.3",
+      "version": "0.8.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:15.655Z",
+      "scannedAt": "2026-08-17T02:05:11.519Z",
       "status": "review",
       "riskScore": 100,
       "static": {
-        "scannedFiles": 430,
-        "scannedBytes": 3644805,
-        "archiveFiles": 513,
-        "archiveBytes": 8781071,
+        "scannedFiles": 431,
+        "scannedBytes": 3664604,
+        "archiveFiles": 514,
+        "archiveBytes": 8802031,
         "findings": [
           {
             "rule": "process-spawn",
@@ -8503,18 +8741,18 @@
     },
     {
       "repository": "cdxiaodong/dsh-island",
-      "verifiedCommit": "7d589b8f98ac85f86336d849e5012ec1124c0653",
+      "verifiedCommit": "62699999e0ccc46b191d5c46b5f0679a463ac097",
       "packageName": "dsh-island",
       "version": "0.6.12",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:35:32.408Z",
+      "scannedAt": "2026-08-17T02:05:12.711Z",
       "status": "review",
       "riskScore": 100,
       "static": {
         "scannedFiles": 13,
         "scannedBytes": 102039,
         "archiveFiles": 893,
-        "archiveBytes": 39486868,
+        "archiveBytes": 39486992,
         "findings": [
           {
             "rule": "process-spawn",
@@ -8988,6 +9226,47 @@
       }
     },
     {
+      "repository": "CharlotteN7/dsh-netguard",
+      "verifiedCommit": "2b91102f8059d2582383810eba332facb7842629",
+      "packageName": "dsh-netguard",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:07.884Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 41,
+        "scannedBytes": 347999,
+        "archiveFiles": 53,
+        "archiveBytes": 480065,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "scripts/check-no-local-paths.sh",
+            "line": 19
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/e2e/harness.ts",
+            "line": 13
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/e2e/report.e2e.ts",
+            "line": 9
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
       "repository": "CharlotteN7/dsh-ocsf-forwarder",
       "verifiedCommit": "3b0e21a23b05d8253386a99e0fdf54a50426b195",
       "packageName": "dsh-ocsf-forwarder",
@@ -9232,18 +9511,18 @@
     },
     {
       "repository": "Cheng-xiu/dsh-mobile-link",
-      "verifiedCommit": "368f852ea5c4bfa5c2b73c0d60a22f004d393f8f",
+      "verifiedCommit": "3ed6c31ff65f56dfe02fe0d4dba40f3bc30d6ba6",
       "packageName": "dsh-mobile-link",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:35:34.954Z",
+      "scannedAt": "2026-08-17T02:05:13.546Z",
       "status": "review",
       "riskScore": 100,
       "static": {
         "scannedFiles": 11,
-        "scannedBytes": 46633,
+        "scannedBytes": 52097,
         "archiveFiles": 15,
-        "archiveBytes": 59401,
+        "archiveBytes": 66148,
         "findings": [
           {
             "rule": "process-spawn",
@@ -9343,18 +9622,18 @@
     },
     {
       "repository": "chengzhi43/dsh-file",
-      "verifiedCommit": "4faf235202e2485859f5557af6571dcb9637c708",
+      "verifiedCommit": "85c41edc1df901c9fcc1819ca092271c804e6e60",
       "packageName": "dsh-file",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T15:01:10.747Z",
+      "scannedAt": "2026-08-17T02:05:13.635Z",
       "status": "passed",
       "riskScore": 10,
       "static": {
         "scannedFiles": 14,
-        "scannedBytes": 154856,
+        "scannedBytes": 157996,
         "archiveFiles": 24,
-        "archiveBytes": 219828,
+        "archiveBytes": 224995,
         "findings": [
           {
             "rule": "process-spawn",
@@ -9393,6 +9672,28 @@
             "detail": "prepare"
           }
         ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "chenkezhen480/dsh-semantic-memory",
+      "verifiedCommit": "0ab4575a7f80e215e01b9519468f5a6d66fbcd86",
+      "packageName": "dsh-plugin-semantic-memory",
+      "version": "0.2.1",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:08.164Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 46,
+        "scannedBytes": 212885,
+        "archiveFiles": 53,
+        "archiveBytes": 299754,
+        "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
@@ -9608,18 +9909,18 @@
     },
     {
       "repository": "chenyinrusi/dsh-llm-cost",
-      "verifiedCommit": "4c06a77abf346134b73d1d452ce65f8baf51acb1",
+      "verifiedCommit": "f3541e6b39c11bf6efecdfb8b08252859c64dc3b",
       "packageName": "dsh-llm-cost",
-      "version": "0.4.2",
+      "version": "0.5.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:46:19.586Z",
+      "scannedAt": "2026-08-17T02:05:13.981Z",
       "status": "passed",
       "riskScore": 0,
       "static": {
         "scannedFiles": 27,
-        "scannedBytes": 130524,
+        "scannedBytes": 128245,
         "archiveFiles": 37,
-        "archiveBytes": 308103,
+        "archiveBytes": 302096,
         "findings": [],
         "truncatedFindings": false
       },
@@ -10118,6 +10419,28 @@
       }
     },
     {
+      "repository": "christophersmith2737-commits/OffPeak",
+      "verifiedCommit": "a3d676f3b8643b8d7b869a3c7a7a517556d6ea55",
+      "packageName": "dsh-offpeak",
+      "version": "1.0.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:10.270Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 55101,
+        "archiveFiles": 8,
+        "archiveBytes": 72145,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
       "repository": "ChrisZhangWG/dsh-codex-meter",
       "verifiedCommit": "c4558079dfa7d38476c7bc66f36af42a06ee21b7",
       "packageName": "dsh-codex-meter",
@@ -10160,6 +10483,35 @@
             "path": "package.json",
             "line": 1,
             "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "ciceroyang/dsh-report-studio",
+      "verifiedCommit": "3478e0b522ef85a6c7a6c4044eea3c54f36bd484",
+      "packageName": "dsh-report-studio",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:10.882Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 22,
+        "scannedBytes": 92832,
+        "archiveFiles": 40,
+        "archiveBytes": 145661,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/auto-weekly.test.mjs",
+            "line": 8
           }
         ],
         "truncatedFindings": false
@@ -10810,6 +11162,28 @@
             "line": 163
           }
         ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "cokiscarazo-rgb/dsh-session-management",
+      "verifiedCommit": "c29f78f30b7e228218e7ad9bca5711038ec5e8bf",
+      "packageName": "dsh-session-management",
+      "version": "1.0.6",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:11.364Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 5,
+        "scannedBytes": 48073,
+        "archiveFiles": 12,
+        "archiveBytes": 198202,
+        "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
@@ -11499,19 +11873,25 @@
     },
     {
       "repository": "Czerror/dsh-plugin-prompt-tool",
-      "verifiedCommit": "96739ec27fdeb7332377aff34fe4e99ca6698b5e",
+      "verifiedCommit": "0885c2f395649c450c18c0d934c3c187ae29e270",
       "packageName": "dsh-plugin-prompt-tool",
-      "version": "0.1.5",
+      "version": "0.2.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:26.162Z",
+      "scannedAt": "2026-08-17T02:05:13.154Z",
       "status": "passed",
-      "riskScore": 2,
+      "riskScore": 12,
       "static": {
-        "scannedFiles": 12,
-        "scannedBytes": 95436,
-        "archiveFiles": 26,
-        "archiveBytes": 322849,
+        "scannedFiles": 22,
+        "scannedBytes": 182408,
+        "archiveFiles": 40,
+        "archiveBytes": 424872,
         "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/sync-anchored.mjs",
+            "line": 3
+          },
           {
             "rule": "install-lifecycle-script",
             "severity": "low",
@@ -12075,6 +12455,28 @@
             "line": 18
           }
         ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "DDDFXYqiming/dsh-annotation-patched",
+      "verifiedCommit": "a4f49d98349ae6f618a8478c01a911f76a60bc3a",
+      "packageName": "@dsh-external/dsh-annotation-patched",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:11.825Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 91443,
+        "archiveFiles": 6,
+        "archiveBytes": 97026,
+        "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
@@ -12831,6 +13233,66 @@
       }
     },
     {
+      "repository": "dingyi222666/dsh-wakatime",
+      "verifiedCommit": "3b3e63d2dce9ef7f52ca50415b9696dbbee19ab8",
+      "packageName": "@dingyi222666/dsh-wakatime",
+      "version": "0.1.1",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:12.266Z",
+      "status": "review",
+      "riskScore": 82,
+      "static": {
+        "scannedFiles": 15,
+        "scannedBytes": 59493,
+        "archiveFiles": 24,
+        "archiveBytes": 696106,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/cli.ts",
+            "line": 9
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "src/cli.ts",
+            "line": 9
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/heartbeat.ts",
+            "line": 10
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/heartbeat.spec.ts",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/plugin.spec.ts",
+            "line": 10
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
       "repository": "dingzhenyao/dsh-plugin-directory",
       "verifiedCommit": "300e4310f7458d2f8d87f1d43c0a7df3dc18ff59",
       "packageName": "dsh-plugin-directory",
@@ -12889,18 +13351,18 @@
     },
     {
       "repository": "djt889/dsh-drag-to-attachment",
-      "verifiedCommit": "b5e8c58e0a8ef98f0f0f495e540d13329a8e1d80",
+      "verifiedCommit": "b3ae8eaaa40ab2c65a19afb9ae4251b6827ac3e2",
       "packageName": "@dsh-external/dsh-drag-to-attachment",
       "version": "1.0.2",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T18:34:18.904Z",
+      "scannedAt": "2026-08-17T02:05:13.785Z",
       "status": "review",
       "riskScore": 50,
       "static": {
         "scannedFiles": 4,
-        "scannedBytes": 386691,
+        "scannedBytes": 387372,
         "archiveFiles": 11,
-        "archiveBytes": 3627849,
+        "archiveBytes": 3628530,
         "findings": [
           {
             "rule": "process-spawn",
@@ -14141,6 +14603,107 @@
       }
     },
     {
+      "repository": "edynasty/dsh-opencode-go-provider",
+      "verifiedCommit": "88413bff00d9f873f703bc922c152a174328c997",
+      "packageName": "dsh-opencode-go-provider",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:21.777Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 141,
+        "scannedBytes": 1442263,
+        "archiveFiles": 166,
+        "archiveBytes": 1726858,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/check-pack.mjs",
+            "line": 13
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/pack-tar.mjs",
+            "line": 12
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/scan-secrets.mjs",
+            "line": 33
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/bin.spec.ts",
+            "line": 9
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/declaration-consumer.spec.ts",
+            "line": 13
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/helpers/host-loader.ts",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/helpers/pack-contract.ts",
+            "line": 8
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/helpers/release-candidate-subprocess.ts",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/live-smoke.spec.ts",
+            "line": 11
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "tests/live-smoke.spec.ts",
+            "line": 11
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/pack-audit-behavior.spec.ts",
+            "line": 15
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/pack-import.spec.ts",
+            "line": 16
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "tests/scan-secrets.spec.ts",
+            "line": 54
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
       "repository": "erduotong/dsh-plugin-graph",
       "verifiedCommit": "a734f4016e7f0a3b1f63ec89066e2eb923af135d",
       "packageName": "dsh-plugin-graph",
@@ -14172,18 +14735,18 @@
     },
     {
       "repository": "Ericwong5021/deepseek-plugin-store",
-      "verifiedCommit": "463e18e7745d2a214b92abfbaa72862ab0af78dd",
+      "verifiedCommit": "b86eac63d22700c16768e52b5279742207c82a06",
       "packageName": "deepseek-plugin-store",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T19:54:21.992Z",
+      "scannedAt": "2026-08-17T02:05:14.087Z",
       "status": "review",
       "riskScore": 100,
       "static": {
         "scannedFiles": 23,
-        "scannedBytes": 141148,
+        "scannedBytes": 143929,
         "archiveFiles": 1770,
-        "archiveBytes": 25375152,
+        "archiveBytes": 31970330,
         "findings": [
           {
             "rule": "sensitive-credential-access",
@@ -14503,11 +15066,11 @@
     },
     {
       "repository": "Failing-coachman563/dsh-skill-viewer",
-      "verifiedCommit": "de53f2b790b96c458133ababd6f518bf3fa164e2",
+      "verifiedCommit": "a0629a233b6d626b610925e1c0c631dc9e4d7e33",
       "packageName": "dsh-skill-viewer",
       "version": "0.5.1",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T19:54:37.759Z",
+      "scannedAt": "2026-08-17T02:05:15.449Z",
       "status": "review",
       "riskScore": 100,
       "static": {
@@ -14763,18 +15326,18 @@
     },
     {
       "repository": "fazhu4/dsh-activity-report",
-      "verifiedCommit": "2c2907422946282346f470de088c8c3790a2869c",
+      "verifiedCommit": "4a883e99ec6c2b34b4aae287a0317efc18276d9d",
       "packageName": "dsh-activity-report",
       "version": "0.1.0-alpha.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T19:54:42.647Z",
+      "scannedAt": "2026-08-17T02:05:15.600Z",
       "status": "passed",
       "riskScore": 20,
       "static": {
         "scannedFiles": 35,
-        "scannedBytes": 205289,
-        "archiveFiles": 48,
-        "archiveBytes": 628615,
+        "scannedBytes": 217775,
+        "archiveFiles": 49,
+        "archiveBytes": 644336,
         "findings": [
           {
             "rule": "process-spawn",
@@ -14841,6 +15404,28 @@
       "sandbox": {
         "status": "skipped",
         "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "FeatherHunter/dsh-prompt",
+      "verifiedCommit": "4973446d45658f42bb3bb0a9f97c4d3fed43a935",
+      "packageName": "dsh-prompt",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:22.569Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 19,
+        "scannedBytes": 87933,
+        "archiveFiles": 36,
+        "archiveBytes": 182627,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -15097,6 +15682,89 @@
       }
     },
     {
+      "repository": "Fisfzy/ego-browser",
+      "verifiedCommit": "a759af2cf4405e957b8f01a59c502dcfdacf41d0",
+      "packageName": "@dsh-external/ego-browser",
+      "version": "0.7.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:22.880Z",
+      "status": "review",
+      "riskScore": 100,
+      "static": {
+        "scannedFiles": 36,
+        "scannedBytes": 854933,
+        "archiveFiles": 56,
+        "archiveBytes": 936719,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "bin/ego-cast-worker.mjs",
+            "line": 42
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "bin/ego-cast-worker.mjs",
+            "line": 42
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "runtime/ego-browser/dist/out/index.js",
+            "line": 7
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "runtime/ego-browser/dist/out/index.js",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "runtime/ego-linux/bin/ego-browser.mjs",
+            "line": 11
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "runtime/ego-linux/bin/ego-browser.mjs",
+            "line": 11
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "runtime/ego-linux/src/chrome.mjs",
+            "line": 1
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "runtime/ego-linux/src/chrome.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "runtime/ego-linux/src/desktop.mjs",
+            "line": 1
+          },
+          {
+            "rule": "destructive-system-command",
+            "severity": "critical",
+            "path": "runtime/skills/ego-browser/scripts/install.sh",
+            "line": 71
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
       "repository": "Fishquito7/dsh-skill-viewer",
       "verifiedCommit": "55c16e4e4978a5e1cb96203e9ff89b6cf1078b94",
       "packageName": "dsh-skill-viewer",
@@ -15145,18 +15813,18 @@
     },
     {
       "repository": "Fishsb/dsh-prompt-enhancer",
-      "verifiedCommit": "0854ee3a011149de377cd0f14a5dae7805568622",
+      "verifiedCommit": "8ceb1f04aea452120fb9386554c35af20b7be6bc",
       "packageName": "dsh-prompt-enhancer",
-      "version": "3.1.2",
+      "version": "3.1.3",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:26.456Z",
+      "scannedAt": "2026-08-17T02:05:56.831Z",
       "status": "review",
       "riskScore": 100,
       "static": {
         "scannedFiles": 70,
-        "scannedBytes": 1244146,
+        "scannedBytes": 1275896,
         "archiveFiles": 98,
-        "archiveBytes": 1429518,
+        "archiveBytes": 1462852,
         "findings": [
           {
             "rule": "dynamic-code-execution",
@@ -15908,18 +16576,18 @@
     },
     {
       "repository": "GHJIVHIDD/dsh-plugin-usage",
-      "verifiedCommit": "db0112f7e782bcb059652ffb4311cf5401022c31",
+      "verifiedCommit": "9c3d41d35023dbfdca96fa1d3a860ca80d50741e",
       "packageName": "@deepseek-ai/dsh-plugin-usage",
-      "version": "0.1.3",
+      "version": "0.1.5",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:25.351Z",
+      "scannedAt": "2026-08-17T02:05:57.522Z",
       "status": "review",
       "riskScore": 100,
       "static": {
         "scannedFiles": 6,
-        "scannedBytes": 71296,
+        "scannedBytes": 72437,
         "archiveFiles": 11,
-        "archiveBytes": 97167,
+        "archiveBytes": 98545,
         "findings": [
           {
             "rule": "sensitive-credential-access",
@@ -15943,13 +16611,13 @@
             "rule": "sensitive-credential-access",
             "severity": "medium",
             "path": "lib/index.js",
-            "line": 96
+            "line": 104
           },
           {
             "rule": "credential-access-with-network",
             "severity": "high",
             "path": "lib/index.js",
-            "line": 96
+            "line": 104
           },
           {
             "rule": "sensitive-credential-access",
@@ -16048,18 +16716,18 @@
     },
     {
       "repository": "GitHubJiKe/dsh-markdown-preview",
-      "verifiedCommit": "35ce4100e06aeffd70c0a18c498154b5c447ec26",
+      "verifiedCommit": "f63cdf45b814eb56b7fb33c5744686baaea1550f",
       "packageName": "dsh-markdown-preview",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T19:55:50.762Z",
+      "scannedAt": "2026-08-17T02:05:57.669Z",
       "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 3,
-        "scannedBytes": 29238,
-        "archiveFiles": 9,
-        "archiveBytes": 44923,
+        "scannedFiles": 4,
+        "scannedBytes": 45072,
+        "archiveFiles": 10,
+        "archiveBytes": 63771,
         "findings": [],
         "truncatedFindings": false
       },
@@ -18472,18 +19140,18 @@
     },
     {
       "repository": "ilps2/dsh-video-understand",
-      "verifiedCommit": "9828015f15df1ad34d8aac6bc3cb52b362ffe755",
+      "verifiedCommit": "d8389aafeb1f10086cb9b720e5343c9487bd91e8",
       "packageName": "dsh-video-understand",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T19:57:59.579Z",
+      "scannedAt": "2026-08-17T02:05:58.049Z",
       "status": "passed",
       "riskScore": 10,
       "static": {
         "scannedFiles": 3,
-        "scannedBytes": 7720,
+        "scannedBytes": 8161,
         "archiveFiles": 8,
-        "archiveBytes": 13873,
+        "archiveBytes": 14314,
         "findings": [
           {
             "rule": "process-spawn",
@@ -18819,6 +19487,28 @@
       }
     },
     {
+      "repository": "iwker/dsh-htmlrun",
+      "verifiedCommit": "9898aff475267013ff90ff6005f7a41fc79b3fed",
+      "packageName": "dsh-htmlrun",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:23.200Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 4,
+        "scannedBytes": 47211,
+        "archiveFiles": 10,
+        "archiveBytes": 82130,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
       "repository": "izwarm195/dsh-net-tools",
       "verifiedCommit": "21baa2cf517aa94fea0e09a63490f55895d3df2f",
       "packageName": "dsh-net-tools",
@@ -18905,6 +19595,28 @@
         "scannedBytes": 134788,
         "archiveFiles": 29,
         "archiveBytes": 920053,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "Jack-sun-learner/dsh-image-skin",
+      "verifiedCommit": "de2651eb5cf71b648dbc256550fbd92e16da2bb0",
+      "packageName": "dsh-image-skin",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:23.476Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 44284,
+        "archiveFiles": 9,
+        "archiveBytes": 3674694,
         "findings": [],
         "truncatedFindings": false
       },
@@ -19234,6 +19946,53 @@
       "sandbox": {
         "status": "skipped",
         "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "jean3690/dsh-toolbox",
+      "verifiedCommit": "0f7b5257d572547a5daca0a5012296818d0f360f",
+      "packageName": "dsh-toolbox",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:24.641Z",
+      "status": "passed",
+      "riskScore": 40,
+      "static": {
+        "scannedFiles": 36,
+        "scannedBytes": 485816,
+        "archiveFiles": 45,
+        "archiveBytes": 3854513,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 3042
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "lib/typert.host.js",
+            "line": 141
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/prepare.mjs",
+            "line": 5
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "src/agentTools.ts",
+            "line": 107
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -19661,18 +20420,18 @@
     },
     {
       "repository": "JimingYang25/Lafeng-UI-A-snazzy-personalized-custom-UI-plugin-for-DeepSeek-Harness-Cordis-.",
-      "verifiedCommit": "245981091ad8c0e57a268e76c3376fc831e0a20a",
+      "verifiedCommit": "ff3eee64b0a35f9022bc62cd0c291b5e906c40fa",
       "packageName": "@linxin666/dsh-client-ui-la-feng",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:46:25.136Z",
+      "scannedAt": "2026-08-17T02:05:58.453Z",
       "status": "passed",
       "riskScore": 0,
       "static": {
         "scannedFiles": 3,
         "scannedBytes": 54198,
         "archiveFiles": 31,
-        "archiveBytes": 35863023,
+        "archiveBytes": 35863158,
         "findings": [],
         "truncatedFindings": false
       },
@@ -19734,46 +20493,72 @@
     },
     {
       "repository": "jing-hy/picturereader",
-      "verifiedCommit": "94716e2569ea10e7ef65332cdcd5202321949744",
+      "verifiedCommit": "a162bc6aee2f2f818d09ae47dce87644e5dacd71",
       "packageName": "picturereader",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.021Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:05:50.405Z",
+      "status": "passed",
+      "riskScore": 30,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 12,
+        "scannedBytes": 145632,
+        "archiveFiles": 18,
+        "archiveBytes": 163482,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/setup-ocr.mjs",
+            "line": 16
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/core.js",
+            "line": 25
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/ocr.test.js",
+            "line": 4
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
       "repository": "jingzhao-l/iterate-plugin",
-      "verifiedCommit": "2b28beb5186dbc6657d1f02966cc67e67e81cea4",
+      "verifiedCommit": "36ffa96f61312071ad1847606c913f3f8ffd0b76",
       "packageName": "iterate-plugin",
       "version": "2.5.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.021Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:05:51.060Z",
+      "status": "passed",
+      "riskScore": 10,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 29,
+        "scannedBytes": 317713,
+        "archiveFiles": 34,
+        "archiveBytes": 358374,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/tools/validate.ts",
+            "line": 1
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -19997,69 +20782,263 @@
       }
     },
     {
-      "repository": "JohnXu22786/file-planning",
-      "verifiedCommit": "a03cd49e562157cb2376e681b8a848ed762bd7d5",
-      "packageName": "dsh-plugin-trailmap",
+      "repository": "JohnXu22786/browser-automation",
+      "verifiedCommit": "4fdafaec821b2010e413f656f1431819477f0ce4",
+      "packageName": "web-bridge-mcp",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:07:25.595Z",
+      "status": "passed",
+      "riskScore": 40,
+      "static": {
+        "scannedFiles": 29,
+        "scannedBytes": 151262,
+        "archiveFiles": 42,
+        "archiveBytes": 250152,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "index.js",
+            "line": 14
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "src/scripting.ts",
+            "line": 104
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "src/walker.ts",
+            "line": 367
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/mcp-smoke.test.ts",
+            "line": 3
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "JohnXu22786/codegraph",
+      "verifiedCommit": "c6c91179df6ff3d1804c3ae6481f58981688ca07",
+      "packageName": "dsh-codegraph",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:25.942Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 7,
+        "scannedBytes": 14145,
+        "archiveFiles": 64,
+        "archiveBytes": 234212,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "index.js",
+            "line": 22
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "JohnXu22786/computer-control",
+      "verifiedCommit": "c9244af2f012e1118c8ce42c2036d797ac663879",
+      "packageName": "dsh-computer-control",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:26.288Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 2,
+        "scannedBytes": 10282,
+        "archiveFiles": 53,
+        "archiveBytes": 371016,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "index.js",
+            "line": 13
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "JohnXu22786/docgen",
+      "verifiedCommit": "c0b804b289f8363af9b28f1a3fb7304a49e56421",
+      "packageName": "dsh-docgen",
+      "version": "1.0.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:26.630Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 3,
+        "scannedBytes": 14334,
+        "archiveFiles": 20,
+        "archiveBytes": 92994,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "JohnXu22786/file-planning",
+      "verifiedCommit": "50cf9109eac515b79c5e5661ffcb7f146f017ed4",
+      "packageName": "dsh-plugin-trailmap",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:05:51.443Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 19,
+        "scannedBytes": 111750,
+        "archiveFiles": 33,
+        "archiveBytes": 146353,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
       "repository": "JohnXu22786/hooks-adapter",
-      "verifiedCommit": "611e5a11b1d1823436eb8866ae5a1f33a43d5514",
+      "verifiedCommit": "32bf75a262956a23ca308e3c62fee6708ef43f4d",
       "packageName": "hooks-adapter",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:05:51.906Z",
+      "status": "review",
+      "riskScore": 70,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 29,
+        "scannedBytes": 149809,
+        "archiveFiles": 49,
+        "archiveBytes": 201515,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/execute.js",
+            "line": 10
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/execute.js",
+            "line": 10
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/cli.test.js",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/serve.test.js",
+            "line": 3
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
+      "repository": "JohnXu22786/memory-vault",
+      "verifiedCommit": "3f4dc3b47fe7dfd9271a12db08ce99628cc161f4",
+      "packageName": "dsh-memory-vault",
+      "version": "1.0.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:43.907Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 2,
+        "scannedBytes": 8498,
+        "archiveFiles": 39,
+        "archiveBytes": 182169,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "index.js",
+            "line": 1
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
       "repository": "JohnXu22786/pty-runner",
-      "verifiedCommit": "d8b6e3f4fe4ae8424b7b0b7beb95b41bce71222c",
+      "verifiedCommit": "81b92ed92a55eec85bc4dac6a98cd62cedafdfdc",
       "packageName": "dsh-backstage",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:05:52.083Z",
+      "status": "passed",
+      "riskScore": 20,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 20,
+        "scannedBytes": 107256,
+        "archiveFiles": 27,
+        "archiveBytes": 147296,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/core/launcher.js",
+            "line": 9
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/core/portprobe.js",
+            "line": 12
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -20086,24 +21065,43 @@
     },
     {
       "repository": "JohnXu22786/secret-guard",
-      "verifiedCommit": "552d064a8448c781ab7c1c1413304a8c9d14aa4d",
+      "verifiedCommit": "999d0009e68278cc7a196a55e4c6451176e1fe5d",
       "packageName": "dsh-secret-guard",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:05:54.077Z",
+      "status": "passed",
+      "riskScore": 30,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 18,
+        "scannedBytes": 119908,
+        "archiveFiles": 26,
+        "archiveBytes": 182259,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/policy.ts",
+            "line": 121
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "tests/gate.test.ts",
+            "line": 151
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "tests/policy.test.ts",
+            "line": 47
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -20129,25 +21127,131 @@
       }
     },
     {
-      "repository": "JohnXu22786/worktree-mgr",
-      "verifiedCommit": "ba9758a3a41accf7e074a10c840ea8ae79b4a8ce",
-      "packageName": "worktree-mgr",
+      "repository": "JohnXu22786/skill-manager",
+      "verifiedCommit": "06231add6da717cd6a925ba6fffcf995c0533c04",
+      "packageName": "dsh-skill-manager",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:07:45.059Z",
+      "status": "passed",
+      "riskScore": 10,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 2,
+        "scannedBytes": 10064,
+        "archiveFiles": 44,
+        "archiveBytes": 232661,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "index.js",
+            "line": 1
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "JohnXu22786/spec-driven",
+      "verifiedCommit": "378e0cdba34dfca5ce421dcf74a17d681364a36f",
+      "packageName": "keel",
+      "version": "1.0.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:45.967Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 17,
+        "scannedBytes": 97684,
+        "archiveFiles": 44,
+        "archiveBytes": 157384,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/cli.test.ts",
+            "line": 3
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "JohnXu22786/statusline",
+      "verifiedCommit": "7e56737fc9612f322f44802e5c48399103d0b9b3",
+      "packageName": "dsh-statusline",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:46.365Z",
+      "status": "passed",
+      "riskScore": 10,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 9755,
+        "archiveFiles": 30,
+        "archiveBytes": 134508,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "index.js",
+            "line": 20
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "JohnXu22786/worktree-mgr",
+      "verifiedCommit": "63a457e23eb367cd629f21a65eee5d539d571ca0",
+      "packageName": "worktree-mgr",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:05:54.490Z",
+      "status": "passed",
+      "riskScore": 30,
+      "static": {
+        "scannedFiles": 18,
+        "scannedBytes": 154267,
+        "archiveFiles": 27,
+        "archiveBytes": 201210,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/git.js",
+            "line": 9
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/triggers.js",
+            "line": 9
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/integration.test.js",
+            "line": 6
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -20174,24 +21278,24 @@
     },
     {
       "repository": "Jolly-J/dsh-deepseek-billing",
-      "verifiedCommit": "a71182320bfc8cdb0575b9543a0c2f6b4181f558",
+      "verifiedCommit": "821cc791fec66a5f83717b5e1c2178fea65a5e84",
       "packageName": "dsh-deepseek-billing",
       "version": "0.1.0-rc.5",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:05:54.815Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 16,
+        "scannedBytes": 97823,
+        "archiveFiles": 27,
+        "archiveBytes": 2146577,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -20588,24 +21692,24 @@
     },
     {
       "repository": "kanchengw/dsh-mindseye",
-      "verifiedCommit": "fee811d836f3700f8e6c95d74f49cfc68b6dc94d",
+      "verifiedCommit": "155fb9c413bb69daad72f99595b51038e089f1e2",
       "packageName": "dsh-mindseye",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:05:55.239Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 40,
+        "scannedBytes": 164723,
+        "archiveFiles": 50,
+        "archiveBytes": 379565,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -20698,24 +21802,24 @@
     },
     {
       "repository": "kc0ed/dsh-bottom-bar",
-      "verifiedCommit": "1dcd0f010af75cdb33522df0f6e12a97d8b10930",
+      "verifiedCommit": "50282f9e9412799d9a9c444262dd0787cf29a317",
       "packageName": "@kc0ed/dsh-bottom-bar",
-      "version": "1.0.2",
+      "version": "1.0.4",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:05:55.538Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 11,
+        "scannedBytes": 464923,
+        "archiveFiles": 21,
+        "archiveBytes": 833933,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -20738,6 +21842,28 @@
       "sandbox": {
         "status": "skipped",
         "reason": "scan-job-produced-no-result-artifact"
+      }
+    },
+    {
+      "repository": "kelai141/dsh-code-diff-viewer",
+      "verifiedCommit": "981ec7849939cc0c480446feba1aa2970defdfcf",
+      "packageName": "dsh-code-diff-viewer",
+      "version": "1.0.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:47.409Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 27915,
+        "archiveFiles": 7,
+        "archiveBytes": 35133,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -21162,24 +22288,24 @@
     },
     {
       "repository": "kirkchinese/claude2dsh",
-      "verifiedCommit": "fbb8ecde52093d1c025428574d973c0388fef645",
+      "verifiedCommit": "557c12c0ae18045138340c130d5ef14dc80b2a92",
       "packageName": "claude2dsh",
       "version": "0.2.0-rc.2",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:05:58.827Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 80,
+        "scannedBytes": 360577,
+        "archiveFiles": 130,
+        "archiveBytes": 900325,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -21268,6 +22394,50 @@
       "sandbox": {
         "status": "skipped",
         "reason": "scan-job-produced-no-result-artifact"
+      }
+    },
+    {
+      "repository": "knowz-io/deepseek-knowz-plugin",
+      "verifiedCommit": "b7cc8011bd2f0f7623d0ffc68e54fd566f6e0388",
+      "packageName": "dsh-knowz",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:48.948Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 2,
+        "scannedBytes": 3868,
+        "archiveFiles": 19,
+        "archiveBytes": 39381,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "knowz-io/deepseek-knowzcode-plugin",
+      "verifiedCommit": "b91424b03790b938727631b980e8de49a283e857",
+      "packageName": "dsh-knowzcode",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:49.548Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 2,
+        "scannedBytes": 4860,
+        "archiveFiles": 19,
+        "archiveBytes": 36961,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -21403,6 +22573,41 @@
       }
     },
     {
+      "repository": "l541402398/dsh-top-leaderboard",
+      "verifiedCommit": "087d839f6f25ab905739899ef75232fee0f9adca",
+      "packageName": "dsh-top-leaderboard",
+      "version": "0.2.1",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:50.108Z",
+      "status": "review",
+      "riskScore": 50,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 55029,
+        "archiveFiles": 8,
+        "archiveBytes": 272848,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "dist/index.mjs",
+            "line": 1
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "dist/index.mjs",
+            "line": 1
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "skipped",
+        "reason": "static-review-required-before-runtime-import"
+      }
+    },
+    {
       "repository": "LA7-F/dsh-MyCordis",
       "verifiedCommit": "a9b312cd0aa0cab0f91d391280f713daca671ce5",
       "packageName": "dsh-mycordis",
@@ -21504,6 +22709,28 @@
       }
     },
     {
+      "repository": "LaoYueHanNi/dsh-token-usage",
+      "verifiedCommit": "c6595af925a1fdb955d47bfd599eaf5dc5b4e884",
+      "packageName": "dsh-token-usage",
+      "version": "0.2.2",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:50.399Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 67,
+        "scannedBytes": 446514,
+        "archiveFiles": 113,
+        "archiveBytes": 2319665,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
       "repository": "Laplace-bit/dsh-bell-notify",
       "verifiedCommit": "b9e2824327c6f4849554beaccf15b08c88763dc7",
       "packageName": "dsh-bell-notify",
@@ -21549,42 +22776,42 @@
     },
     {
       "repository": "LaplaceYoung/dsh-directorx",
-      "verifiedCommit": "8f60c0b9b09f06d837196c54fdb7223a7aa90468",
+      "verifiedCommit": "d96ff6559c37ee2f97054789ada0666bb18449cf",
       "packageName": "dsh-directorx",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:10.796Z",
+      "scannedAt": "2026-08-17T02:05:59.503Z",
       "status": "review",
       "riskScore": 100,
       "static": {
-        "scannedFiles": 106,
-        "scannedBytes": 3989544,
-        "archiveFiles": 740,
-        "archiveBytes": 62922532,
+        "scannedFiles": 108,
+        "scannedBytes": 4023861,
+        "archiveFiles": 743,
+        "archiveBytes": 62995636,
         "findings": [
           {
             "rule": "sensitive-credential-access",
             "severity": "medium",
             "path": "lib/index.js",
-            "line": 1288
+            "line": 1290
           },
           {
             "rule": "process-spawn",
             "severity": "medium",
             "path": "lib/index.js",
-            "line": 2585
+            "line": 2587
           },
           {
             "rule": "credential-access-with-network",
             "severity": "high",
             "path": "lib/index.js",
-            "line": 1237
+            "line": 1239
           },
           {
             "rule": "download-and-execute-primitives",
             "severity": "high",
             "path": "lib/index.js",
-            "line": 1237
+            "line": 1239
           },
           {
             "rule": "sensitive-credential-access",
@@ -21820,68 +23047,101 @@
     },
     {
       "repository": "LeemanCheung/dsh-agent-arena",
-      "verifiedCommit": "cbfa869727079c067cfffa4f283598ac594999f5",
+      "verifiedCommit": "9848c63612e3cd4394c23b12b0a4dff3e2427cc4",
       "packageName": "dsh-agent-arena",
       "version": "1.0.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:03.224Z",
+      "status": "passed",
+      "riskScore": 10,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 33,
+        "scannedBytes": 340958,
+        "archiveFiles": 62,
+        "archiveBytes": 2470404,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "packages/dsh-agent-arena/lib/client.js",
+            "line": 171
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
       "repository": "LeemanCheung/dsh-skin-studio",
-      "verifiedCommit": "141b3f9f5a0b7bb0b38de94275f5a3de8d5197eb",
+      "verifiedCommit": "4ea365f59a7771909c689fb7021d2ead46aaff6d",
       "packageName": "dsh-skin-studio",
       "version": "1.0.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:03.723Z",
+      "status": "passed",
+      "riskScore": 10,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 28,
+        "scannedBytes": 310855,
+        "archiveFiles": 56,
+        "archiveBytes": 2329040,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "packages/dsh-skin-studio/lib/client.js",
+            "line": 412
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
       "repository": "LeemanCheung/dsh-vibe-pack",
-      "verifiedCommit": "e9aa26ef00872253b105187541d810e9911049c7",
+      "verifiedCommit": "35807d551cb8c74cee31ba9c0c079a3f498051e6",
       "packageName": "dsh-vibe-pack",
       "version": "1.0.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:04.208Z",
+      "status": "passed",
+      "riskScore": 30,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 40,
+        "scannedBytes": 344587,
+        "archiveFiles": 70,
+        "archiveBytes": 2358887,
+        "findings": [
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "packages/dsh-vibe-pack/lib/client.js",
+            "line": 164
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/dsh-vibe-pack/lib/manager-B4FZJ9E1.js",
+            "line": 94
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "packages/dsh-vibe-pack/src/core/security.ts",
+            "line": 67
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -22257,6 +23517,28 @@
       }
     },
     {
+      "repository": "lhf6623/dsh-vibe",
+      "verifiedCommit": "f3fe3bf15db11c66d41333758c989f00cb642582",
+      "packageName": "dsh-vibe",
+      "version": "0.1.35",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:51.712Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 19,
+        "scannedBytes": 66584,
+        "archiveFiles": 24,
+        "archiveBytes": 83131,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
       "repository": "Lhy723/dsh-agent-canvas",
       "verifiedCommit": "87d27f23905fbea29d251374795ec6f977076d00",
       "packageName": "dsh-agent-canvas",
@@ -22298,6 +23580,28 @@
       "sandbox": {
         "status": "skipped",
         "reason": "scan-job-produced-no-result-artifact"
+      }
+    },
+    {
+      "repository": "Liangebra/dsh-esc-enter",
+      "verifiedCommit": "f65eb66326b8f574f8a863760c6387eab14d3ec6",
+      "packageName": "dsh-esc-enter",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:58.291Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 3,
+        "scannedBytes": 2949,
+        "archiveFiles": 7,
+        "archiveBytes": 5470,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -22443,6 +23747,36 @@
       "sandbox": {
         "status": "skipped",
         "reason": "scan-job-produced-no-result-artifact"
+      }
+    },
+    {
+      "repository": "lijian-ui/dsh-im-gateway",
+      "verifiedCommit": "00a9eeac1bd76369f112f63a4b904ec8129c2e73",
+      "packageName": "@lijian-ui/dsh-im-gateway",
+      "version": "0.1.1",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:58.789Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 22,
+        "scannedBytes": 248621,
+        "archiveFiles": 29,
+        "archiveBytes": 431046,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -22680,24 +24014,31 @@
     },
     {
       "repository": "linhut/gongwen-skill",
-      "verifiedCommit": "ebec1862bd556f54b62b47360f1f8d4cfe114d92",
+      "verifiedCommit": "accee993ba664b26f822912854c43b4d90d194dd",
       "packageName": "gongwen-skill",
-      "version": "1.12.61",
+      "version": "1.12.66",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:20.797Z",
+      "status": "passed",
+      "riskScore": 10,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 2,
+        "scannedBytes": 13849,
+        "archiveFiles": 143,
+        "archiveBytes": 1514826,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "dsh/index.js",
+            "line": 14
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -22812,24 +24153,46 @@
     },
     {
       "repository": "linzhuoliSOC/dsh-skin-study",
-      "verifiedCommit": "233139cec4165c6f5231424ff7cd4647c4f2bf71",
+      "verifiedCommit": "65c35fe23ee64a9fa8d8c2813b81a3fba8d218bf",
       "packageName": "dsh-skin-study",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:06:21.488Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 9,
+        "scannedBytes": 139240,
+        "archiveFiles": 24,
+        "archiveBytes": 2672368,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "Lisk809/dsh-dream-incubator",
+      "verifiedCommit": "d64e4e0d8bf1c6fc47025a3dc370ebd3e4b6485f",
+      "packageName": "dsh-dream-incubator",
+      "version": "0.1.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:59.220Z",
+      "status": "passed",
+      "riskScore": 0,
+      "static": {
+        "scannedFiles": 47,
+        "scannedBytes": 345565,
+        "archiveFiles": 66,
+        "archiveBytes": 1170524,
+        "findings": [],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -22874,6 +24237,72 @@
       "sandbox": {
         "status": "skipped",
         "reason": "scan-job-produced-no-result-artifact"
+      }
+    },
+    {
+      "repository": "literaf/dsh-paper-slides",
+      "verifiedCommit": "6199fed304c7e588f5201531bb04fe3a1745b520",
+      "packageName": "dsh-paper-slides",
+      "version": "0.2.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:07:59.744Z",
+      "status": "passed",
+      "riskScore": 2,
+      "static": {
+        "scannedFiles": 10,
+        "scannedBytes": 42098,
+        "archiveFiles": 21,
+        "archiveBytes": 108180,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
+      }
+    },
+    {
+      "repository": "literaf/dsh-research",
+      "verifiedCommit": "6596e88e44c60471cc88182de6259594d29e01fe",
+      "packageName": "dsh-research",
+      "version": "0.2.0",
+      "scannerVersion": 2,
+      "scannedAt": "2026-08-17T02:08:00.080Z",
+      "status": "passed",
+      "riskScore": 12,
+      "static": {
+        "scannedFiles": 9,
+        "scannedBytes": 39180,
+        "archiveFiles": 23,
+        "archiveBytes": 134346,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/packaging.test.ts",
+            "line": 11
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
+        "truncatedFindings": false
+      },
+      "sandbox": {
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -23098,24 +24527,67 @@
     },
     {
       "repository": "loadingvx/deepseek-harness-workbench-plugin",
-      "verifiedCommit": "f55b3cb6216ed0cab3111cce6741e30d2671acfc",
+      "verifiedCommit": "799c31a4385a8beb4a3b8565cbc5d1d069e3b5ae",
       "packageName": "dsh-workbench-plugin",
-      "version": "0.1.13",
+      "version": "0.1.14",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:21.895Z",
+      "status": "review",
+      "riskScore": 100,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 121,
+        "scannedBytes": 811274,
+        "archiveFiles": 156,
+        "archiveBytes": 13263716,
+        "findings": [
+          {
+            "rule": "destructive-system-command",
+            "severity": "critical",
+            "path": "devops/dev.sh",
+            "line": 51
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 4
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 4
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/external-open.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/git-exec.ts",
+            "line": 1
+          },
+          {
+            "rule": "destructive-system-command",
+            "severity": "critical",
+            "path": "tests/term-assist.spec.ts",
+            "line": 78
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/term-assist.spec.ts",
+            "line": 1
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
@@ -23802,24 +25274,24 @@
     },
     {
       "repository": "Lzh3070/dsh-session-cost",
-      "verifiedCommit": "a69b6a93cde6bb483f3a7267d3d5c6cdfe98f39f",
+      "verifiedCommit": "98a4b6b2a233fc5caee419d552b26c21137dca1f",
       "packageName": "dsh-session-cost",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:06:22.650Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 4,
+        "scannedBytes": 48770,
+        "archiveFiles": 11,
+        "archiveBytes": 96345,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -24465,40 +25937,53 @@
     },
     {
       "repository": "mexiaosqwq/dsh-web-mobile",
-      "verifiedCommit": "3e7144fd9dcd229198a24b843853b7f8295c1073",
+      "verifiedCommit": "29d1412ee0f486516ec85876266ead483d066a53",
       "packageName": "@dsh-external/dsh-mobile-nav",
-      "version": "0.2.0",
+      "version": "1.0.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:22.946Z",
+      "status": "review",
+      "riskScore": 50,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 35,
+        "scannedBytes": 278134,
+        "archiveFiles": 65,
+        "archiveBytes": 941368,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/cdp-probe.mjs",
+            "line": 1
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/cdp-probe.mjs",
+            "line": 1
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
       "repository": "MichengAI/dsh-agency-agents",
-      "verifiedCommit": "1760c343c142461f494dbd4933d9eebd09535ab6",
+      "verifiedCommit": "cdcd5bd3e31122a5ff281627e33897509fd4dbd8",
       "packageName": "@michengai/dsh-agency-agents",
-      "version": "0.1.13",
+      "version": "0.1.17",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:51.321Z",
+      "scannedAt": "2026-08-17T02:06:29.725Z",
       "status": "passed",
       "riskScore": 10,
       "static": {
-        "scannedFiles": 19,
-        "scannedBytes": 618084,
-        "archiveFiles": 336,
-        "archiveBytes": 5392743,
+        "scannedFiles": 20,
+        "scannedBytes": 650568,
+        "archiveFiles": 337,
+        "archiveBytes": 5425779,
         "findings": [
           {
             "rule": "dynamic-code-execution",
@@ -24743,24 +26228,133 @@
     },
     {
       "repository": "mishibeikejie/zat-dsh-engine",
-      "verifiedCommit": "62c83063324a3addc351ff63cb9535b9a0b975e0",
+      "verifiedCommit": "db252f3b08eacc1de3d179a6031b9b5be8063240",
       "packageName": "zat-dsh-engine",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:50:53.022Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:30.975Z",
+      "status": "review",
+      "riskScore": 100,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 30,
+        "scannedBytes": 1353740,
+        "archiveFiles": 44,
+        "archiveBytes": 2155637,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "lib/index.js",
+            "line": 22013
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "lib/index.js",
+            "line": 22013
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/audit-all.mjs",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/diag-install.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/diag-list.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/diag-net.mjs",
+            "line": 3
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/selftest-bundle-gate.mjs",
+            "line": 15
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "scripts/selftest-find-health.mjs",
+            "line": 113
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "scripts/selftest-find-health.mjs",
+            "line": 112
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/selftest-find-health.mjs",
+            "line": 5
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "scripts/selftest-find-health.mjs",
+            "line": 113
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/selftest-find-health.mjs",
+            "line": 5
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/selftest-real-install.mjs",
+            "line": 7
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/selftest-real-install2.mjs",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/selftest-skill-install.mjs",
+            "line": 6
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/selftest-state-sync.mjs",
+            "line": 3
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 497
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "src/index.ts",
+            "line": 497
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
@@ -26459,24 +28053,24 @@
     },
     {
       "repository": "pan17/dsh-wechat",
-      "verifiedCommit": "7d8615d7b8ca697d521f47763088155a5e5c620b",
+      "verifiedCommit": "72e866087c46bbebfea23d8fa5baeda6b1d60ecc",
       "packageName": "dsh-wechat",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:52:46.629Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:06:31.371Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 38,
+        "scannedBytes": 334384,
+        "archiveFiles": 52,
+        "archiveBytes": 1094192,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -26591,24 +28185,61 @@
     },
     {
       "repository": "pengpengyi92/dsh-quant",
-      "verifiedCommit": "e4ca02a3d09ccf2eb23dd4729aaac277bcea863f",
+      "verifiedCommit": "41976ba3bed9bfef6dd1b9ab1b20dc1b5883bdeb",
       "packageName": "dsh-quant",
-      "version": "0.20.2",
+      "version": "0.21.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:52:46.629Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:31.952Z",
+      "status": "review",
+      "riskScore": 100,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 55,
+        "scannedBytes": 390232,
+        "archiveFiles": 131,
+        "archiveBytes": 1420686,
+        "findings": [
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/dsh-community/github.ts",
+            "line": 92
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "src/dsh-community/github.ts",
+            "line": 92
+          },
+          {
+            "rule": "sensitive-credential-access",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 1683
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "src/index.ts",
+            "line": 1228
+          },
+          {
+            "rule": "credential-access-with-network",
+            "severity": "high",
+            "path": "src/index.ts",
+            "line": 269
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "verify.ts",
+            "line": 229
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
@@ -27301,24 +28932,55 @@
     },
     {
       "repository": "pixellover1433/dsh-better-sidebar-lite",
-      "verifiedCommit": "1d583eb1ac46a863ba46fc2bc72798af5d11bc61",
+      "verifiedCommit": "7d0979122c0c6b463ea8fbb0383362027ddfaeb6",
       "packageName": "dsh-better-sidebar-lite",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:52:46.629Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:32.409Z",
+      "status": "review",
+      "riskScore": 80,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 148,
+        "scannedBytes": 576426,
+        "archiveFiles": 279,
+        "archiveBytes": 3044318,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "lib/host/git-runner.js",
+            "line": 8
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/probe-cf.mjs",
+            "line": 1
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/probe-cf.mjs",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/host/git-runner.ts",
+            "line": 8
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/host/fixtures/scripted-git.ts",
+            "line": 7
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
@@ -27433,24 +29095,68 @@
     },
     {
       "repository": "protoctistmoses143/dsh-docs",
-      "verifiedCommit": "bb544d294c2fd449376691375a981c2f6eb744f2",
+      "verifiedCommit": "3cc7b6d951fdc8604a32c64fb48fd4ce72ab99bb",
       "packageName": "dsh-doc",
       "version": "0.1.1",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:52:46.629Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:31.527Z",
+      "status": "review",
+      "riskScore": 92,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 39,
+        "scannedBytes": 182053,
+        "archiveFiles": 63,
+        "archiveBytes": 2484108,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/build-runtime-win32-x64.mjs",
+            "line": 16
+          },
+          {
+            "rule": "download-and-execute-primitives",
+            "severity": "high",
+            "path": "scripts/build-runtime-win32-x64.mjs",
+            "line": 16
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/fetch-runtime-win32-x64.mjs",
+            "line": 15
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/engine/python-stdio-client.ts",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/helpers/document-fixtures.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/unit/python-worker-config.test.ts",
+            "line": 1
+          },
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
@@ -28349,24 +30055,24 @@
     },
     {
       "repository": "rouyiemei/dsh-smart-router",
-      "verifiedCommit": "987dfcd7fe4501ebde1a0613a7b28ae690ea8a68",
+      "verifiedCommit": "db67ae3fefe96e498ba7c733c4fd7afe99440758",
       "packageName": "dsh-smart-router",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:52:46.629Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:06:32.123Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 14,
+        "scannedBytes": 138083,
+        "archiveFiles": 21,
+        "archiveBytes": 158869,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -29383,24 +31089,24 @@
     },
     {
       "repository": "SoDaZilla-zzz/dsh-liquid-glass-balance-card",
-      "verifiedCommit": "f3779d53a7c7ba18f4a800d2c219817d3dc5ed3e",
+      "verifiedCommit": "a5b378523c238b30ea34d388b8474fa50abc7991",
       "packageName": "dsh-liquid-glass-balance-card",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:52:46.630Z",
-      "status": "error",
+      "scannedAt": "2026-08-17T02:06:32.512Z",
+      "status": "passed",
       "riskScore": 0,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
+        "scannedFiles": 4,
+        "scannedBytes": 78654,
+        "archiveFiles": 15,
+        "archiveBytes": 22771193,
         "findings": [],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -30574,18 +32280,18 @@
     },
     {
       "repository": "Taler97/dsh-rollback",
-      "verifiedCommit": "fcc3419999a7190445f03c97c8a30f5a20e7b2d7",
+      "verifiedCommit": "366288c3e197fc71c92b0feeff7ba5740449facf",
       "packageName": "dsh-rollback",
       "version": "0.1.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:45:54.723Z",
+      "scannedAt": "2026-08-17T02:06:33.764Z",
       "status": "passed",
       "riskScore": 22,
       "static": {
         "scannedFiles": 8,
-        "scannedBytes": 37241,
+        "scannedBytes": 37499,
         "archiveFiles": 17,
-        "archiveBytes": 104241,
+        "archiveBytes": 104499,
         "findings": [
           {
             "rule": "process-spawn",
@@ -30726,24 +32432,43 @@
     },
     {
       "repository": "TaurusWood/dsh-plugin-appshot",
-      "verifiedCommit": "60ae57693d869273a817a836b069bbcb102fad95",
+      "verifiedCommit": "02bf4e6c7fc9cb54e3c558680ef5aa6ea2da3b9b",
       "packageName": "dsh-plugin-appshot",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:54:44.335Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:34.024Z",
+      "status": "passed",
+      "riskScore": 30,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 34,
+        "scannedBytes": 87355,
+        "archiveFiles": 55,
+        "archiveBytes": 3796384,
+        "findings": [
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/agent.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/helpers/run-native.ts",
+            "line": 8
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "tests/phase2-t21-agent-app-bundle.test.ts",
+            "line": 14
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -31034,40 +32759,149 @@
     },
     {
       "repository": "THEWOLFWALKER/dsh-notifier",
-      "verifiedCommit": "0221d1efdec68dd938d83c96c0aedf12bf8d7024",
+      "verifiedCommit": "59e954e18683c31bf4f0e121752076f4890a1a5c",
       "packageName": "dsh-notifier",
-      "version": "0.6.5",
+      "version": "0.7.1",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:54:44.335Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:41.140Z",
+      "status": "review",
+      "riskScore": 100,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 766,
+        "scannedBytes": 7729322,
+        "archiveFiles": 1092,
+        "archiveBytes": 42456982,
+        "findings": [
+          {
+            "rule": "encoded-payload-execution",
+            "severity": "high",
+            "path": "node_modules/@tencent-connect/qqbot-connector/dist/cjs/qqbot-session.js",
+            "line": 1
+          },
+          {
+            "rule": "encoded-payload-execution",
+            "severity": "high",
+            "path": "node_modules/@tencent-connect/qqbot-connector/dist/esm/qqbot-session.js",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/child_process.d.ts",
+            "line": 1
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/cluster.d.ts",
+            "line": 2
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/index.d.ts",
+            "line": 58
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "node_modules/@types/node/module.d.ts",
+            "line": 274
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/net.d.ts",
+            "line": 640
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/perf_hooks.d.ts",
+            "line": 482
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/process.d.ts",
+            "line": 2
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "node_modules/@types/node/repl.d.ts",
+            "line": 30
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/ts5.6/index.d.ts",
+            "line": 60
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "node_modules/@types/node/ts5.7/index.d.ts",
+            "line": 60
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "node_modules/@types/node/vm.d.ts",
+            "line": 423
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "scripts/channel-login.mjs",
+            "line": 13
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "src/adapters/desktop.mjs",
+            "line": 25
+          },
+          {
+            "rule": "dynamic-code-execution",
+            "severity": "medium",
+            "path": "test/admin-server.test.mjs",
+            "line": 466
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/desktop.test.mjs",
+            "line": 107
+          },
+          {
+            "rule": "process-spawn",
+            "severity": "medium",
+            "path": "test/public.test.mjs",
+            "line": 460
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
         "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "reason": "static-review-required-before-runtime-import"
       }
     },
     {
       "repository": "TheYoungChen/dsh-plugin-market",
-      "verifiedCommit": "5bd63b0046ec4972dfa26ceb2fdf272040da6999",
+      "verifiedCommit": "cc1cdb557e8de43c0a202a8d87c2754ac88fd6bd",
       "packageName": "dsh-plugin-market",
       "version": "1.0.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:46:04.998Z",
+      "scannedAt": "2026-08-17T02:06:43.772Z",
       "status": "review",
       "riskScore": 70,
       "static": {
         "scannedFiles": 15,
         "scannedBytes": 191391,
         "archiveFiles": 26,
-        "archiveBytes": 1088089,
+        "archiveBytes": 1092439,
         "findings": [
           {
             "rule": "process-spawn",
@@ -33269,24 +35103,32 @@
     },
     {
       "repository": "V1ki/dsh-plugin-subscriptions",
-      "verifiedCommit": "f5d27fdb426a7c9250a15612c91ef1707ea3d96b",
+      "verifiedCommit": "157f6b0dffaf4ae05eb214697c05dd8ae981b47d",
       "packageName": "dsh-plugin-subscriptions",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T20:54:44.335Z",
-      "status": "error",
-      "riskScore": 0,
+      "scannedAt": "2026-08-17T02:06:44.012Z",
+      "status": "passed",
+      "riskScore": 2,
       "static": {
-        "scannedFiles": 0,
-        "scannedBytes": 0,
-        "archiveFiles": 0,
-        "archiveBytes": 0,
-        "findings": [],
+        "scannedFiles": 30,
+        "scannedBytes": 283463,
+        "archiveFiles": 44,
+        "archiveBytes": 731924,
+        "findings": [
+          {
+            "rule": "install-lifecycle-script",
+            "severity": "low",
+            "path": "package.json",
+            "line": 1,
+            "detail": "prepare"
+          }
+        ],
         "truncatedFindings": false
       },
       "sandbox": {
-        "status": "skipped",
-        "reason": "scan-job-produced-no-result-artifact"
+        "status": "inconclusive",
+        "reason": "sandbox-missing-runtime-dependency"
       }
     },
     {
@@ -34439,18 +36281,18 @@
     },
     {
       "repository": "winterhuan/dsh-skills-viewer",
-      "verifiedCommit": "14f9bb3479576583ebb90bbe04ff2762b8248885",
+      "verifiedCommit": "d47529285c7381a08f3522f1efc24adf40b84ff8",
       "packageName": "@winterchenhuan/dsh-skills-viewer",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "scannerVersion": 2,
-      "scannedAt": "2026-08-16T22:47:33.174Z",
+      "scannedAt": "2026-08-17T02:06:44.464Z",
       "status": "passed",
       "riskScore": 0,
       "static": {
         "scannedFiles": 11,
-        "scannedBytes": 31285,
+        "scannedBytes": 33936,
         "archiveFiles": 18,
-        "archiveBytes": 41241,
+        "archiveBytes": 44905,
         "findings": [],
         "truncatedFindings": false
       },
