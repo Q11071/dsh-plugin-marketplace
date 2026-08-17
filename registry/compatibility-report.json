@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "policyVersion": 1,
-  "generatedAt": "2026-08-17T03:13:49.661Z",
-  "total": 466,
+  "generatedAt": "2026-08-17T03:44:44.382Z",
+  "total": 509,
   "summary": {
     "passed": 0,
-    "partial": 392,
-    "failed": 37,
+    "partial": 457,
+    "failed": 46,
     "timeout": 1,
     "unsupported": 0,
     "error": 0,
-    "pending": 3124
+    "pending": 3050
   },
   "results": [
     {
@@ -812,6 +812,48 @@
       "log": "[dsh-vision-bridge] gen.js loaded (v2 render-fix)\n[dsh-vision-bridge] host apply running: providers=opencode-go,deepseek-official,deepseek model=qwen-vl-max apiKey=MISSING skillDir=(unset) resolvePatched=true adaptersWrapped=1\n[dsh-vision-bridge] generate_image tool registered\n[dsh-vision-bridge] adapters-updated: re-wrapped 0 adapter(s)\ndsh web: http://127.0.0.1:3080\n[dsh-vision-bridge] adapters-updated: re-wrapped 0 adapter(s)\n"
     },
     {
+      "repository": "534119219/chicheng-peak",
+      "verifiedCommit": "c4d7dd60f2bf955ce9595cf517fee49c444868a1",
+      "packageName": "chicheng-peak",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:31:41.654Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "534119219/chicheng-push",
       "verifiedCommit": "2aa2b8273183bc91f4cf6d12b1f7121bbee751da",
       "packageName": "chicheng-push",
@@ -1232,6 +1274,90 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "863683348/dsh-feed",
+      "verifiedCommit": "d9f59743c53d8a349f1deb2f18f70117a4014ef7",
+      "packageName": "dsh-feed",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:32:30.085Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "unsupported",
+          "reason": "ugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "ly loader entry feed (dsh-feed): unsupported JSON schema: schema.required is not supported by the value schema DSL\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: JsonSchemaError: unsupported JSON schema: schema.required is not supported by the value schema DSL\n          at authorError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:543:8)\n          at assertAuthorKeys (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:554:69)\n          at runSchemaCompiler (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:691:5)\n          at compileValueSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:771:2)\n          at valueSchemaSpecToJsonSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:791:17)\n          at defineTool (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:846:23)\n          at new apply (file:///work/dsh-home/profiles/web/node_modules/dsh-feed/lib/index.js:48:22)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+    },
+    {
+      "repository": "863683348/dsh-need-finder",
+      "verifiedCommit": "ff56240d9e158f1cfa5252bbe22a46dd9ee0cb54",
+      "packageName": "dsh-need-finder",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:33:13.110Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "unsupported",
+          "reason": "ugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "-guide (dsh-need-finder): unsupported JSON schema: schema.required is not supported by the value schema DSL\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: JsonSchemaError: unsupported JSON schema: schema.required is not supported by the value schema DSL\n          at authorError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:543:8)\n          at assertAuthorKeys (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:554:69)\n          at runSchemaCompiler (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:691:5)\n          at compileValueSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:771:2)\n          at valueSchemaSpecToJsonSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:791:17)\n          at defineTool (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:846:23)\n          at new apply (file:///work/dsh-home/profiles/web/node_modules/dsh-need-finder/lib/index.js:40:22)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+    },
+    {
       "repository": "863683348/dsh-plugin-focus",
       "verifiedCommit": "c6cf27b2f7ca01e6d3a0bf462846f0ddd61b8acd",
       "packageName": "dsh-plugin-focus",
@@ -1274,6 +1400,90 @@
       "log": "cus (dsh-plugin-focus): unsupported JSON schema: schema.required is not supported by the value schema DSL\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: JsonSchemaError: unsupported JSON schema: schema.required is not supported by the value schema DSL\n          at authorError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:543:8)\n          at assertAuthorKeys (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:554:69)\n          at runSchemaCompiler (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:691:5)\n          at compileValueSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:771:2)\n          at valueSchemaSpecToJsonSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:791:17)\n          at defineTool (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:846:23)\n          at new apply (file:///work/dsh-home/profiles/web/node_modules/dsh-plugin-focus/lib/index.js:132:22)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
     },
     {
+      "repository": "863683348/dsh-recipe",
+      "verifiedCommit": "2fc268f5ee28f293c560b22999d3dec228897fa8",
+      "packageName": "dsh-recipe",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:32:24.317Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "unsupported",
+          "reason": "ugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "der entry recipe (dsh-recipe): unsupported JSON schema: schema.required is not supported by the value schema DSL\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: JsonSchemaError: unsupported JSON schema: schema.required is not supported by the value schema DSL\n          at authorError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:543:8)\n          at assertAuthorKeys (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:554:69)\n          at runSchemaCompiler (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:691:5)\n          at compileValueSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:771:2)\n          at valueSchemaSpecToJsonSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:791:17)\n          at defineTool (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:846:23)\n          at new apply (file:///work/dsh-home/profiles/web/node_modules/dsh-recipe/lib/index.js:57:22)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+    },
+    {
+      "repository": "863683348/dsh-trend-radar",
+      "verifiedCommit": "d9b36aa6a928d16d3e87c25d2b6f5f7686cd96cb",
+      "packageName": "dsh-trend-radar",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:33:07.080Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "unsupported",
+          "reason": "ugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "radar (dsh-trend-radar): unsupported JSON schema: schema.required is not supported by the value schema DSL\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._await (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:506:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:500:3)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: JsonSchemaError: unsupported JSON schema: schema.required is not supported by the value schema DSL\n          at authorError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:543:8)\n          at assertAuthorKeys (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:554:69)\n          at runSchemaCompiler (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:691:5)\n          at compileValueSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:771:2)\n          at valueSchemaSpecToJsonSchema (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:791:17)\n          at defineTool (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-tools@0.1.0-rc.6_f8724372086ccc1457fc84e7becee2e0/node_modules/@deepseek-ai/dsh-tools/lib/index.js:846:23)\n          at new apply (file:///work/dsh-home/profiles/web/node_modules/dsh-trend-radar/lib/index.js:53:22)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at composeError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:199:18) {\n        code: 'UNSUPPORTED_SCHEMA',\n        violations: [ 'schema.required is not supported by the value schema DSL' ]\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+    },
+    {
       "repository": "9087/dsh-diff-approval",
       "verifiedCommit": "414a54441143d50e3ea58ade2d0dc898baa9d7f7",
       "packageName": "dsh-diff-approval",
@@ -1307,6 +1517,90 @@
         "update": {
           "status": "inconclusive",
           "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "940842546/dsh-usage-billing",
+      "verifiedCommit": "941423f17b1e395b7bc9b0358b30c75959b21222",
+      "packageName": "dsh-usage-billing",
+      "version": "0.3.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:33:47.015Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n[usage-stats] auto-backfill done: sessions=0 found=0 failed=0\n"
+    },
+    {
+      "repository": "a1141171521/dsh-thinking-effort",
+      "verifiedCommit": "08cdc0ccb75b664397a113773fc16edefa3718c4",
+      "packageName": "dsh-thinking-effort",
+      "version": "0.5.2",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:34:32.216Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
         },
         "networkIsolation": {
           "status": "passed",
@@ -1442,13 +1736,55 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
-      "repository": "a903067276-rgb/dsh-hud",
-      "verifiedCommit": "9758c0d719c4645b9084a9d730638ffc26f11055",
-      "packageName": "dsh-hud",
-      "version": "1.0.0",
+      "repository": "a903067276-rgb/dsh-file-upload",
+      "verifiedCommit": "95c1563de2dbf33aa3d82550797ecce666d80775",
+      "packageName": "dsh-file-upload",
+      "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:14:23.158Z",
+      "checkedAt": "2026-08-17T03:35:19.187Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "a903067276-rgb/dsh-hud",
+      "verifiedCommit": "1a9d12b08419d34e6699f8f6222a0fbb4eb66bc9",
+      "packageName": "dsh-hud",
+      "version": "1.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:24:47.549Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -1482,6 +1818,48 @@
         }
       },
       "log": "[dsh-hud] routes registered\ndsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "a903067276-rgb/dsh-plan-switch",
+      "verifiedCommit": "023663a7c0917ef8ad1f0310ad22308bc3f103d8",
+      "packageName": "dsh-plan-switch",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:34:02.914Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
       "repository": "AbcdefgXW/dsh-msg-hub",
@@ -1779,12 +2157,12 @@
     },
     {
       "repository": "AdonisSheldon/dsh-openai-oauth",
-      "verifiedCommit": "1e88665614e5ae242dded332646f17841ee2adda",
+      "verifiedCommit": "b908509dea911947ae1ffd48b6997fd4136f1ae7",
       "packageName": "dsh-openai-oauth",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:43:54.708Z",
+      "checkedAt": "2026-08-17T03:25:36.826Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -2199,12 +2577,12 @@
     },
     {
       "repository": "akqwpeter-prog/dsh-skill-router",
-      "verifiedCommit": "93a031d1357a6b4c58d17ded95682c1d8b7dda5a",
+      "verifiedCommit": "b21c13576d07529b2d3958c776444c3f1f88c972",
       "packageName": "dsh-skill-router",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:44:57.364Z",
+      "checkedAt": "2026-08-17T03:26:26.340Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -2241,12 +2619,12 @@
     },
     {
       "repository": "akqwpeter-prog/skill-bartender",
-      "verifiedCommit": "ccef314516e38ef208059b90d746e3fd5758dd98",
+      "verifiedCommit": "df90b8787342b24148acd786b21d0dc82ad38f74",
       "packageName": "skill-bartender",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:41:41.613Z",
+      "checkedAt": "2026-08-17T03:27:23.708Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -2576,13 +2954,55 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
-      "repository": "AmethystLuna/embedded-workbench",
-      "verifiedCommit": "fdab76b0fbcb4caf8a3fe42d4204f4c08556075f",
-      "packageName": "@amethystluna/embedded-workbench",
-      "version": "0.7.0",
+      "repository": "allentnetus/dsh-job-hunting",
+      "verifiedCommit": "435f0a0eb64edeb53cbb1463b091b56bfa48e626",
+      "packageName": "dsh-job-hunting",
+      "version": "0.1.2",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:42:24.378Z",
+      "checkedAt": "2026-08-17T03:34:51.931Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "AmethystLuna/embedded-workbench",
+      "verifiedCommit": "250cdf968df52f41cfd2530dbdbd5e1fe06cb378",
+      "packageName": "@amethystluna/embedded-workbench",
+      "version": "0.7.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:28:20.938Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -2619,12 +3039,12 @@
     },
     {
       "repository": "AmethystLuna/logicprobe",
-      "verifiedCommit": "54905ff9f2e15d1c82b08d090dc21f4a8771984c",
+      "verifiedCommit": "1682357eb6acb98443c9e6b6d83763e7c6167851",
       "packageName": "@amethystluna/logicprobe",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:43:20.359Z",
+      "checkedAt": "2026-08-17T03:24:47.619Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -2913,12 +3333,12 @@
     },
     {
       "repository": "Anestis271/dsh-desktop",
-      "verifiedCommit": "1f55ceb520957a8cdf46edd324333d2299f41ef2",
+      "verifiedCommit": "0672d4d1e2e1078bd5787b875fb32b4dfaaf59f2",
       "packageName": "@anestis271/dsh-desktop",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T17:42:22.295Z",
+      "checkedAt": "2026-08-17T03:25:41.660Z",
       "result": "failed",
       "scope": "compatibility",
       "checks": {
@@ -3543,12 +3963,12 @@
     },
     {
       "repository": "april-jk/dsh-mobile-plugin",
-      "verifiedCommit": "14e0f30bef99e3ffc94bdc00ab56f96905092304",
+      "verifiedCommit": "4eb0d5bb04efaa4ce376f7445f86dbab4e0d86fe",
       "packageName": "@april-jk/dsh-mobile",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T18:49:38.777Z",
+      "checkedAt": "2026-08-17T03:26:31.659Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -4431,6 +4851,48 @@
       "profile": "web",
       "harnessVersion": 9,
       "checkedAt": "2026-08-16T18:51:14.385Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "balcoz/dsh-ocr-local",
+      "verifiedCommit": "6b38ef78ff9973eae495fdc3efa3cb28b4a9a745",
+      "packageName": "dsh-ocr-local",
+      "version": "0.2.5",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:35:51.181Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -5643,12 +6105,12 @@
     },
     {
       "repository": "charrywhite/dsh-sticky-notes",
-      "verifiedCommit": "469be51a81275852253b32ff187da5f20d81097e",
+      "verifiedCommit": "edd0c975b34a1e4a11b6219df4cfd95c677310c3",
       "packageName": "dsh-sticky-notes",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T19:59:53.966Z",
+      "checkedAt": "2026-08-17T03:27:16.598Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -5895,12 +6357,12 @@
     },
     {
       "repository": "chengzhi43/dsh-file",
-      "verifiedCommit": "85c41edc1df901c9fcc1819ca092271c804e6e60",
+      "verifiedCommit": "ae933f70273397c925410da42e302a7968e7c2a1",
       "packageName": "dsh-file",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:10:07.124Z",
+      "checkedAt": "2026-08-17T03:28:11.492Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -6357,12 +6819,12 @@
     },
     {
       "repository": "ChongCyrus/Vibe-Mathematics",
-      "verifiedCommit": "da256420f0231be952a0a0c7e1f0ba6cde68d23b",
+      "verifiedCommit": "c0047ae9ddf12f2337dec6f7876864df7ec4435d",
       "packageName": "dsh-vibe-math",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:04:28.476Z",
+      "checkedAt": "2026-08-17T03:24:46.523Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -6441,12 +6903,12 @@
     },
     {
       "repository": "ChrisZhangWG/dsh-codex-meter",
-      "verifiedCommit": "c4558079dfa7d38476c7bc66f36af42a06ee21b7",
+      "verifiedCommit": "dbe24eddf24d39f25ccecd08a7dff6a342dc4bc4",
       "packageName": "dsh-codex-meter",
       "version": "1.0.7",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:05:24.011Z",
+      "checkedAt": "2026-08-17T03:25:43.930Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -6483,12 +6945,12 @@
     },
     {
       "repository": "ciceroyang/dsh-report-studio",
-      "verifiedCommit": "3478e0b522ef85a6c7a6c4044eea3c54f36bd484",
+      "verifiedCommit": "257a5385b307a7bcf6a55452c09f8bf756d3b678",
       "packageName": "dsh-report-studio",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:15:26.626Z",
+      "checkedAt": "2026-08-17T03:26:32.310Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -7155,12 +7617,12 @@
     },
     {
       "repository": "crazywoola/dsh-balance",
-      "verifiedCommit": "f53df51013ee40fc85488bb0b1d57d52175e7866",
+      "verifiedCommit": "a42546f6e13b5da206248f6a335c64a370272bea",
       "packageName": "@pinkbanana/dsh-balance",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:06:51.402Z",
+      "checkedAt": "2026-08-17T03:27:27.656Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -8037,12 +8499,12 @@
     },
     {
       "repository": "dfkai/dsh-board",
-      "verifiedCommit": "42d22cf0100dc98772dba5180f4224d9a5284435",
+      "verifiedCommit": "56d49ff1137d48f804a5c1d970ed1db0cdde89be",
       "packageName": "dsh-board",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:10:03.877Z",
+      "checkedAt": "2026-08-17T03:28:16.855Z",
       "result": "failed",
       "scope": "compatibility",
       "checks": {
@@ -8244,6 +8706,48 @@
         }
       },
       "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "DietCokewithSugar/dsh-user-experience",
+      "verifiedCommit": "57fe06eb8bc1313a931bfb50eb2416c52bb1fdea",
+      "packageName": "dsh-user-experience",
+      "version": "0.4.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:36:40.090Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "failed",
+          "reason": "@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at file:///work/dsh-home/profiles/web/#ux-experience\n          at file:///work/dsh-home/profiles/web/#include\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "y loader entry include (cordis:include): failed to apply loader entry ux-experience (dsh-user-experience): command \"ux\" input hint must not be empty\n      at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n      at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n      at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {\n    [cause]: Error: failed to apply loader entry ux-experience (dsh-user-experience): command \"ux\" input hint must not be empty\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._await (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:506:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:500:3)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 129)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: TypeError: command \"ux\" input hint must not be empty\n          at normalizeDefinition (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-commands@0.1.0-rc.6_@deepseek-ai+cordis@4.0.1_@deepseek-ai+dsh-agent@0_f18bd7aa4aa916b517165061977dda49/node_modules/@deepseek-ai/dsh-commands/lib/index.js:142:48)\n          at Proxy.register (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-commands@0.1.0-rc.6_@deepseek-ai+cordis@4.0.1_@deepseek-ai+dsh-agent@0_f18bd7aa4aa916b517165061977dda49/node_modules/@deepseek-ai/dsh-commands/lib/index.js:243:23)\n          at Object.apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)\n          at new apply (file:///work/dsh-home/profiles/web/node_modules/dsh-user-experience/lib/index.js:4835:15)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at file:///work/dsh-home/profiles/web/#ux-experience\n          at file:///work/dsh-home/profiles/web/#include\n    }\n  }\n}\n\nNode.js v22.23.2\n"
     },
     {
       "repository": "Dingpenghui-good/dsh-conversation-language",
@@ -8625,12 +9129,12 @@
     },
     {
       "repository": "dove-a/dsh-chat-window-fold",
-      "verifiedCommit": "8550a973a281f15dbea656441c23c95271f4d7df",
+      "verifiedCommit": "bb2813c249e4e7aabca330bc734faf19c49f38e5",
       "packageName": "dsh-chat-window-fold",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:16:58.570Z",
+      "checkedAt": "2026-08-17T03:24:43.701Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -10011,13 +10515,13 @@
     },
     {
       "repository": "Favio8/dsh-plugin-deepeye",
-      "verifiedCommit": "895ab8e3c90ccd45f5d6e070cb123c9860773e3f",
+      "verifiedCommit": "81c172c66e9cd4d9a8e62cc5d699372962169277",
       "packageName": "dsh-plugin-deepeye",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:23:07.182Z",
-      "result": "partial",
+      "checkedAt": "2026-08-17T03:25:30.413Z",
+      "result": "failed",
       "scope": "compatibility",
       "checks": {
         "install": {
@@ -10041,8 +10545,8 @@
           "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "inconclusive",
-          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+          "status": "failed",
+          "reason": "update-or-state-preservation-failed: ues with peer dependencies found. Run \"pnpm peers check\" to list them. Packages: +1 -26 +-------------------------- Progress: resolved 36, reused 4, downloaded 0, added 1, done Added 1 entry to minimumReleaseAgeExclude in pnpm-workspace.yaml (set minimumReleaseAgeStrict to true to gate these updates with a prompt):   dsh-plugin-deepeye@0.2.0 Done in 893ms using pnpm v11.22.0  | Command failed: /work/runtime/node_modules/.bin/dsh plugin --profile web add dsh-p"
         },
         "networkIsolation": {
           "status": "passed",
@@ -10137,12 +10641,12 @@
     },
     {
       "repository": "FeatherHunter/dsh-prompt",
-      "verifiedCommit": "4973446d45658f42bb3bb0a9f97c4d3fed43a935",
+      "verifiedCommit": "5f74ec896c4c138a55b6e2d6ad0feccafea376c7",
       "packageName": "dsh-prompt",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:13:54.270Z",
+      "checkedAt": "2026-08-17T03:29:19.020Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -10352,7 +10856,7 @@
       "version": "1.3.2",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:09:50.617Z",
+      "checkedAt": "2026-08-17T03:30:39.610Z",
       "result": "timeout",
       "scope": "compatibility",
       "checks": {
@@ -10385,7 +10889,7 @@
           "reason": "runtime-container-network-is-none"
         }
       },
-      "log": "dsh web: http://127.0.0.1:3080\n[dsh-vault] 运行状态标记写入失败: spawn powershell.exe ENOENT\n[dsh-vault] manifest 写入失败: spawn powershell.exe ENOENT\n[dsh-vault] 备份完成: /work/.dsh-backups/backup-2026-08-17T02-10-26-778Z (0 个会话)\n[dsh-vault] 运行状态标记写入失败: spawn powershell.exe ENOENT\n"
+      "log": "dsh web: http://127.0.0.1:3080\n[dsh-vault] 运行状态标记写入失败: spawn powershell.exe ENOENT\n[dsh-vault] manifest 写入失败: spawn powershell.exe ENOENT\n[dsh-vault] 备份完成: /work/.dsh-backups/backup-2026-08-17T03-31-16-185Z (0 个会话)\n[dsh-vault] 运行状态标记写入失败: spawn powershell.exe ENOENT\n"
     },
     {
       "repository": "feverZHONG/dsh-chess-xq",
@@ -11481,12 +11985,12 @@
     },
     {
       "repository": "GIT121995/dsh-memory-gate",
-      "verifiedCommit": "2f02acc707d3dd036a94b201df5a52a390274cf2",
+      "verifiedCommit": "d7d90b7a189991de424a8ea34684dc53cd61b79a",
       "packageName": "dsh-memory-gate",
       "version": "0.9.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T20:31:29.411Z",
+      "checkedAt": "2026-08-17T03:30:04.795Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -12027,12 +12531,12 @@
     },
     {
       "repository": "GraySilver/dsh-task-modes",
-      "verifiedCommit": "a093bd23d1ae7e4beb009ed058360d8a7d39a3b1",
+      "verifiedCommit": "9163f0fab972aef43d897ce4bb4781aafc50cad6",
       "packageName": "@graysilver/dsh-task-modes",
-      "version": "0.1.9",
+      "version": "0.2.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T22:50:35.438Z",
+      "checkedAt": "2026-08-17T03:30:59.008Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -14463,12 +14967,12 @@
     },
     {
       "repository": "iwker/dsh-htmlrun",
-      "verifiedCommit": "9898aff475267013ff90ff6005f7a41fc79b3fed",
+      "verifiedCommit": "fb2d9a687df1a61fff8c66db404ffe884c694556",
       "packageName": "dsh-htmlrun",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:14:42.241Z",
+      "checkedAt": "2026-08-17T03:29:45.846Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -16058,6 +16562,48 @@
       "log": "modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n      at async Proxy.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:217:14)\n      at async mountRootInclude (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:984:20)\n      at async boot (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:1175:3)\n      at async runProfile (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:247:14)\n      at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n    [cause]: Error: failed to import loader entry secret-guard (dsh-secret-guard): Stripping types is currently unsupported for files under node_modules, for \"file:///work/dsh-home/profiles/demo/node_modules/dsh-secret-guard/src/index.ts\"\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:514:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 78)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: Error [ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING]: Stripping types is currently unsupported for files under node_modules, for \"file:///work/dsh-home/profiles/demo/node_modules/dsh-secret-guard/src/index.ts\"\n          at stripTypeScriptModuleTypes (node:internal/modules/typescript:156:11)\n          at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:656:29)\n          at #translate (node:internal/modules/esm/loader:559:20)\n          at afterLoad (node:internal/modules/esm/loader:612:29)\n          at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:617:12)\n          at #createModuleJob (node:internal/modules/esm/loader:640:36)\n          at #getJobFromResolveResult (node:internal/modules/esm/loader:353:34)\n          at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:321:41)\n          at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:680:25) {\n        code: 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING'\n      }\n    }\n  }\n}\n\nNode.js v22.23.2\n"
     },
     {
+      "repository": "JohnXu22786/session-titler",
+      "verifiedCommit": "cfd39f3946e7ebf31e6ddf21a14c4423be1de7c9",
+      "packageName": "dsh-session-caption",
+      "version": "0.1.0",
+      "profile": "demo",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:37:24.466Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "failed",
+          "reason": "pseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at file:///work/dsh-home/profiles/demo/#session-caption\n          at file:///work/dsh-home/profiles/demo/#include\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "le:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:1175:3)\n      at async runProfile (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:247:14)\n      at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n    [cause]: Error: failed to apply loader entry session-caption (dsh-session-caption): session-title provider automatic mode is invalid\n        at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n        at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n        at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n        at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n        at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n        at async Promise.allSettled (index 78)\n        at async EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:87:21)\n        at async Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:3) {\n      [cause]: Error: session-title provider automatic mode is invalid\n          at Proxy.validateProvider (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-session-title@0.1.0-rc.6_d1255cd1c1cc892be642dda517b65e3c/node_modules/@deepseek-ai/dsh-session-title/lib/index.js:529:94)\n          at Object.apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)\n          at Proxy.register (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-session-title@0.1.0-rc.6_d1255cd1c1cc892be642dda517b65e3c/node_modules/@deepseek-ai/dsh-session-title/lib/index.js:295:8)\n          at Object.apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:120:36)\n          at new apply (file:///work/dsh-home/profiles/demo/node_modules/dsh-session-caption/lib/src/index.js:32:22)\n          at Fiber.execute (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1067:24)\n          at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis@4.0.1_@deepseek-ai+cordis-plugin-include@1.0.6_@deepseek-ai+cordis-plugin-loader@1.0.2/node_modules/@deepseek-ai/cordis/lib/index.js:1141:34\n          at file:///work/dsh-home/profiles/demo/#session-caption\n          at file:///work/dsh-home/profiles/demo/#include\n    }\n  }\n}\n\nNode.js v22.23.2\n"
+    },
+    {
       "repository": "JohnXu22786/skill-manager",
       "verifiedCommit": "06231add6da717cd6a925ba6fffcf995c0533c04",
       "packageName": "dsh-skill-manager",
@@ -16269,12 +16815,12 @@
     },
     {
       "repository": "kanchengw/dsh-mindseye",
-      "verifiedCommit": "155fb9c413bb69daad72f99595b51038e089f1e2",
+      "verifiedCommit": "d1c969be967386bf3608aea70b56d1596a6c6c4d",
       "packageName": "dsh-mindseye",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:21:38.327Z",
+      "checkedAt": "2026-08-17T03:30:34.053Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -16311,12 +16857,12 @@
     },
     {
       "repository": "kc0ed/dsh-bottom-bar",
-      "verifiedCommit": "50282f9e9412799d9a9c444262dd0787cf29a317",
+      "verifiedCommit": "202665343b61bb89f70a811cbd4ac7125833b26f",
       "packageName": "@kc0ed/dsh-bottom-bar",
       "version": "1.0.4",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:18:38.192Z",
+      "checkedAt": "2026-08-17T03:31:28.608Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -16353,12 +16899,12 @@
     },
     {
       "repository": "kelai141/dsh-code-diff-viewer",
-      "verifiedCommit": "981ec7849939cc0c480446feba1aa2970defdfcf",
+      "verifiedCommit": "302a520f79f36116164775ab522be4686e666cee",
       "packageName": "dsh-code-diff-viewer",
       "version": "1.0.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:19:27.508Z",
+      "checkedAt": "2026-08-17T03:32:16.475Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -16730,13 +17276,55 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "kouyichi/dsh-tui-app",
+      "verifiedCommit": "f9952590396c995eba8d9156924edae6cc838ae7",
+      "packageName": "dsh-tui-app",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:34:24.514Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "failed",
+          "reason": "exact-source-install-failed: _modules/.bin/node-gyp rebuild\nnode scripts/post-install.js\ncd /work\nDSH_HOME=/work/baseline-home /work/runtime/node_modules/.bin/dsh plugin --profile \"$PLUGIN_PROFILE\" install --ignore-scripts\n/work/runtime/node_modules/.bin/dsh plugin --profile \"$PLUGIN_PROFILE\" add \"$PLUGIN_SPEC\" --ignore-scripts\nnode /harness/compatibility-inspect.mjs\nif [ \"$PLUGIN_SOURCE\" = npm ]; then node /harness/compatibility-update.mjs; fi\n"
+        },
+        "hostLoad": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "update": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        },
+        "networkIsolation": {
+          "status": "skipped",
+          "reason": "install-did-not-complete"
+        }
+      },
+      "log": "exact-source-install-failed: _modules/.bin/node-gyp rebuild\nnode scripts/post-install.js\ncd /work\nDSH_HOME=/work/baseline-home /work/runtime/node_modules/.bin/dsh plugin --profile \"$PLUGIN_PROFILE\" install --ignore-scripts\n/work/runtime/node_modules/.bin/dsh plugin --profile \"$PLUGIN_PROFILE\" add \"$PLUGIN_SPEC\" --ignore-scripts\nnode /harness/compatibility-inspect.mjs\nif [ \"$PLUGIN_SOURCE\" = npm ]; then node /harness/compatibility-update.mjs; fi\n"
+    },
+    {
       "repository": "LA7-F/dsh-MyCordis",
-      "verifiedCommit": "a9b312cd0aa0cab0f91d391280f713daca671ce5",
+      "verifiedCommit": "c800249342589a3ae6088e4541ca16153ef4cee9",
       "packageName": "dsh-mycordis",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-16T23:00:13.295Z",
+      "checkedAt": "2026-08-17T03:33:04.748Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -16899,12 +17487,54 @@
     },
     {
       "repository": "LeemanCheung/dsh-vibe-pack",
-      "verifiedCommit": "35807d551cb8c74cee31ba9c0c079a3f498051e6",
+      "verifiedCommit": "781376c03116313c39b3002c40de0cfbb4663406",
       "packageName": "dsh-vibe-pack",
       "version": "1.0.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:21:40.641Z",
+      "checkedAt": "2026-08-17T03:29:31.879Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "unsupported",
+          "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "LeemanCheung/dsh-whale-companion",
+      "verifiedCommit": "9b7c978dd5985f63d234761adf13f0a5554b9fe2",
+      "packageName": "dsh-whale-companion",
+      "version": "1.0.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:34:35.021Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -17319,12 +17949,12 @@
     },
     {
       "repository": "linhut/gongwen-skill",
-      "verifiedCommit": "accee993ba664b26f822912854c43b4d90d194dd",
+      "verifiedCommit": "9a4bcff096780279406514b19337dd074159a410",
       "packageName": "gongwen-skill",
-      "version": "1.12.66",
+      "version": "1.12.67",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:24:15.428Z",
+      "checkedAt": "2026-08-17T03:30:19.597Z",
       "result": "failed",
       "scope": "compatibility",
       "checks": {
@@ -17612,6 +18242,90 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "loonai321/dsh-humanized-deepseek-maid",
+      "verifiedCommit": "6dd9bbb7303f61038174314a828dc0e314749b6b",
+      "packageName": "dsh-humanized-deepseek-maid",
+      "version": "0.4.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:35:24.461Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "loongsuite/dsh-plugin",
+      "verifiedCommit": "c7921555c3bb21a87b8a36d75705791ed22183bf",
+      "packageName": "@loongsuite/dsh-plugin",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:36:12.246Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "Luoji-Yuli/dsh-turn-rail",
       "verifiedCommit": "ce32d113e72d6dd5f487eab5dc57fbd7fd46aed7",
       "packageName": "@deepseek-ai/dsh-turn-rail",
@@ -17739,12 +18453,12 @@
     },
     {
       "repository": "MichengAI/dsh-agency-agents",
-      "verifiedCommit": "cdcd5bd3e31122a5ff281627e33897509fd4dbd8",
+      "verifiedCommit": "2add6b6409b7f33785c2f28db940233a7997566c",
       "packageName": "@michengai/dsh-agency-agents",
       "version": "0.1.17",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:11:30.108Z",
+      "checkedAt": "2026-08-17T03:31:00.890Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -18074,6 +18788,132 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "omdsh-dev/dsh-llm-fallbacks",
+      "verifiedCommit": "fb338cd9f03adc188a734a3419234f7c5d71eb7b",
+      "packageName": "dsh-llm-fallbacks",
+      "version": "0.2.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:37:11.776Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "omdsh-plugins/omdsh-base",
+      "verifiedCommit": "8b584f3e441c6b90eee67327f92e3a9908e56b72",
+      "packageName": "@omdsh-plugins/omdsh-base",
+      "version": "0.1.3",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:34:27.988Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "omdsh-plugins/omdsh-plughub",
+      "verifiedCommit": "7b84b3603114cba80d0a72bdfda311af2deb1b2f",
+      "packageName": "@omdsh-plugins/omdsh-plughub",
+      "version": "0.1.3",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:35:18.933Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "pan17/dsh-wechat",
       "verifiedCommit": "72e866087c46bbebfea23d8fa5baeda6b1d60ecc",
       "packageName": "dsh-wechat",
@@ -18200,13 +19040,55 @@
       "log": "(node:38) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\ndsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "PicGo/dsh-plugin",
+      "verifiedCommit": "8616305583fde0d02f2cf9bcfc8b957e81f36476",
+      "packageName": "@picgo/dsh-plugin",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:36:08.859Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "rouyiemei/dsh-smart-router",
-      "verifiedCommit": "db67ae3fefe96e498ba7c733c4fd7afe99440758",
+      "verifiedCommit": "4b0bcf8415035f668b582ce88622ed65a3f895fa",
       "packageName": "dsh-smart-router",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:26:35.733Z",
+      "checkedAt": "2026-08-17T03:31:58.253Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -18225,6 +19107,48 @@
         "clientLoad": {
           "status": "inconclusive",
           "reason": "client-module-factory-loaded-browser-react-mount-not-executed-by-node-harness"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "ruimin251204/dsh-plugin-surgery",
+      "verifiedCommit": "846721729ab398bb8baaa078b3cde9701e876619",
+      "packageName": "dsh-plugin-surgery",
+      "version": "0.2.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:36:58.998Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "failed",
+          "reason": "client-bundle-check-failed: Error: Dynamic require of \"react\" is not supported"
         },
         "dispose": {
           "status": "passed",
@@ -18326,6 +19250,48 @@
       "log": "dsh web: http://127.0.0.1:3080\n"
     },
     {
+      "repository": "shatyuka/dsh-llm-codebuddy",
+      "verifiedCommit": "6a37e60755851035435be8855bf10ebb1ece9c16",
+      "packageName": "@shatyuka/dsh-llm-codebuddy",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:37:47.686Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "inconclusive",
+          "reason": "official-client-module-css-cannot-be-loaded-by-node-harness: Unknown file extension \".css\" for /work/runtime/node_modules/.pnpm/katex@0.16.47/node_modules/katex/dist/katex.min.css"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "no-earlier-stable-npm-version-is-published"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
       "repository": "siweina/dsh-novel-writer",
       "verifiedCommit": "30825e55c0d776929bc8fe3629ecbe8c732d8252",
       "packageName": "dsh-novel-writer",
@@ -18351,6 +19317,48 @@
         "clientLoad": {
           "status": "unsupported",
           "reason": "client-platform-runtime-is-incomplete: TypeError: document.querySelector is not a function"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "sjh9714/dsh-lean",
+      "verifiedCommit": "2b2e412cb80d1d585d208cdfe4958bf418c26473",
+      "packageName": "dsh-lean",
+      "version": "0.8.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:36:38.877Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "agent-loop-was-intentionally-altered-or-incomplete: requests=3, toolResult=true, finalText=false"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
         },
         "dispose": {
           "status": "passed",
@@ -18411,12 +19419,12 @@
     },
     {
       "repository": "SoDaZilla-zzz/dsh-liquid-glass-balance-card",
-      "verifiedCommit": "a5b378523c238b30ea34d388b8474fa50abc7991",
+      "verifiedCommit": "f1085b6077d43557dc8a49b6517eecf11d8f838b",
       "packageName": "dsh-liquid-glass-balance-card",
       "version": "0.1.0",
       "profile": "web",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:23:18.027Z",
+      "checkedAt": "2026-08-17T03:32:44.314Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -18705,12 +19713,12 @@
     },
     {
       "repository": "Taler97/dsh-rollback",
-      "verifiedCommit": "366288c3e197fc71c92b0feeff7ba5740449facf",
+      "verifiedCommit": "3deb80df973913da93197a3a1cf006dfc3629333",
       "packageName": "dsh-rollback",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "profile": "demo",
       "harnessVersion": 9,
-      "checkedAt": "2026-08-17T02:12:22.438Z",
+      "checkedAt": "2026-08-17T03:29:48.653Z",
       "result": "partial",
       "scope": "compatibility",
       "checks": {
@@ -18735,8 +19743,8 @@
           "reason": "dsh-host-exited-after-sigterm"
         },
         "update": {
-          "status": "unsupported",
-          "reason": "no-earlier-stable-npm-version-is-published"
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
         },
         "networkIsolation": {
           "status": "passed",
@@ -18744,6 +19752,48 @@
         }
       },
       "log": ""
+    },
+    {
+      "repository": "tancheng33/dsh-yogacara",
+      "verifiedCommit": "c15c27af016e5aa03b2ca454d0c23f322b188426",
+      "packageName": "dsh-yogacara",
+      "version": "0.1.1",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:37:39.035Z",
+      "result": "failed",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "failed",
+          "reason": "ode-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:81:28)\n        at Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:19)\n        at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:234:34\n  }\n}\n\nNode.js v22.23.2\n"
+        },
+        "agentLoop": {
+          "status": "inconclusive",
+          "reason": "market-mock-agent-loop-not-attempted"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "skipped",
+          "reason": "host-exited-before-disposal-probe"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:81:28)\n    at Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:19)\n    at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:234:34\n    at boot (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:1186:9)\n    at async runProfile (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:247:14)\n    at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n  [cause]: Error: failed to apply loader entry include (cordis:include): duplicate loader entry id: storage\n      at updateError (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:299:9)\n      at Entry._init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:519:10)\n      at async Entry.init (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:495:4)\n      at async Entry.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:416:37)\n      at async EntryGroup.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:55:4)\n      at async Proxy.create (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:217:14)\n      at async mountRootInclude (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:984:20)\n      at async boot (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:1175:3)\n      at async runProfile (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/profile-boot-DG5t9aNs.js:247:14)\n      at async file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh@0.1.0-rc.6_4b02b31f4347d42e02dd8ae2631af2b2/node_modules/@deepseek-ai/dsh/lib/bin.js:133:3 {\n    [cause]: TypeError: duplicate loader entry id: storage\n        at EntryGroup.update (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+cordis-plugin-loader@1.0.2_@deepseek-ai+cordis@4.0.1_node-addon-require-builtin@0.1.5/node_modules/@deepseek-ai/cordis-plugin-loader/lib/index.js:81:28)\n        at Include._apply (file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:238:19)\n        at file:///work/runtime/node_modules/.pnpm/@deepseek-ai+dsh-app-boot@0.1.0-rc.6_cffb06008418fdb711e670de564d1e2e/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js:234:34\n  }\n}\n\nNode.js v22.23.2\n"
     },
     {
       "repository": "tangzheng202202/dsh-voice-live",
@@ -18912,6 +19962,762 @@
         }
       },
       "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-byte-size",
+      "verifiedCommit": "55a407fbd97451909a4656447eac9a08d67cee8f",
+      "packageName": "dsh-byte-size",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:38:25.849Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-color-name",
+      "verifiedCommit": "5d8254ec9dff7f9e1a736dd0d74cace08c8902ba",
+      "packageName": "dsh-color-name",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:39:14.632Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-composition",
+      "verifiedCommit": "29a8715c1c7fd1741194ac171828ca9ed92b74f7",
+      "packageName": "dsh-composition",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:40:04.018Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-design-patterns",
+      "verifiedCommit": "a6c61f6bda5ae6d5834bf7067c4695722f7bf710",
+      "packageName": "dsh-design-patterns",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:38:45.013Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-duration",
+      "verifiedCommit": "26c0ebc2f806b183065d381f116d806d49b5c0e1",
+      "packageName": "dsh-duration",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:39:33.208Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-grid-system",
+      "verifiedCommit": "945956b0a6b4068b30e008da670b6bcce9a183d2",
+      "packageName": "dsh-grid-system",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:40:20.755Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-interaction-design",
+      "verifiedCommit": "37b567c486a2d35d7e430f22bb8acaf0e8cb9292",
+      "packageName": "dsh-interaction-design",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:41:08.861Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-json-merge",
+      "verifiedCommit": "066f960b03c1e094c87a935c871e8ab0fda52db9",
+      "packageName": "dsh-json-merge",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:41:57.160Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-motion-design",
+      "verifiedCommit": "ba48eb981b4ca6d991ec69f73684379a1e5167bc",
+      "packageName": "dsh-motion-design",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:38:38.356Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-number-words",
+      "verifiedCommit": "162423a9b2528747262519683167458442febc94",
+      "packageName": "dsh-number-words",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:39:24.739Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-photography",
+      "verifiedCommit": "441ff2f20c67ab569ad82e5fd610cfeecdb7ad21",
+      "packageName": "dsh-photography",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:40:11.153Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-roman",
+      "verifiedCommit": "540fe015e37a842296dd024bd5addddffa5766a9",
+      "packageName": "dsh-roman",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:40:58.918Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-storyboard",
+      "verifiedCommit": "8d01ce2ed4801ef625813a9bb2a87ef41943c591",
+      "packageName": "dsh-storyboard",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:41:44.538Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-string-similarity",
+      "verifiedCommit": "01fe7998fcaf2d35d39a60d059dccac37b81503b",
+      "packageName": "dsh-string-similarity",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:39:06.808Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-text-diff",
+      "verifiedCommit": "0626893df216d4d2ab86d4a18bfd60d2a7ed83e0",
+      "packageName": "dsh-text-diff",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:39:53.903Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-text-wrap",
+      "verifiedCommit": "e115ece4bcad096aa0e8ccc7e0ab82cb6a4a6771",
+      "packageName": "dsh-text-wrap",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:40:41.087Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "uckkk/dsh-ux-writing",
+      "verifiedCommit": "ecf5e64fd2023bdfe24b3d368fd33a5e0f604e3f",
+      "packageName": "dsh-ux-writing",
+      "version": "0.1.0",
+      "profile": "web",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:41:29.448Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "unsupported",
+          "reason": "exact-source-has-no-staged-previous-npm-version"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "dsh web: http://127.0.0.1:3080\n"
+    },
+    {
+      "repository": "UNLINEARITY/dsh-code",
+      "verifiedCommit": "394b3ef04cacf69a2076ae752550035f75f4fcfe",
+      "packageName": "dsh-code",
+      "version": "0.8.0",
+      "profile": "cli",
+      "harnessVersion": 9,
+      "checkedAt": "2026-08-17T03:42:16.829Z",
+      "result": "partial",
+      "scope": "compatibility",
+      "checks": {
+        "install": {
+          "status": "passed",
+          "reason": "official-dsh-cli-installed-exact-source-with-lifecycle-scripts-disabled"
+        },
+        "hostLoad": {
+          "status": "passed",
+          "reason": "dsh-profile-remained-running-for-observation-window"
+        },
+        "agentLoop": {
+          "status": "skipped",
+          "reason": "plugin-is-not-classified-as-an-agent-extension"
+        },
+        "clientLoad": {
+          "status": "skipped",
+          "reason": "plugin-has-no-client-bundle"
+        },
+        "dispose": {
+          "status": "passed",
+          "reason": "dsh-host-exited-after-sigterm"
+        },
+        "update": {
+          "status": "inconclusive",
+          "reason": "official-dsh-cli-did-not-preserve-disabled-state-during-update"
+        },
+        "networkIsolation": {
+          "status": "passed",
+          "reason": "runtime-container-network-is-none"
+        }
+      },
+      "log": "╭─────────────────────────────────────────────────────────────────╮\n│     ▄▄▄▄▄▄▄▄█    ▄█▄     ▄                                      │\n│  ▄▄██████████▄▄  ▀███▄████                                      │\n│ ▄███████████████▄  ███▀▀▀   DeepSeek Harness · v0.8.0           │\n│ ██     ▀▀█████▄▀██████      Into the Unknown  探索未至之境      │\n│ ██▄       ▀████▄▄████       /help · Esc interrupt · Ctrl+C quit │\n│  ██▄        ▀██████▀                                            │\n│   ▀██▄▄  ██▄  ▀███▄▄                                            │\n│      ▀▀███████▀▀ ▀▀▀                                            │\n╰─────────────────────────────────────────────────────────────────╯\n╭─────────────────────────────────────────────────────────────────╮\n│                                                                 │\n│  ▄▄██████████▄▄  ▀███▄████                                      │\n│ ▄███████████████▄  ███▀▀▀   DeepSeek Harness · v0.8.0           │\n│ ██     ▀▀█████▄▀██████      Into the Unknown  探索未至之境      │\n│ ██▄       ▀████▄▄████       /help · Esc interrupt · Ctrl+C quit │\n│  ██▄        ▀██████▀                                            │\n│   ▀██▄▄  ██▄  ▀███▄▄                                            │\n│      ▀▀███████▀▀ ▀▀▀                                            │\n╰──▄──────────────────────────────────────────────────────────────╯\n╭─────────────────────────────────────────────────────────────────╮\n│                                                                 │\n│  ▄▄██████████▄▄  ▀███▄████                                      │\n│ ▄███████████████▄  ███▀▀▀   DeepSeek Harness · v0.8.0           │\n│ ██     ▀▀█████▄▀██████      Into the Unknown  探索未至之境      │\n│ ██▄       ▀████▄▄████       /help · Esc interrupt · Ctrl+C quit │\n│  ██▄        ▀██████▀                                            │\n│   ▀██▄▄  ██▄  ▀███▄▄                                            │\n│      ▀▀███████▀▀ ▀▀▀                                            │\n╰──▄──────────────────────────────────────────────────────────────╯\n\n  ERROR Raw mode is not supported on the current process.stdin, which Ink uses\n       as input stream by default.\n       Read about how to prevent this error on\n       https://github.com/vadimdemedes/ink/#israwmodesupported\n\n - Read about how to prevent this error on\n   https://github.com/vadimdemedes/ink/#israwmodesupported\n -handleSetRawM (file:///work/dsh-home/profiles/cli/node_modules/dsh-code/lib/i\n  ode          ndex.mjs:23668:41)\n - (file:///work/dsh-home/profiles/cli/node_modules/dsh-code/lib/index.mjs:2424\n  2:3)\n -commitHookEffectLis (file:///work/dsh-home/profiles/cli/node_modules/dsh-code\n  Mount              /lib/index.mjs:17369:24)\n -commitPassiveMountO (file:///work/dsh-home/profiles/cli/node_modules/dsh-code\n  Fiber              /lib/index.mjs:18361:12)\n -commitPassiveMountEffec (file:///work/dsh-home/profiles/cli/node_modules/dsh-\n  s_complete             code/lib/index.mjs:18331:7)\n -commitPassiveMountEffe (file:///work/dsh-home/profiles/cli/node_modules/dsh-c\n  ts_begin              ode/lib/index.mjs:18322:12)\n -commitPassiveMountE (file:///work/dsh-home/profiles/cli/node_modules/dsh-code\n  fects              /lib/index.mjs:18313:4)\n -flushPassiveEffec (file:///work/dsh-home/profiles/cli/node_modules/dsh-code/l\n  sImpl            ib/index.mjs:19683:4)\n -flushPassiveEff (file:///work/dsh-home/profiles/cli/node_modules/dsh-code/lib\n  cts            /index.mjs:19650:13)\n -performSyncWorkO (file:///work/dsh-home/profiles/cli/node_modules/dsh-code/li\n  Root            b/index.mjs:19149:4)\n\n"
     },
     {
       "repository": "V1ki/dsh-plugin-subscriptions",
