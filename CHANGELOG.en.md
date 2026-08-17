@@ -8,27 +8,18 @@ Registry refresh commits are grouped instead of listed individually.
 
 ## [Unreleased]
 
-### Added
+### Fixed and reverted
 
-- Added a one-click full Actions scan. One manual dispatch chains 200-target waves, uses committed reports as checkpoints, skips repeated discovery and already verified exact commits, and pauses protectively on low API budget, the wave cap, or repeated lack of progress.
-- Added `registry/full-scan-state.json` to record the session, wave, remaining security and compatibility work, API allowance, and pause reason so interrupted scans can resume from committed evidence.
-- Aggregated discovery, exact-commit security scanning, and runtime compatibility into one two-hour workflow. A commit cleared by security now enters compatibility in the same run instead of waiting for another workflow.
-- Security gating now preserves the classifier's original install decision and restores it after a pass; automatic-install candidates are prioritized during backfill.
-- Added a runtime compatibility stage and `registry/compatibility-report.json`. It uses the official DSH CLI with lifecycle scripts disabled for security-cleared exact automatic sources, then checks Host startup and disposal in an offline temporary Profile.
-- Marketplace cards now distinguish static-check and runtime-compatibility states. Agent, browser, and update/rollback checks that were not actually executed remain explicitly partial instead of sharing an ambiguous Verified badge.
-- Added bounded, incremental security verification for exact plugin commits, including static malware indicators and a no-network, read-only Docker entry probe.
-- Added `registry/security-report.json`; new and changed commits remain guided until their security result is available while existing entries are backfilled in batches.
-- Untrusted runtime probes receive neither the Registry PAT nor repository write credentials.
-
-### Fixed
-
-- Guided auditing now reconciles a newly available, fully verified npm tarball into the Registry instead of failing the same workflow with a contradictory classification.
-- Guided auditing now preserves author-required manual steps, conflicting evidence, and security review gates.
-- Exhausting the GitHub API allowance during candidate validation now checkpoints completed work and defers the rest instead of discarding the entire run.
-- Guided audits read READMEs from exact-commit Raw URLs and no longer consume the discovery PAT's API allowance.
-- An oversized README or temporary per-repository network failure now leaves that entry guided with incomplete audit evidence instead of failing the entire Registry workflow.
-- The security sandbox now reports an uncommitted runtime entry or missing runtime dependency as inconclusive instead of a runtime failure, and scanner-version upgrades prioritize old results for rechecking.
-- Persistence findings now require both a scheduler/autostart signal and process-execution capability, reducing false positives from plugins that only display cron-related text.
+- Removed the unfinished malware and Agent Loop runtime checks from the stable marketplace path;
+  experimental results no longer decide whether an entry is `automatic` or `guided`.
+- Fixed the experimental gate that converted pending or review-needed results into
+  `manualSteps=true`. In the latest 3,608-entry Registry, restored automatic installation for 953
+  plugins whose original static evidence already qualified, while retaining 592 genuinely guided
+  entries.
+- Restored the scheduled Registry job to structural, exact-source, runtime-artifact, lifecycle,
+  and Profile checks only.
+- Added a Registry regression assertion that rejects experimental reasons or temporary install
+  overrides in the stable snapshot.
 
 ## [0.9.1] - 2026-08-15
 

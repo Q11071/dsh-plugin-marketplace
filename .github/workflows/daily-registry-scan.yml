@@ -1,45 +1,19 @@
-name: Refresh and verify plugin Registry
+name: Refresh verified plugin Registry
 
 on:
   schedule:
     - cron: '17 */2 * * *'
-  repository_dispatch:
-    types: [continue-full-registry-scan]
   workflow_dispatch:
-    inputs:
-      scan_mode:
-        description: Verification mode
-        required: true
-        default: incremental
-        type: choice
-        options:
-          - incremental
-          - full
-      max_plugins:
-        description: Incremental mode maximum per stage (1-500; full uses 200 per wave)
-        required: false
-        default: '100'
-
-env:
-  SCAN_MODE: ${{ (inputs.scan_mode == 'full' || github.event_name == 'repository_dispatch') && 'full' || 'incremental' }}
-  SCAN_LIMIT: ${{ (inputs.scan_mode == 'full' || github.event_name == 'repository_dispatch') && '200' || inputs.max_plugins || '100' }}
-  FULL_SCAN_CONTINUATION: ${{ github.event_name == 'repository_dispatch' && 'true' || 'false' }}
-  FULL_SCAN_SESSION: ${{ github.event.client_payload.session_id || github.run_id }}
-  FULL_SCAN_WAVE: ${{ github.event.client_payload.wave || '0' }}
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: dsh-plugin-registry-write
+  group: dsh-plugin-registry-refresh
   cancel-in-progress: false
 
 jobs:
-  refresh:
-    name: Discover and classify repositories
-    if: ${{ github.event_name != 'repository_dispatch' }}
-    permissions:
-      contents: write
+  scan:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -53,9 +27,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:test
-      - run: pnpm security:test
-      - run: pnpm compatibility:test
-      - run: pnpm full-scan:test
       - run: pnpm discovery:test
       - run: pnpm profile:test
       - run: pnpm self-update:test
@@ -65,266 +36,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
       - name: Audit every guided install classification
         run: pnpm registry:audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
       - name: Verify generated Registry
         run: pnpm registry:verify
-      - name: Commit discovery changes
+      - name: Commit Registry changes
         shell: bash
         run: |
-          git add registry/plugins.json registry/discovery.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json registry/security-report.json registry/compatibility-report.json
+          git add registry/plugins.json registry/discovery.json registry/rejected.json registry/state.json registry/install-review.json registry/guided-audit.json
           if git diff --cached --quiet; then
-            echo "Registry discovery is already current."
+            echo "Registry is already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(registry): refresh verified plugins"
-          git pull --rebase origin main
           git push
-
-  security_plan:
-    name: Plan exact-commit security checks
-    needs: refresh
-    if: ${{ always() && (needs.refresh.result == 'success' || github.event_name == 'repository_dispatch') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    outputs:
-      matrix: ${{ steps.plan.outputs.matrix }}
-      has_work: ${{ steps.plan.outputs.has_work }}
-      selected: ${{ steps.plan.outputs.selected }}
-      remaining: ${{ steps.plan.outputs.remaining }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-          persist-credentials: false
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.1.2
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
-      - id: plan
-        name: Select new, changed and backfill commits
-        run: node scripts/security-plan.mjs --limit "$SCAN_LIMIT" --batch-size 5
-      - uses: actions/upload-artifact@v7
-        with:
-          name: security-plan
-          path: .security-work/plan.json
-          retention-days: 2
-
-  security_scan:
-    name: Security scan
-    needs: security_plan
-    if: ${{ needs.security_plan.outputs.has_work == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix: ${{ fromJSON(needs.security_plan.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-          persist-credentials: false
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.1.2
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
-      - name: Pull disposable sandbox image
-        run: docker pull node:22-bookworm-slim
-      - name: Scan exact commits
-        env:
-          SECURITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
-          SECURITY_SANDBOX: '1'
-        run: node scripts/security-scan.mjs --output ".security-work/result-${{ matrix.batch }}.json"
-      - uses: actions/upload-artifact@v7
-        if: ${{ always() }}
-        with:
-          name: security-result-${{ matrix.batch }}
-          path: .security-work/result-${{ matrix.batch }}.json
-          if-no-files-found: ignore
-          retention-days: 2
-
-  compatibility_plan:
-    name: Apply security gate and plan runtime checks
-    needs: [security_plan, security_scan]
-    if: ${{ always() && needs.security_plan.result == 'success' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    outputs:
-      matrix: ${{ steps.plan.outputs.matrix }}
-      has_work: ${{ steps.plan.outputs.has_work }}
-      selected: ${{ steps.plan.outputs.selected }}
-      remaining: ${{ steps.plan.outputs.remaining }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-          persist-credentials: false
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.1.2
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
-      - uses: actions/download-artifact@v8
-        with:
-          name: security-plan
-          path: .security-results/plan
-      - uses: actions/download-artifact@v8
-        if: ${{ needs.security_plan.outputs.has_work == 'true' }}
-        continue-on-error: true
-        with:
-          pattern: security-result-*
-          path: .security-results/scans
-          merge-multiple: true
-      - name: Apply this run's security results locally
-        run: node scripts/security-merge.mjs
-      - id: plan
-        name: Select security-cleared exact commits
-        run: node scripts/compatibility-plan.mjs --limit "$SCAN_LIMIT" --batch-size 5
-      - uses: actions/upload-artifact@v7
-        with:
-          name: compatibility-plan
-          path: .compatibility-work/plan.json
-          retention-days: 2
-
-  compatibility_scan:
-    name: Runtime compatibility scan
-    needs: compatibility_plan
-    if: ${{ needs.compatibility_plan.outputs.has_work == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix: ${{ fromJSON(needs.compatibility_plan.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-          persist-credentials: false
-      - name: Pull disposable DSH runtime images
-        run: |
-          docker pull node:22-bookworm
-          docker pull node:22-bookworm-slim
-      - name: Install and test exact commits
-        env:
-          COMPATIBILITY_BATCH_JSON: ${{ toJSON(matrix.repositories) }}
-          DSH_COMPAT_VERSION: 0.1.0-rc.6
-        run: node scripts/compatibility-scan.mjs --output ".compatibility-work/result-${{ matrix.batch }}.json"
-      - uses: actions/upload-artifact@v7
-        if: ${{ always() }}
-        with:
-          name: compatibility-result-${{ matrix.batch }}
-          path: .compatibility-work/result-${{ matrix.batch }}.json
-          if-no-files-found: ignore
-          retention-days: 2
-
-  finalize:
-    name: Merge verification evidence
-    needs: [security_plan, security_scan, compatibility_plan, compatibility_scan]
-    if: ${{ always() && needs.security_plan.result == 'success' && needs.compatibility_plan.result == 'success' }}
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: main
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.1.2
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile --ignore-scripts
-      - uses: actions/download-artifact@v8
-        with:
-          name: security-plan
-          path: .security-results/plan
-      - uses: actions/download-artifact@v8
-        if: ${{ needs.security_plan.outputs.has_work == 'true' }}
-        continue-on-error: true
-        with:
-          pattern: security-result-*
-          path: .security-results/scans
-          merge-multiple: true
-      - id: security_merge
-        name: Validate and merge security evidence
-        run: node scripts/security-merge.mjs
-      - name: Refresh guided audit after applying security gates
-        if: ${{ steps.security_merge.outputs.gate_changes != '0' }}
-        run: pnpm registry:audit
-      - uses: actions/download-artifact@v8
-        with:
-          name: compatibility-plan
-          path: .compatibility-results/plan
-      - uses: actions/download-artifact@v8
-        if: ${{ needs.compatibility_plan.outputs.has_work == 'true' }}
-        continue-on-error: true
-        with:
-          pattern: compatibility-result-*
-          path: .compatibility-results/scans
-          merge-multiple: true
-      - name: Validate and merge runtime evidence
-        run: node scripts/compatibility-merge.mjs
-      - id: rate_limit
-        name: Read GitHub API budget for full-scan continuation
-        if: ${{ env.SCAN_MODE == 'full' }}
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.REGISTRY_GITHUB_TOKEN || github.token }}
-        run: |
-          remaining="$(gh api rate_limit --jq '.resources.core.remaining' 2>/dev/null || echo 0)"
-          reset="$(gh api rate_limit --jq '.resources.core.reset' 2>/dev/null || echo 0)"
-          echo "remaining=$remaining" >> "$GITHUB_OUTPUT"
-          echo "reset=$reset" >> "$GITHUB_OUTPUT"
-      - id: full_scan
-        name: Save full-scan checkpoint
-        if: ${{ env.SCAN_MODE == 'full' }}
-        env:
-          FULL_SCAN_RATE_REMAINING: ${{ steps.rate_limit.outputs.remaining }}
-          FULL_SCAN_RATE_RESET: ${{ steps.rate_limit.outputs.reset }}
-          FULL_SCAN_RATE_MINIMUM: ${{ vars.FULL_SCAN_RATE_MINIMUM || '750' }}
-          FULL_SCAN_MAX_WAVES: ${{ vars.FULL_SCAN_MAX_WAVES || '50' }}
-        run: node scripts/full-scan-progress.mjs
-      - name: Verify Registry contracts
-        run: pnpm registry:verify
-      - name: Commit aggregated verification reports
-        shell: bash
-        run: |
-          git add registry/plugins.json registry/state.json registry/install-review.json registry/guided-audit.json registry/security-report.json registry/compatibility-report.json
-          if [ -f registry/full-scan-state.json ]; then
-            git add registry/full-scan-state.json
-          fi
-          if git diff --cached --quiet; then
-            echo "Verification reports are already current."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore(verification): verify plugin commits"
-          git pull --rebase origin main
-          git push
-      - name: Start next full-scan wave
-        if: ${{ steps.full_scan.outputs.should_continue == 'true' }}
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/dispatches" \
-            -f event_type=continue-full-registry-scan \
-            -f "client_payload[session_id]=${{ steps.full_scan.outputs.session_id }}" \
-            -F "client_payload[wave]=${{ steps.full_scan.outputs.next_wave }}"

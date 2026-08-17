@@ -5,7 +5,7 @@
 **A verified DSH plugin marketplace backed by a centrally maintained Registry.**
 
 [![Version](https://img.shields.io/github/v/tag/YELEBAI/dsh-plugin-marketplace?label=version&style=flat-square)](https://github.com/YELEBAI/dsh-plugin-marketplace/tags)
-[![Registry Verification](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
+[![Registry Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
 [![License](https://img.shields.io/github/license/YELEBAI/dsh-plugin-marketplace?style=flat-square)](./LICENSE)
 ![DSH Web](https://img.shields.io/badge/DSH-Web-4f46e5?style=flat-square)
 
@@ -22,8 +22,6 @@
 | --- | --- |
 | 🔍 Automatic discovery | Scans `topic:dsh-plugin archived:false` every two hours |
 | ✅ Registry validation | Checks manifests, bundle patches, loader entries, runtime artifacts, and exact install sources |
-| 🛡️ Commit security checks | Statically scans new and changed commits for malicious behavior and probes entries in a read-only, no-network sandbox |
-| 🧪 Runtime compatibility | Installs exact sources with lifecycle scripts disabled through the official DSH CLI, then starts and disposes an isolated offline Profile |
 | ⚡ One-click install | Available only when every automatic-install requirement passes |
 | 🤖 Agent-assisted install | Creates a constrained installation Agent when builds, lifecycle scripts, or human judgment are required |
 | 🧭 Installation Skill | Makes the Agent load a bundled safe workflow that chooses an exact source, isolated build, or hard stop |
@@ -158,21 +156,16 @@ flowchart LR
     A["GitHub topic: dsh-plugin"] --> B["Incremental scan every two hours"]
     B --> C["Resolve default branch to a 40-character commit SHA"]
     C --> D["Statically validate manifests, patches, entries, and npm tarballs"]
-    D -->|"Valid"| E["Exact-commit security queue"]
-    E --> I["Static rules + isolated entry probe"]
-    I -->|"Passed; continue in this run"| J["registry/security-report.json"]
-    I -->|"Review"| F
-    J --> L["Runtime compatibility queue"]
-    L --> M["Official CLI install + offline DSH Profile"]
-    M --> N["registry/compatibility-report.json"]
-    N --> K["registry/plugins.json"]
+    D -->|"Valid"| E["registry/plugins.json"]
     D -->|"Insufficient evidence"| F["Guided-install audit"]
     D -->|"Invalid structure"| G["registry/rejected.json"]
-    K --> H["DSH Plugin Marketplace"]
+    E --> H["DSH Plugin Marketplace"]
     F --> H
 ```
 
-Discovery and static scanning never install dependencies, execute third-party code, or evaluate `!!js` values in YAML. Only after an exact source clears those stages does the separate compatibility container install it with lifecycle scripts disabled and start it. Temporary network failures preserve the last valid result instead of removing large numbers of entries from the marketplace.
+The scanner never installs dependencies, executes third-party code, or evaluates `!!js` values in YAML. Temporary network failures preserve the last valid result instead of removing large numbers of entries from the marketplace.
+
+Heuristic malware scans and Agent Loop runtime probes are currently experimental and isolated from the stable Registry. Their results cannot downgrade a plugin that passed the static install checks above from one-click to guided installation.
 
 ### Registry files
 
@@ -181,9 +174,6 @@ Discovery and static scanning never install dependencies, execute third-party co
 | [`registry/plugins.json`](./registry/plugins.json) | Verified plugins and install policies in the public v2 format |
 | [`registry/discovery.json`](./registry/discovery.json) | Categories and seven-day Star growth |
 | [`registry/guided-audit.json`](./registry/guided-audit.json) | Per-scan verification of every guided-install entry |
-| [`registry/security-report.json`](./registry/security-report.json) | Malware indicators and isolated probe results keyed by repository and exact commit |
-| [`registry/compatibility-report.json`](./registry/compatibility-report.json) | Official DSH CLI install, Host startup, disposal, and bounded per-check compatibility results |
-| `registry/full-scan-state.json` | Session, wave, remaining work, and pause-reason checkpoint created by the first one-click full scan |
 | [`registry/install-review.json`](./registry/install-review.json) | Evidence for commands, Profiles, lifecycle scripts, and runtime artifacts |
 | [`registry/rejected.json`](./registry/rejected.json) | Structurally invalid candidates and rejection reasons |
 | [`registry/state.json`](./registry/state.json) | Incremental scan state and daily Star baselines |
@@ -208,19 +198,14 @@ dsh --profile web
 
 You may also set `registryUrl` in the plugin configuration. Remote content is cached in memory for 15 minutes and supports ETag. A refresh failure first uses the most recent valid response and then falls back to the bundled snapshot. Configure the cache and timeout with `registryCacheMinutes` and `registryRequestTimeoutMs`.
 
-A custom Registry may omit `discovery.json`, `guided-audit.json`, `security-report.json`, and `compatibility-report.json`:
+A custom Registry may omit `discovery.json` and `guided-audit.json`:
 
 - without `discovery.json`, search and installation still work, but entries use the “Other” category and report zero Star growth;
 - without `guided-audit.json`, the Agent still performs read-only verification against the exact commit in the core Registry, but scanner-provided audit context is unavailable.
-- without security or compatibility reports, cards show pending states instead of pretending the checks passed.
 
 ## Automated scans and PAT usage
 
-The [aggregated verification workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours. One run discovers and classifies repositories, security-scans exact commits, immediately runtime-tests entries cleared in that same run, and finally merges both evidence reports. In manual `incremental` mode, `max_plugins` limits each stage and defaults to 100.
-
-Select `full` in a manual dispatch for a one-click full scan. The first wave refreshes repository discovery; each wave then handles up to 200 security targets and 200 security-cleared compatibility targets. After reports and `registry/full-scan-state.json` are committed, an internal `repository_dispatch` starts the next wave. Continuation waves skip the expensive discovery pass, and exact commits that already have current evidence are skipped. If a wave is interrupted, selecting `full` again resumes from the committed reports instead of rescanning completed commits.
-
-Full mode stops after all work is complete, 50 automatic waves, three consecutive waves without new evidence, or when the GitHub Core API allowance falls below 750. A protective stop records `paused` and its reason. Configure the thresholds with the `FULL_SCAN_RATE_MINIMUM` and `FULL_SCAN_MAX_WAVES` Actions Variables. A later manual `full` dispatch creates a new continuation session over the existing checkpoint.
+The [Registry Scan workflow](./.github/workflows/daily-registry-scan.yml) runs at minute 17 every two hours and can also be started manually from GitHub Actions.
 
 Scans prefer the read-only PAT stored in the `REGISTRY_GITHUB_TOKEN` Actions Secret and fall back to the repository-provided `GITHUB_TOKEN`. The PAT is used only for GitHub API reads and never for Registry commits; writes continue to use the credential provided by Actions checkout.
 
@@ -246,14 +231,6 @@ The scanner automatically partitions GitHub Search results beyond the 1,000-resu
 - bundle patch: 64 KiB
 - npm archive: 50 MiB
 - extracted npm content: 150 MiB
-
-Scheduled and incremental security stages select 100 exact commits by default; each one-click full-scan wave selects 200. Classifier-approved automatic sources come first; within that group, changed commits, newly published entries, temporary failures, and initial backfill are prioritized in that order. Work is grouped into batches of five with at most four parallel jobs. An unchanged commit with an existing result is not scanned again. New and changed commits remain temporarily guided while the result is pending, but their classifier decision is preserved; a same-run pass restores that decision and immediately feeds the compatibility stage. Pre-enforcement entries continue to backfill gradually.
-
-Compatibility runs select only automatic exact sources whose current commit passed static checks. The install phase uses the official DSH CLI with `--ignore-scripts`; only the allowlisted official DSH runtime dependency `node-pty@1.1.0` is rebuilt, while plugin and plugin-dependency lifecycle scripts remain disabled. Only a disposable directory is mounted. The runtime phase has no network, tokens, extra capabilities, Docker socket, or maintainer workspace. It starts a clean DSH baseline before the plugin Profile and verifies bounded startup and SIGTERM disposal. Agent-classified plugins also run through a market-owned offline Mock Agent turn that performs a tool call, receives `tool/result`, produces a final reply, and verifies the call ID, error flag, and message content. Client bundles receive only the official DSH platform modules and execute their ModuleLoader factory; a real browser React mount is still `inconclusive`, never a fabricated full pass.
-
-Static inspection never evaluates plugin code. It looks for reverse shells, destructive system commands, persistence, miner indicators, encoded-payload execution, credential access combined with networking, download/process execution combinations, and bundled native executables. Only entries that do not require static review enter a temporary Docker container with no network, a read-only filesystem, dropped capabilities, CPU/memory/PID limits, and no token. Missing dependencies are reported as inconclusive, not malicious.
-
-Only the final report-merging job receives repository write access. Jobs that run third-party code receive no PAT, do not persist checkout credentials, and cannot modify the host report. The merger accepts a result only after matching it to the planned repository and 40-character commit. Findings are heuristic risk signals: high-risk matches switch the plugin to guided installation and human review rather than treating one rule as a final malware verdict.
 
 ## Security and validation
 

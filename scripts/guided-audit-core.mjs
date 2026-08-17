@@ -1,29 +1,20 @@
 /** Pure install-audit decisions and deterministic npm promotion helpers. */
 
-import { isSecurityReviewReason } from './security-core.mjs'
-
 export function assessGuidedInstall(plugin, inspection, remoteCommands, npmVerification) {
   const reviewReasons = Array.isArray(inspection?.reviewReasons) ? inspection.reviewReasons : []
   const npmBlockers = reviewReasons.filter(reason => (
     reason === 'readme-profiles-conflict-with-dsh-marketplace-profiles'
     || reason === 'manifest-requires-manual-steps'
     || reason === 'registry-install-policy-requires-manual-steps'
-    || isSecurityReviewReason(reason)
   ))
   if (npmVerification.verified === true && plugin.install.profiles.length > 0 && npmBlockers.length === 0) {
     return { outcome: 'automatic-npm-candidate', reason: npmVerification.reason }
-  }
-  if (npmVerification.verified === true && npmBlockers.some(isSecurityReviewReason)) {
-    return { outcome: 'guided-security-review', reason: npmBlockers.find(isSecurityReviewReason) }
   }
   if (npmVerification.verified === true && npmBlockers.length > 0) {
     return { outcome: 'guided-conflicting-evidence', reason: npmBlockers[0] }
   }
   if (npmVerification.verified === true) {
     return { outcome: 'guided-profile-unknown', reason: 'npm-release-verified-but-compatible-profile-is-unknown' }
-  }
-  if (reviewReasons.some(isSecurityReviewReason)) {
-    return { outcome: 'guided-security-review', reason: reviewReasons.find(isSecurityReviewReason) }
   }
   const github = remoteCommands.some(command => command.source === 'github')
   const lifecycleScripts = inspection?.lifecycleScripts ?? []

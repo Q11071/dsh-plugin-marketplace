@@ -39,20 +39,6 @@ const categorySchema = z.union([
   z.literal('other'),
 ])
 
-const verificationSchema = z.object({
-  security: z.object({
-    status: z.union([z.literal('passed'), z.literal('review'), z.literal('error'), z.literal('pending')]),
-    checkedAt: z.union([z.string(), z.null()]),
-  }),
-  compatibility: z.object({
-    status: z.union([
-      z.literal('passed'), z.literal('partial'), z.literal('failed'), z.literal('timeout'),
-      z.literal('unsupported'), z.literal('error'), z.literal('pending'),
-    ]),
-    checkedAt: z.union([z.string(), z.null()]),
-  }),
-})
-
 const repoSummarySchema = z.object({
   owner: z.string(),
   repo: z.string(),
@@ -76,7 +62,6 @@ const repoSummarySchema = z.object({
   hasClient: z.boolean(),
   verifiedAt: z.string(),
   install: installMetadataSchema,
-  verification: verificationSchema,
 })
 
 const manifestSchema = z.object({

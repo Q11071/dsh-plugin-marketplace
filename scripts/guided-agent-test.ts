@@ -52,14 +52,19 @@ assert.match(skill.content, /references\/decision-matrix\.md/)
 assert.match(skill.content, /never inspect or write another DSH Workspace/)
 
 const routeCases = [
-  ['AKS1st/dsh-archived-conversations', /已提交运行产物/],
-  ['781316853/dsh-provider-quota', /隔离源码构建/],
-  ['CH4ACKO3/dsh-harmony', /隔离源码构建/],
-  ['JeremyGuo/dsh-custom-workspace', /隔离源码构建/],
+  [{ ...evidence, npmVerification: { ...evidence.npmVerification, verified: true } }, /精确 npm 版本/],
+  [{
+    ...evidence,
+    npmVerification: { ...evidence.npmVerification, verified: false },
+    current: { ...evidence.current, runtimeArtifactsCommitted: true },
+  }, /已提交运行产物/],
+  [{
+    ...evidence,
+    npmVerification: { ...evidence.npmVerification, verified: false },
+    current: { ...evidence.current, runtimeArtifactsCommitted: false },
+  }, /隔离源码构建/],
 ] as const
-for (const [repository, expectedRoute] of routeCases) {
-  const sample = await registry.guidedEvidence(repository)
-  assert(sample, `guided evidence missing for ${repository}`)
+for (const [sample, expectedRoute] of routeCases) {
   assert.match(guidedInstallRoute(sample), expectedRoute)
 }
 

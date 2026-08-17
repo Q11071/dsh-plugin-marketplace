@@ -73,29 +73,6 @@ const guidedAuditSchema = z.object({
   }).passthrough()),
 }).passthrough()
 
-const securityReportSchema = z.object({
-  schemaVersion: z.literal(1),
-  results: z.array(z.object({
-    repository: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
-    verifiedCommit: z.string().regex(/^[0-9a-f]{40}$/i),
-    scannedAt: z.iso.datetime(),
-    status: z.union([z.literal('passed'), z.literal('review'), z.literal('error')]),
-  }).passthrough()),
-}).passthrough()
-
-const compatibilityReportSchema = z.object({
-  schemaVersion: z.literal(1),
-  results: z.array(z.object({
-    repository: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
-    verifiedCommit: z.string().regex(/^[0-9a-f]{40}$/i),
-    checkedAt: z.iso.datetime(),
-    result: z.union([
-      z.literal('passed'), z.literal('partial'), z.literal('failed'), z.literal('timeout'),
-      z.literal('unsupported'), z.literal('error'),
-    ]),
-  }).passthrough()),
-}).passthrough()
-
 const installSchema = z.object({
   mode: z.union([z.literal('automatic'), z.literal('guided')]),
   source: z.union([z.literal('github'), z.literal('npm'), z.literal('tarball'), z.literal('manual')]),
@@ -293,9 +270,8 @@ export class RegistryClient {
       if (this.cache?.source === source && this.cache.etag !== null) headers['if-none-match'] = this.cache.etag
       const response = await fetch(url, { headers, signal: AbortSignal.timeout(this.timeoutMs) })
       if (response.status === 304 && this.cache?.source === source) {
-        const registry = await this.applyVerificationSidecars(this.cache.registry, source)
-        this.cache = { ...this.cache, registry, expiresAt: Date.now() + this.cacheMs }
-        return registry
+        this.cache.expiresAt = Date.now() + this.cacheMs
+        return this.cache.registry
       }
       if (!response.ok) throw new Error(`Registry returned HTTP ${String(response.status)}`)
       raw = await response.json() as unknown
@@ -303,10 +279,7 @@ export class RegistryClient {
     } else {
       throw new Error(`Unsupported Registry URL protocol ${JSON.stringify(url.protocol)}`)
     }
-    const registry = await this.applyVerificationSidecars(
-      applyDiscovery(normalizeRegistry(raw), await this.loadDiscovery(source)),
-      source,
-    )
+    const registry = applyDiscovery(normalizeRegistry(raw), await this.loadDiscovery(source))
     const names = new Set<string>()
     for (const plugin of registry.plugins) {
       const key = plugin.fullName.toLocaleLowerCase()
@@ -332,23 +305,6 @@ export class RegistryClient {
     try {
       const raw = await this.readJson(companionSource(source, 'discovery.json'))
       return discoverySchema.parse(raw)
-    } catch {
-      return undefined
-    }
-  }
-
-  /** Security and runtime compatibility are optional exact-commit sidecars. */
-  private async applyVerificationSidecars(registry: MarketplaceRegistry, source: string): Promise<MarketplaceRegistry> {
-    const [security, compatibility] = await Promise.all([
-      this.loadOptionalCompanion(source, 'security-report.json', securityReportSchema),
-      this.loadOptionalCompanion(source, 'compatibility-report.json', compatibilityReportSchema),
-    ])
-    return applyVerification(registry, security, compatibility)
-  }
-
-  private async loadOptionalCompanion<T>(source: string, filename: string, schema: z.ZodType<T>): Promise<T | undefined> {
-    try {
-      return schema.parse(await this.readJson(companionSource(source, filename)))
     } catch {
       return undefined
     }
@@ -395,15 +351,7 @@ function normalizeRegistry(raw: unknown): MarketplaceRegistry {
 function withDefaultDiscovery<T extends z.output<typeof registryPluginBaseSchema> & { install: MarketplaceRegistryPlugin['install'] }>(
   plugin: T,
 ): MarketplaceRegistryPlugin {
-  return {
-    ...plugin,
-    categories: ['other'],
-    starGrowth7d: 0,
-    verification: {
-      security: { status: 'pending', checkedAt: null },
-      compatibility: { status: 'pending', checkedAt: null },
-    },
-  }
+  return { ...plugin, categories: ['other'], starGrowth7d: 0 }
 }
 
 function applyDiscovery(
@@ -418,33 +366,6 @@ function applyDiscovery(
       const row = rows.get(plugin.fullName.toLocaleLowerCase())
       if (row === undefined) return plugin
       return { ...plugin, categories: [...new Set(row.categories)], starGrowth7d: row.starGrowth7d }
-    }),
-  }
-}
-
-function applyVerification(
-  registry: MarketplaceRegistry,
-  security: z.output<typeof securityReportSchema> | undefined,
-  compatibility: z.output<typeof compatibilityReportSchema> | undefined,
-): MarketplaceRegistry {
-  const securityRows = new Map(security?.results.map(row => [row.repository.toLocaleLowerCase(), row]) ?? [])
-  const compatibilityRows = new Map(compatibility?.results.map(row => [row.repository.toLocaleLowerCase(), row]) ?? [])
-  return {
-    ...registry,
-    plugins: registry.plugins.map((plugin) => {
-      const securityRow = securityRows.get(plugin.fullName.toLocaleLowerCase())
-      const compatibilityRow = compatibilityRows.get(plugin.fullName.toLocaleLowerCase())
-      return {
-        ...plugin,
-        verification: {
-          security: securityRow?.verifiedCommit === plugin.verifiedCommit
-            ? { status: securityRow.status, checkedAt: securityRow.scannedAt }
-            : { status: 'pending', checkedAt: null },
-          compatibility: compatibilityRow?.verifiedCommit === plugin.verifiedCommit
-            ? { status: compatibilityRow.result, checkedAt: compatibilityRow.checkedAt }
-            : { status: 'pending', checkedAt: null },
-        },
-      }
     }),
   }
 }

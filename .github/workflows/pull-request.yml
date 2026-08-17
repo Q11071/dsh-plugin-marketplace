@@ -48,8 +48,6 @@ jobs:
       - run: pnpm restart:test
       - run: pnpm self-update:test
       - run: pnpm guided-agent:test
-      - run: pnpm security:test
-      - run: pnpm compatibility:test
       - name: Build plugin
         run: pnpm build
         env:

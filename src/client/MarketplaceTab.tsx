@@ -22,9 +22,7 @@ import type {
   MarketplaceManualInstallResult,
   MarketplacePluginDetails,
   MarketplacePluginCategory,
-  MarketplaceCompatibilityStatus,
   MarketplaceRegistryPlugin,
-  MarketplaceSecurityStatus,
   MarketplaceSearchPage,
   MarketplaceRestartResult,
   MarketplaceToggleResult,
@@ -145,11 +143,6 @@ const s = {
     borderRadius: 999, padding: '2px 7px', fontSize: 10, lineHeight: '16px',
   } as React.CSSProperties,
   verifiedDot: { width: 5, height: 5, borderRadius: '50%', background: 'var(--dsw-alias-state-success-primary)', flex: 'none' } as React.CSSProperties,
-  verificationChip: {
-    display: 'inline-flex', alignItems: 'center', flex: 'none', maxWidth: 150,
-    border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 999,
-    padding: '2px 8px', fontSize: 10, lineHeight: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-  } as React.CSSProperties,
   description: { ...({ color: 'var(--dsw-alias-label-tertiary)', fontSize: 13, lineHeight: '20px', margin: 0 } as React.CSSProperties), display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', minHeight: 40 } as React.CSSProperties,
   statsRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, minHeight: 20, marginTop: 'auto' } as React.CSSProperties,
   statGroup: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 } as React.CSSProperties,
@@ -224,45 +217,6 @@ function phaseDot(phase: string): StateDotState {
   if (phase === 'done') return 'done'
   if (phase === 'failed') return 'error'
   return 'ongoing'
-}
-
-function securityLabel(status: MarketplaceSecurityStatus, t: MarketplaceTabProps['t']): string {
-  if (status === 'passed') return t('securityPassed')
-  if (status === 'review') return t('securityReview')
-  if (status === 'error') return t('securityError')
-  return t('securityPending')
-}
-
-function compatibilityLabel(status: MarketplaceCompatibilityStatus, t: MarketplaceTabProps['t']): string {
-  if (status === 'passed') return t('compatibilityPassed')
-  if (status === 'partial') return t('compatibilityPartial')
-  if (status === 'failed') return t('compatibilityFailed')
-  if (status === 'timeout') return t('compatibilityTimeout')
-  if (status === 'unsupported') return t('compatibilityUnsupported')
-  if (status === 'error') return t('compatibilityError')
-  return t('compatibilityPending')
-}
-
-function verificationTone(status: MarketplaceSecurityStatus | MarketplaceCompatibilityStatus): React.CSSProperties {
-  if (status === 'passed') {
-    return {
-      color: 'var(--dsw-alias-state-success-primary)',
-      borderColor: 'color-mix(in srgb, var(--dsw-alias-state-success-primary) 32%, transparent)',
-      background: 'color-mix(in srgb, var(--dsw-alias-state-success-primary) 9%, transparent)',
-    }
-  }
-  if (status === 'failed' || status === 'timeout' || status === 'error' || status === 'review') {
-    return {
-      color: 'var(--dsw-alias-state-error-primary)',
-      borderColor: 'color-mix(in srgb, var(--dsw-alias-state-error-primary) 32%, transparent)',
-      background: 'color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent)',
-    }
-  }
-  return {
-    color: 'var(--dsw-alias-label-tertiary)',
-    borderColor: 'var(--dsw-alias-border-l2)',
-    background: 'var(--dsw-alias-bg-layer-2)',
-  }
 }
 
 function jobKindLabel(kind: string, t: MarketplaceTabProps['t']): string {
@@ -996,13 +950,7 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
           <strong style={s.title} title={item.fullName}>
             {item.repo}
           </strong>
-          <span
-            style={{ ...s.verifiedBadge, ...verificationTone(item.verification.security.status) }}
-            title={t('securityCheck')}
-          >
-            <span style={{ ...s.verifiedDot, background: 'currentColor' }} aria-hidden='true' />
-            {securityLabel(item.verification.security.status, t)}
-          </span>
+          <span style={s.verifiedBadge}><span style={s.verifiedDot} aria-hidden='true' />{t('verified')}</span>
         </div>
         <p style={s.authorLine} title={item.owner}>{fmt(t, 'repositoryAuthor', { author: item.owner })}</p>
         <p style={s.description} title={item.description ?? undefined}>{item.description === null || item.description === '' ? '\u00A0' : item.description}</p>
@@ -1014,13 +962,7 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
           {item.updatedAt !== '' ? <span style={s.updatedCompact} title={t('updated') + ' ' + new Date(item.updatedAt).toLocaleDateString()}>{compactDate(item.updatedAt)}</span> : null}
         </div>
         <div style={s.chipRow}>
-          {item.categories.slice(0, 1).map((category) => <span key={category} style={s.chip}>{categoryLabel(category, t)}</span>)}
-          <span
-            style={{ ...s.verificationChip, ...verificationTone(item.verification.compatibility.status) }}
-            title={t('compatibilityCheck')}
-          >
-            {compatibilityLabel(item.verification.compatibility.status, t)}
-          </span>
+          {item.categories.slice(0, 2).map((category) => <span key={category} style={s.chip}>{categoryLabel(category, t)}</span>)}
         </div>
         <div style={s.actions}>
           {operationActive ? (
@@ -1078,10 +1020,6 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
               <dd style={s.kvDd}>{item.install.source} · {item.install.mode === 'automatic' ? t('automaticInstall') : t('guidedInstall')}</dd>
               <dt style={s.kvDt}>{t('profiles')}</dt>
               <dd style={s.kvDd}>{item.install.profiles.length > 0 ? item.install.profiles.join(', ') : t('profileUnknown')}</dd>
-              <dt style={s.kvDt}>{t('securityCheck')}</dt>
-              <dd style={s.kvDd}>{securityLabel(item.verification.security.status, t)}</dd>
-              <dt style={s.kvDt}>{t('compatibilityCheck')}</dt>
-              <dd style={s.kvDd}>{compatibilityLabel(item.verification.compatibility.status, t)}</dd>
             </dl>
           ) : null}
           {detail?.patch !== null && detail?.patch !== undefined ? (

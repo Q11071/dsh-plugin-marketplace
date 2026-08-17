@@ -296,6 +296,22 @@ validateBundlePatch(
 assert.equal(globalThis.__DSH_REGISTRY_EXECUTED__, false, 'YAML !!js content must never execute during validation')
 delete globalThis.__DSH_REGISTRY_EXECUTED__
 
+// Experimental verification reports must never rewrite the public install
+// classification. This also guards the one-time rollback of the old gate.
+const stableState = JSON.parse(await readFile(path.join(root, 'registry', 'state.json'), 'utf8'))
+const stableRegistry = JSON.parse(await readFile(path.join(root, 'registry', 'plugins.json'), 'utf8'))
+const publishedByName = new Map(stableRegistry.plugins.map(plugin => [plugin.fullName.toLocaleLowerCase(), plugin]))
+for (const [key, row] of Object.entries(stableState.repositories)) {
+  if (row?.status !== 'verified' || row.plugin === undefined) continue
+  assert.equal(row.inspection?.securityBaseInstall, undefined, key + ' retained an experimental install override')
+  assert.equal(
+    row.inspection?.reviewReasons?.some(reason => typeof reason === 'string' && reason.startsWith('security-scan-')),
+    false,
+    key + ' retained an experimental review reason',
+  )
+  assert.deepEqual(publishedByName.get(key)?.install, row.plugin.install, key + ' public install mode differs from stable state')
+}
+
 console.log('Registry validator tests passed')
 
 function assertInvalid(callback, label) {

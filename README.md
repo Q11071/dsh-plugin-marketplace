@@ -5,7 +5,7 @@
 **经过验证的 DSH 插件市场，以及自主维护的中心 Registry。**
 
 [![Version](https://img.shields.io/github/v/tag/YELEBAI/dsh-plugin-marketplace?label=version&style=flat-square)](https://github.com/YELEBAI/dsh-plugin-marketplace/tags)
-[![Registry Verification](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
+[![Registry Scan](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml/badge.svg)](https://github.com/YELEBAI/dsh-plugin-marketplace/actions/workflows/daily-registry-scan.yml)
 [![License](https://img.shields.io/github/license/YELEBAI/dsh-plugin-marketplace?style=flat-square)](./LICENSE)
 ![DSH Web](https://img.shields.io/badge/DSH-Web-4f46e5?style=flat-square)
 
@@ -22,8 +22,6 @@
 | --- | --- |
 | 🔍 自动发现 | 每两小时扫描一次 `topic:dsh-plugin archived:false` |
 | ✅ Registry 验证 | 检查 manifest、bundle patch、loader entry、运行产物和精确安装来源 |
-| 🛡️ Commit 安全复验 | 对新增和变更 commit 做恶意行为静态检测，并在无网络只读沙箱中探测入口 |
-| 🧪 运行时兼容性 | 用官方 DSH CLI 禁用生命周期脚本安装精确来源，再在断网临时 Profile 中启动和释放 |
 | ⚡ 一键安装 | 仅对全部自动安装条件均通过的插件开放 |
 | 🤖 Agent 安装 | 为需要构建、生命周期脚本或人工判断的插件创建受约束的安装 Agent |
 | 🧭 安装 Skill | Agent 强制加载内置安全工作流，自动选择精确来源、隔离构建或停止路径 |
@@ -155,21 +153,16 @@ flowchart LR
     A["GitHub topic: dsh-plugin"] --> B["两小时增量扫描"]
     B --> C["锁定默认分支的 40 位 commit SHA"]
     C --> D["静态验证 manifest、patch、入口和 npm tarball"]
-    D -->|"验证通过"| E["精确 commit 安全队列"]
-    E --> I["静态规则 + 隔离入口探测"]
-    I -->|"通过，同轮继续"| J["registry/security-report.json"]
-    I -->|"需复核"| F
-    J --> L["运行时兼容性队列"]
-    L --> M["官方 CLI 安装 + 断网 DSH Profile"]
-    M --> N["registry/compatibility-report.json"]
-    N --> K["registry/plugins.json"]
+    D -->|"验证通过"| E["registry/plugins.json"]
     D -->|"证据不足"| F["引导安装审计"]
     D -->|"结构无效"| G["registry/rejected.json"]
-    K --> H["DSH 插件市场"]
+    E --> H["DSH 插件市场"]
     F --> H
 ```
 
-候选发现与静态扫描阶段不会安装依赖、执行第三方代码，也不会解析 YAML 中的 `!!js` 内容。只有精确来源通过这些阶段后，独立兼容性容器才会禁用生命周期脚本安装并启动插件。临时网络失败会保留上一次有效结果，不会导致市场条目批量下架。
+扫描器不会安装依赖、执行第三方代码，也不会解析 YAML 中的 `!!js` 内容。临时网络失败会保留上一次有效结果，不会导致市场条目批量下架。
+
+恶意代码启发式扫描和 Agent Loop 运行时探测目前属于实验项目，与稳定 Registry 完全隔离；实验结果不会把已通过上述静态安装检查的插件从一键安装降级为引导安装。
 
 ### Registry 文件
 
@@ -178,9 +171,6 @@ flowchart LR
 | [`registry/plugins.json`](./registry/plugins.json) | 已验证插件及其安装策略，公开格式为 v2 |
 | [`registry/discovery.json`](./registry/discovery.json) | 分类与最近 7 天 Star 增长数据 |
 | [`registry/guided-audit.json`](./registry/guided-audit.json) | 所有引导安装条目的逐轮复验结果 |
-| [`registry/security-report.json`](./registry/security-report.json) | 按仓库和精确 commit 保存的恶意行为检测与隔离探测结果 |
-| [`registry/compatibility-report.json`](./registry/compatibility-report.json) | 官方 DSH CLI 安装、Host 启动、释放及受限分项兼容性结果 |
-| `registry/full-scan-state.json` | 一键全量扫描首次运行后生成的会话、轮次、剩余工作与暂停原因断点 |
 | [`registry/install-review.json`](./registry/install-review.json) | 安装命令、Profile、生命周期脚本与运行产物证据 |
 | [`registry/rejected.json`](./registry/rejected.json) | 未通过结构验证的候选及原因 |
 | [`registry/state.json`](./registry/state.json) | 增量扫描状态与每日 Star 基线 |
@@ -205,19 +195,14 @@ dsh --profile web
 
 也可以在插件配置中设置 `registryUrl`。远程内容默认在内存中缓存 15 分钟并支持 ETag；刷新失败时先使用最近一次有效内容，再回退到包内快照。缓存时间和超时可通过 `registryCacheMinutes`、`registryRequestTimeoutMs` 调整。
 
-自建 Registry 可以不提供 `discovery.json`、`guided-audit.json`、`security-report.json` 和 `compatibility-report.json`：
+自建 Registry 可以不提供 `discovery.json` 和 `guided-audit.json`：
 
 - 缺少 `discovery.json` 时，插件仍可搜索和安装，但分类显示为“其他”，Star 增长为 0；
 - 缺少 `guided-audit.json` 时，Agent 仍会依据核心 Registry 的精确 commit 做只读核验，但没有扫描器的辅助审计信息。
-- 缺少安全或兼容性报告时，市场卡片会显示“待静态检查”或“待兼容性验证”，不会伪装成通过。
 
 ## 自动扫描与 PAT
 
-[聚合验证工作流](./.github/workflows/daily-registry-scan.yml) 默认每两小时在第 17 分钟执行。一次运行会依次完成仓库发现与安装分类、精确 commit 安全扫描、对本轮安全通过条目的运行时兼容性验证，最后统一合并两份报告，不再等待下一条工作流。手动运行选择 `incremental` 时，可用 `max_plugins` 控制两个阶段各自最多处理的条目数，默认均为 100。
-
-手动选择 `full` 即可启动一次一键全量扫描。首轮先刷新仓库发现，之后每轮处理最多 200 个安全目标和 200 个已通过安全门禁的兼容性目标；报告和 `registry/full-scan-state.json` 提交成功后，工作流使用内部 `repository_dispatch` 自动启动下一轮。后续轮次不会重复执行全仓库发现，已具有当前精确 commit 结果的条目也会自动跳过。这样即使某轮被中断，再次选择 `full` 也会直接从现有报告继续，而不是重扫已经完成的 commit。
-
-全量模式最多自动接力 50 轮，并在连续 3 轮没有新增证据、GitHub Core API 剩余额度低于 750，或所有待处理项已经完成时停止。前两项会将状态写为 `paused` 并记录原因；额度下限与轮数上限可分别用 Actions Variables `FULL_SCAN_RATE_MINIMUM`、`FULL_SCAN_MAX_WAVES` 调整。暂停后再次手动选择 `full` 会基于现有断点创建新的续扫会话。
+[Registry Scan 工作流](./.github/workflows/daily-registry-scan.yml) 默认每两小时在第 17 分钟执行，也支持在 GitHub Actions 页面手动运行。
 
 扫描优先使用 Actions Secret `REGISTRY_GITHUB_TOKEN` 中的只读 PAT；未配置时回退到仓库自动提供的 `GITHUB_TOKEN`。PAT 只用于读取 GitHub API，不参与 Registry 提交；写回仓库仍使用 Actions checkout 的内置凭据。
 
@@ -243,14 +228,6 @@ pnpm registry:audit
 - bundle patch：64 KiB
 - npm 压缩包：50 MiB
 - npm 解包内容：150 MiB
-
-安全阶段的定时/增量扫描默认每轮选择 100 个精确 commit，一键全量模式每轮选择 200 个。分类器判断可自动安装的条目优先，其内部优先级依次为 commit 已变化、新收录、上次临时失败和首次存量回填，并按每批 5 个、最多 4 批并行执行。未变化且已有结果的 commit 不会重复扫描。新收录或发生变化的 commit 在结果产生前会临时保持引导安装，但状态中会保存分类器的原始安装决策；若本轮安全检查通过，会立即恢复该决策并进入同一次运行的兼容性阶段。启用安全策略前已经收录的条目继续在后台逐批补齐。
-
-静态检测不会执行插件代码，主要寻找反向 Shell、破坏性系统命令、持久化、矿工特征、编码载荷执行、凭据读取与联网组合、下载与进程执行组合，以及仓库内原生可执行文件。静态检查未要求人工复核时，Host 入口才会被放入无网络、只读文件系统、无额外 capability、受内存/PID/CPU 限制且不包含 Token 的临时 Docker 容器中导入。依赖缺失会记录为“不确定”，不会误报为恶意。
-
-兼容性工作流只选择当前精确 commit 已通过静态检查、且具有精确自动安装来源的插件。安装阶段使用官方 DSH CLI 和 `--ignore-scripts`，仅对白名单中的官方 DSH `node-pty@1.1.0` 运行时依赖执行重建，并只挂载一次性临时目录；插件及其依赖的生命周期脚本始终不会执行。运行阶段移除网络、Token、额外 capability 和宿主工作区，先启动干净 DSH 基线，再启动插件 Profile 并检查是否能在 SIGTERM 后释放。Agent 类插件还会运行市场自有的无网络 Mock Agent 回路，完成一次工具调用、`tool/result` 和最终回复，并核对调用 ID、错误位和消息内容。Client Bundle 只注入 DSH 官方平台模块并执行 ModuleLoader factory；真正的浏览器 React 挂载尚未执行，因此会诚实记录为 `inconclusive`，不会伪装成完整兼容性通过。
-
-只有最终合并报告的任务拥有仓库写权限。运行第三方代码的沙箱任务不接收 PAT、不持久化 checkout 凭据，也不能修改宿主报告；合并器会再次核对计划中的仓库与 40 位 commit 后才接受结果。检测结果为启发式风险信号，命中高风险规则时转为引导安装和人工复核，不把单条规则当作恶意代码的最终定论。
 
 ## 安全与验证规则
 
