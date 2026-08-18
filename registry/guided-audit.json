@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-18T20:52:26.711Z",
-  "total": 691,
+  "generatedAt": "2026-08-18T22:49:44.324Z",
+  "total": 693,
   "groups": {
-    "local-or-unparsed-command-only": 360,
+    "local-or-unparsed-command-only": 361,
     "no-install-command-found": 108,
-    "remote-command-found": 223
+    "remote-command-found": 224
   },
   "rows": [
     {
@@ -4872,7 +4872,7 @@
       "repository": "chnjames/dsh-plugin-market",
       "packageName": "dsh-plugin-market",
       "version": "0.3.0",
-      "verifiedCommit": "648528c22e7cee6834e00bba4350955c84388e82",
+      "verifiedCommit": "9b03e3bdb1150c1e6e920c1982e9aeb44b09e507",
       "readmePath": "README.md",
       "commands": [
         {
@@ -16965,7 +16965,7 @@
       "repository": "meisam2236/agent-board",
       "packageName": "dsh-agent-board",
       "version": "0.1.0",
-      "verifiedCommit": "f43957aeb0c90c0ff138d3fd951654b1093d68df",
+      "verifiedCommit": "2de2d3a3c190eb31ba0659890c707846cf2eba41",
       "readmePath": "README.md",
       "commands": [
         {
@@ -20668,6 +20668,65 @@
       }
     },
     {
+      "repository": "Palaiologos1453/dsh-worktree-studio",
+      "packageName": "dsh-worktree-studio",
+      "version": "0.1.1",
+      "verifiedCommit": "6265c9691d297a559498ca81327b07c0140d7c8f",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-worktree-studio",
+          "profile": "web",
+          "spec": "dsh-worktree-studio",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile web add github:Palaiologos1453/dsh-worktree-studio",
+          "profile": "web",
+          "spec": "github:Palaiologos1453/dsh-worktree-studio",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-worktree-studio",
+          "profile": "web",
+          "spec": "dsh-worktree-studio",
+          "source": "npm"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-worktree-studio",
+          "profile": "web",
+          "spec": "dsh-worktree-studio",
+          "source": "npm"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-worktree-studio@0.1.1",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-version-not-published"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": [
+          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
+        ]
+      }
+    },
+    {
       "repository": "Paloma966/dsh-socrates",
       "packageName": "dsh-socrates",
       "version": "0.1.0",
@@ -21912,7 +21971,7 @@
       "repository": "rand0wn/dsh-minimal-anchor",
       "packageName": "dsh-minimal-anchor",
       "version": "0.1.0",
-      "verifiedCommit": "64bce8637531166afe3a7709e8ddc9c0155016d7",
+      "verifiedCommit": "d450e212eadecf5e8370e6dba870f03e5b4d2977",
       "readmePath": "README.md",
       "commands": [
         {
@@ -29281,6 +29340,47 @@
       "npmVerification": {
         "verified": false,
         "spec": "paper-plane-x-dsh@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": [
+          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
+        ]
+      }
+    },
+    {
+      "repository": "Windsland52/dsh-auto-retry",
+      "packageName": "@dsh-external/dsh-auto-retry",
+      "version": "0.1.0",
+      "verifiedCommit": "f914092e41f799b6a9a3c0a70b4ceaf0630974c6",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add \"github:Windsland52/dsh-auto-retry#main\"",
+          "profile": "web",
+          "spec": "github:Windsland52/dsh-auto-retry#main",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "@dsh-external/dsh-auto-retry@0.1.0",
         "reason": "npm-version-not-published"
       },
       "assessment": {
