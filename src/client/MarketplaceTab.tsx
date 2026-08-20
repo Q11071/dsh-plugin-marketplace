@@ -750,8 +750,6 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const installedNeedle = installedQuery.trim().toLocaleLowerCase()
   const enabledInstalledCount = installedEntries.filter((entry) => entry.linked && entry.enabled).length
   const disabledInstalledCount = installedEntries.filter((entry) => entry.linked && !entry.enabled).length
-  const updateableEntries = installedEntries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
-  const selectedUpdateEntries = updateableEntries.filter((entry) => selectedUpdates.has(entry.packageName))
   const visibleInstalledEntries = installedEntries.filter((entry) => {
     if (installedFilter === 'enabled' && (!entry.linked || !entry.enabled)) return false
     if (installedFilter === 'disabled' && (!entry.linked || entry.enabled)) return false
@@ -762,6 +760,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       entry.version,
     ].some(value => value.toLocaleLowerCase().includes(installedNeedle))
   })
+  const visibleUpdateableEntries = visibleInstalledEntries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
+  const selectedUpdateEntries = visibleUpdateableEntries.filter((entry) => selectedUpdates.has(entry.packageName))
   const installedEmptyMessage = installedNeedle !== ''
     ? t('emptyInstalledSearch')
     : installedFilter === 'enabled'
@@ -923,7 +923,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
               })
             }}
             onUpdateSelected={() => { openBatchUpdate(selectedUpdateEntries) }}
-            onUpdateAll={() => { openBatchUpdate(updateableEntries) }}
+            onUpdateAll={() => { openBatchUpdate(visibleUpdateableEntries) }}
             onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
             onSetEnabled={onSetEnabled}
             onAgentUpdate={(entry) => {

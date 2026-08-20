@@ -7,7 +7,7 @@ import { strict as assert } from 'node:assert'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { JobTable, linkedPnpmStore, pnpmArgsFor } from '../src/host/installer.ts'
+import { JobTable, ProfileMutationQueue, linkedPnpmStore, pnpmArgsFor } from '../src/host/installer.ts'
 
 let passed = 0
 function ok(name: string, fn: () => void): void {
@@ -96,6 +96,43 @@ try {
   ok('a new Profile mutation can start after the previous job settles', () => {
     assert.equal(jobs.create('update', 'second-plugin').packageName, 'second-plugin')
   })
+
+  const queuedJobs = new JobTable()
+  const queuedFirst = queuedJobs.create('update', 'first-plugin', true)
+  const queuedSecond = queuedJobs.create('update', 'second-plugin', true)
+  ok('batch jobs can be tracked together while Profile writes remain queued', () => {
+    assert.equal(queuedJobs.hasActive(), true)
+    assert.equal(queuedJobs.get(queuedFirst.jobId)?.packageName, 'first-plugin')
+    assert.equal(queuedJobs.get(queuedSecond.jobId)?.packageName, 'second-plugin')
+  })
+
+  const queue = new ProfileMutationQueue()
+  const order: string[] = []
+  let releaseFirst!: () => void
+  const firstGate = new Promise<void>((resolve) => { releaseFirst = resolve })
+  const firstMutation = queue.enqueue(async () => {
+    order.push('first:start')
+    await firstGate
+    order.push('first:end')
+  })
+  const secondMutation = queue.enqueue(async () => { order.push('second') })
+  await new Promise<void>((resolve) => { setImmediate(resolve) })
+  ok('queued Profile mutations do not overlap', () => assert.deepEqual(order, ['first:start']))
+  releaseFirst()
+  await Promise.all([firstMutation, secondMutation])
+  ok('queued Profile mutations preserve acceptance order', () => {
+    assert.deepEqual(order, ['first:start', 'first:end', 'second'])
+  })
+
+  const recoveringQueue = new ProfileMutationQueue()
+  const expectedFailure = recoveringQueue.enqueue(async () => {
+    throw new Error('expected mutation failure')
+  })
+  const afterFailure = recoveringQueue.enqueue(async () => 'continued')
+  await assert.rejects(expectedFailure, /expected mutation failure/)
+  assert.equal(await afterFailure, 'continued')
+  passed += 1
+  console.log('ok - a failed Profile mutation does not stall the queue')
 } finally {
   rmSync(tmp, { recursive: true, force: true })
 }

@@ -55,7 +55,15 @@ assert.deepEqual(applySelfUpdate(installed, target, 'web'), {
   canUpdate: true,
   install: target.install,
 })
-const currentVersion = applySelfUpdate({ ...installed, version: '0.5.0' }, target, 'web')
+const staleCurrentVersion = applySelfUpdate({ ...installed, version: '0.5.0' }, target, 'web')
+assert.equal(staleCurrentVersion.updateAvailable, true)
+assert.equal(staleCurrentVersion.availableVersion, null)
+assert.equal(staleCurrentVersion.availableVersionSource, null)
+const currentVersion = applySelfUpdate({
+  ...installed,
+  version: '0.5.0',
+  currentSpec: 'github:' + SELF_REPOSITORY + '#' + commit,
+}, target, 'web')
 assert.equal(currentVersion.updateAvailable, false)
 assert.equal(currentVersion.availableVersion, null)
 assert.equal(currentVersion.availableVersionSource, null)

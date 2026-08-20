@@ -51,7 +51,7 @@ import { readProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
 import { buildGuidedAgentTask } from './guided-agent.ts'
 import { loadInstallSkill, type MarketplaceSkillRegistration } from './install-skill.ts'
-import { JobTable, runPnpmJob, type JobRecord } from './installer.ts'
+import { JobTable, ProfileMutationQueue, runPnpmJob, type JobRecord } from './installer.ts'
 import { parseManualInstall } from './manual-install.ts'
 import { scheduleProcessRestart } from './restart.ts'
 import {
@@ -146,7 +146,7 @@ export class MarketplaceService extends TypertRemoteService {
   private pendingInstallResolution = 0
   private restartPending = false
   /** 同一 Profile 的写操作排队执行，避免批量更新并发改写锁文件。 */
-  private mutationTail: Promise<void> = Promise.resolve()
+  private readonly mutationQueue = new ProfileMutationQueue()
 
   constructor(ctx: Context, config: RegistryConfig) {
     super(ctx, 'marketplace')
@@ -427,6 +427,10 @@ export class MarketplaceService extends TypertRemoteService {
         }
         const versionOrder = compareSemver(registered.version, entry.version)
         entry.updateAvailable = versionOrder > 0
+          || (versionOrder === 0
+            && registered.install.source === 'github'
+            && isGitHubSpec(entry.currentSpec)
+            && !entry.currentSpec.toLocaleLowerCase().includes(registered.verifiedCommit.toLocaleLowerCase()))
         entry.availableVersion = versionOrder > 0 ? registered.version : null
         entry.availableVersionSource = versionOrder > 0 ? 'registry' : null
         entry.canUpdate = registered.install.mode === 'automatic'
@@ -658,9 +662,9 @@ export class MarketplaceService extends TypertRemoteService {
         const conflict = this.installConflict(details, before, profile.dir)
         if (conflict !== null) return conflict
       }
-      const job = this.jobs.create(kind, packageName)
+      const job = this.jobs.create(kind, packageName, allowQueuedMutation)
       const spec = executableSpec(registered)
-      this.enqueueMutation(() => this.driveInstall(
+      void this.mutationQueue.enqueue(() => this.driveInstall(
         job,
         profile,
         spec,
@@ -679,12 +683,6 @@ export class MarketplaceService extends TypertRemoteService {
 
   private profileMutationBusy(): boolean {
     return this.pendingInstallResolution > 0 || this.jobs.hasActive()
-  }
-
-  private enqueueMutation(work: () => Promise<void>): void {
-    const scheduled = this.mutationTail.catch(() => undefined).then(work)
-    this.mutationTail = scheduled.catch(() => undefined)
-    void scheduled
   }
 
   /** Read main/package.json directly, then freeze the update to its resolved commit. */
@@ -930,6 +928,10 @@ function executableSpec(plugin: MarketplaceRegistryPlugin | SelfUpdateTarget): s
     return expected
   }
   throw new RegistryError('Only Registry entries pinned to an exact GitHub commit or verified npm release can be installed automatically.')
+}
+
+function isGitHubSpec(value: string): boolean {
+  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
 }
 
 function validPackageName(value: string): boolean {
