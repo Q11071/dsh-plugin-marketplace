@@ -13,7 +13,7 @@ import type {
 } from '../types.ts'
 
 const MAX_LOG_CHARS = 65536
-const MAX_JOBS = 8
+const MAX_JOBS = 64
 const WINDOWS_ABSOLUTE_PATH = /^(?:[A-Za-z]:[\\/]|\\\\)/
 
 function resolveStoreDir(dir: string, storeDir: string): string {
@@ -50,8 +50,8 @@ export class JobTable {
   private readonly jobs = new Map<string, JobRecord>()
   private seq = 0
 
-  create(kind: MarketplaceJobKind, packageName: string): JobRecord {
-    if (this.hasActive()) {
+  create(kind: MarketplaceJobKind, packageName: string, allowQueued = false): JobRecord {
+    if (!allowQueued && this.hasActive()) {
       throw new Error('Another Profile plugin operation is already in progress.')
     }
     this.seq += 1
@@ -69,9 +69,9 @@ export class JobTable {
     }
     this.jobs.set(record.jobId, record)
     while (this.jobs.size > MAX_JOBS) {
-      const oldest = this.jobs.keys().next().value
-      if (oldest === undefined) break
-      this.jobs.delete(oldest)
+      const oldestFinished = [...this.jobs.entries()].find(([, job]) => job.finishedAt !== null)?.[0]
+      if (oldestFinished === undefined) break
+      this.jobs.delete(oldestFinished)
     }
     return record
   }
@@ -124,6 +124,17 @@ export class JobTable {
       outcome: job.outcome === null ? null : { ...job.outcome },
       failure: job.failure === null ? null : { ...job.failure },
     }
+  }
+}
+
+/** Serialize Profile mutations while allowing every accepted job to be tracked. */
+export class ProfileMutationQueue {
+  private tail: Promise<void> = Promise.resolve()
+
+  enqueue(work: () => Promise<void>): Promise<void> {
+    const scheduled = this.tail.catch(() => undefined).then(work)
+    this.tail = scheduled.catch(() => undefined)
+    return scheduled
   }
 }
 

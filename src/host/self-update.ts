@@ -53,22 +53,30 @@ export function selfUpdateTarget(details: MarketplacePluginDetails): SelfUpdateT
   }
 }
 
-/** Decorate the installed row without treating same-version repository commits as releases. */
+/** Decorate the installed row, including a newer verified commit at the same version. */
 export function applySelfUpdate(
   entry: MarketplaceInstalledEntry,
   target: SelfUpdateTarget,
   profile: string,
 ): MarketplaceInstalledEntry {
+  const versionOrder = compareSemver(target.version, entry.version)
+  const commitChanged = versionOrder === 0
+    && isGitHubSpec(entry.currentSpec)
+    && !entry.currentSpec.toLocaleLowerCase().includes(target.verifiedCommit.toLocaleLowerCase())
   return {
     ...entry,
     registryRepo: target.fullName,
-    availableVersion: target.version,
-    availableVersionSource: 'repository',
+    availableVersion: versionOrder > 0 ? target.version : null,
+    availableVersionSource: versionOrder > 0 ? 'repository' : null,
     verifiedCommit: target.verifiedCommit,
-    updateAvailable: compareSemver(target.version, entry.version) > 0,
+    updateAvailable: versionOrder > 0 || commitChanged,
     canUpdate: target.install.profiles.includes(profile),
     install: target.install,
   }
+}
+
+function isGitHubSpec(value: string): boolean {
+  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
 }
 
 /** Compare semver values without introducing a runtime dependency. */

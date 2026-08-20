@@ -243,6 +243,22 @@ export interface MarketplaceJobHandle {
   jobId: string
 }
 
+/** 一次批量更新中已进入队列的插件任务。 */
+export interface MarketplaceBatchUpdateJob extends MarketplaceJobHandle {
+  packageName: string
+}
+
+/** 多个 Registry 固定来源的更新请求。 */
+export interface MarketplaceBatchUpdateRequest {
+  updates: MarketplaceInstallRequest[]
+}
+
+/** 已接受任务及未能加入队列的条目。 */
+export interface MarketplaceBatchUpdateResult {
+  jobs: MarketplaceBatchUpdateJob[]
+  failures: Array<{ repo: string; message: string }>
+}
+
 /** Restricted command-line install request; the Host parses it without a shell. */
 export interface MarketplaceManualInstallRequest {
   command: string
@@ -258,6 +274,7 @@ export interface MarketplaceManualInstallResult extends MarketplaceJobHandle {
 export type MarketplaceSearchOutcome = MarketplaceResult<MarketplaceSearchPage>
 export type MarketplaceDetailsOutcome = MarketplaceResult<MarketplacePluginDetails>
 export type MarketplaceInstallOutcome = MarketplaceResult<MarketplaceJobHandle>
+export type MarketplaceBatchUpdateOutcome = MarketplaceResult<MarketplaceBatchUpdateResult>
 export type MarketplaceManualInstallOutcome = MarketplaceResult<MarketplaceManualInstallResult>
 export type MarketplaceJobStatusOutcome = MarketplaceResult<MarketplaceJobStatus>
 export type MarketplaceInstalledOutcome = MarketplaceResult<MarketplaceInstalled>

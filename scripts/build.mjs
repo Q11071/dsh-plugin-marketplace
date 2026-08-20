@@ -22,7 +22,8 @@ function resolveEsbuild(checkout) {
 }
 
 const esbuild = require(resolveEsbuild(checkout))
-const zod = path.dirname(require.resolve('zod/package.json'))
+const zod = path.join(root, 'node_modules', 'zod')
+if (!existsSync(path.join(zod, 'package.json'))) throw new Error('zod is not installed under the plugin workspace')
 
 // The loader module table: every entry the browser require can answer
 // (platform seed + the documented runtime-store exemption).
@@ -66,6 +67,7 @@ await esbuild.build({
   format: 'esm',
   target: 'es2024',
   outfile: 'lib/typert.js',
+  preserveSymlinks: true,
   alias: { zod },
 })
 
@@ -77,6 +79,7 @@ await esbuild.build({
   format: 'esm',
   target: 'es2024',
   outfile: 'lib/remote.js',
+  preserveSymlinks: true,
   alias: { zod },
 })
 
@@ -92,6 +95,7 @@ await esbuild.build({
   tsconfigRaw: { compilerOptions: { alwaysStrict: true } },
   jsx: 'automatic',
   outfile: 'lib/client.js',
+  preserveSymlinks: true,
   external: PLATFORM_EXTERNALS,
   alias: { zod },
   banner: { js: BANNER },

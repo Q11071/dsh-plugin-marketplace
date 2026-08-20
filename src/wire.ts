@@ -189,6 +189,10 @@ const installRequestSchema = z.object({
   ref: z.string(),
 })
 
+const batchUpdateRequestSchema = z.object({
+  updates: z.array(installRequestSchema).min(1).max(50),
+})
+
 const manualInstallRequestSchema = z.object({ command: z.string() })
 
 const manualInstallValueSchema = z.object({
@@ -238,6 +242,11 @@ const agentWorkspaceRequestSchema = z.object({ workspaceDir: z.string() })
 const agentWorkspaceValueSchema = z.object({
   workspaceDir: z.string(),
   workspaceDirCustom: z.boolean(),
+})
+
+const batchUpdateValueSchema = z.object({
+  jobs: z.array(z.object({ jobId: z.string(), packageName: z.string() })),
+  failures: z.array(z.object({ repo: z.string(), message: z.string() })),
 })
 
 const diagnoseConflictsValueSchema = z.object({
@@ -304,6 +313,7 @@ export const TYPERT = {
     invocation('installPlugin', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('manualInstall', [param('request', manualInstallRequestSchema, `${REQUEST_TYPES}MarketplaceManualInstallRequest`)], result(resultSchema(manualInstallValueSchema), `${REQUEST_TYPES}MarketplaceManualInstallOutcome`)),
     invocation('update', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
+    invocation('updateBatch', [param('request', batchUpdateRequestSchema, `${REQUEST_TYPES}MarketplaceBatchUpdateRequest`)], result(resultSchema(batchUpdateValueSchema), `${REQUEST_TYPES}MarketplaceBatchUpdateOutcome`)),
     invocation('uninstall', [param('request', uninstallRequestSchema, `${REQUEST_TYPES}MarketplaceUninstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('setEnabled', [param('request', toggleRequestSchema, `${REQUEST_TYPES}MarketplaceToggleRequest`)], result(resultSchema(toggleValueSchema), `${REQUEST_TYPES}MarketplaceToggleOutcome`)),
     invocation('jobStatus', [param('request', jobStatusRequestSchema, `${REQUEST_TYPES}MarketplaceJobStatusRequest`)], result(resultSchema(jobStatusValueSchema), `${REQUEST_TYPES}MarketplaceJobStatusOutcome`)),
