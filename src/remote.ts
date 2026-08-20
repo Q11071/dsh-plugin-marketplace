@@ -11,6 +11,8 @@ import type {
   MarketplaceAgentWorkspace,
   MarketplaceAgentWorkspaceRequest,
   MarketplaceDetailsRequest,
+  MarketplaceBatchUpdateRequest,
+  MarketplaceBatchUpdateResult,
   MarketplaceDiagnoseConflictsResult,
   MarketplaceGuidedAgentRequest,
   MarketplaceGuidedAgentTask,
@@ -43,6 +45,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     installPlugin: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     manualInstall: (request: MarketplaceManualInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceManualInstallResult>>>
     update: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    updateBatch: (request: MarketplaceBatchUpdateRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchUpdateResult>>>
     uninstall: (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     setEnabled: (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     jobStatus: (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
@@ -61,6 +64,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/installPlugin': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/manualInstall': (request: MarketplaceManualInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceManualInstallResult>>>
     'marketplace/update': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    'marketplace/updateBatch': (request: MarketplaceBatchUpdateRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchUpdateResult>>>
     'marketplace/uninstall': (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/setEnabled': (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
     'marketplace/jobStatus': (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>

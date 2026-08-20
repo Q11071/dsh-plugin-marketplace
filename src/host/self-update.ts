@@ -59,13 +59,14 @@ export function applySelfUpdate(
   target: SelfUpdateTarget,
   profile: string,
 ): MarketplaceInstalledEntry {
+  const versionOrder = compareSemver(target.version, entry.version)
   return {
     ...entry,
     registryRepo: target.fullName,
-    availableVersion: target.version,
-    availableVersionSource: 'repository',
+    availableVersion: versionOrder > 0 ? target.version : null,
+    availableVersionSource: versionOrder > 0 ? 'repository' : null,
     verifiedCommit: target.verifiedCommit,
-    updateAvailable: compareSemver(target.version, entry.version) > 0,
+    updateAvailable: versionOrder > 0,
     canUpdate: target.install.profiles.includes(profile),
     install: target.install,
   }

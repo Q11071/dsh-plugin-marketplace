@@ -55,7 +55,14 @@ assert.deepEqual(applySelfUpdate(installed, target, 'web'), {
   canUpdate: true,
   install: target.install,
 })
-assert.equal(applySelfUpdate({ ...installed, version: '0.5.0' }, target, 'web').updateAvailable, false)
+const currentVersion = applySelfUpdate({ ...installed, version: '0.5.0' }, target, 'web')
+assert.equal(currentVersion.updateAvailable, false)
+assert.equal(currentVersion.availableVersion, null)
+assert.equal(currentVersion.availableVersionSource, null)
+const newerInstalledVersion = applySelfUpdate({ ...installed, version: '0.6.0' }, target, 'web')
+assert.equal(newerInstalledVersion.updateAvailable, false)
+assert.equal(newerInstalledVersion.availableVersion, null)
+assert.equal(newerInstalledVersion.availableVersionSource, null)
 assert.equal(applySelfUpdate(installed, target, 'headless').canUpdate, false)
 assert.equal(compareSemver('1.0.0', '1.0.0-rc.1'), 1)
 assert.throws(() => selfUpdateTarget({ ...details, resolvedRef: 'main' }))

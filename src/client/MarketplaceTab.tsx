@@ -12,6 +12,7 @@ import {
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
   MarketplaceAgentWorkspace,
+  MarketplaceBatchUpdateResult,
   MarketplaceConflict,
   MarketplaceDiagnoseConflictsResult,
   MarketplaceInstalled,
@@ -42,6 +43,7 @@ export interface MarketplaceTabInjected {
   install: (repo: string, ref: string) => Promise<string>
   manualInstall: (command: string) => Promise<MarketplaceManualInstallResult>
   update: (repo: string, ref: string) => Promise<string>
+  updateBatch: (updates: Array<{ repo: string; ref: string }>) => Promise<MarketplaceBatchUpdateResult>
   uninstall: (packageName: string) => Promise<string>
   setEnabled: (packageName: string, enabled: boolean) => Promise<MarketplaceToggleResult>
   installLocation: () => Promise<MarketplaceInstallLocation>
@@ -68,14 +70,16 @@ type ViewState =
   | { status: 'ready'; page: MarketplaceSearchPage }
 
 type ConfirmRequest = {
-  mode: 'install' | 'manual-install' | 'update' | 'uninstall' | 'restart'
+  mode: 'install' | 'manual-install' | 'update' | 'batch-update' | 'uninstall' | 'restart'
   repo: string
   ref: string
   packageName: string
   command: string
+  updates?: MarketplaceInstalledEntry[]
 }
 
 type Subpage = 'catalog' | 'installed' | 'management'
+type InstalledFilter = 'all' | 'enabled' | 'disabled'
 type RestartState = 'idle' | 'requesting' | 'restarting'
 
 type StartingAction = { packageName: string; kind: MarketplaceJobKind }
@@ -174,6 +178,7 @@ const s = {
   tag: { color: 'var(--dsw-alias-state-success-primary)', fontSize: 11, lineHeight: '16px', flex: 'none' } as React.CSSProperties,
   installedList: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
   installedToolbar: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } as React.CSSProperties,
+  bulkActions: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', borderRadius: 10, padding: '10px 12px' } as React.CSSProperties,
   installedCard: { display: 'flex', flexDirection: 'column', gap: 12, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '16px 18px' } as React.CSSProperties,
   installedTop: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', gap: 20 } as React.CSSProperties,
   installedInfo: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 } as React.CSSProperties,
@@ -281,12 +286,14 @@ function friendlyPackageName(packageName: string): string {
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, guidedAgent, install, manualInstall, update, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, agentWorkspace, setAgentWorkspaceDir, chooseAgentWorkspaceDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, guidedAgent, install, manualInstall, update, updateBatch, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, agentWorkspace, setAgentWorkspaceDir, chooseAgentWorkspaceDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
   const [query, setQuery] = useState('')
   const [installedQuery, setInstalledQuery] = useState('')
+  const [installedFilter, setInstalledFilter] = useState<InstalledFilter>('all')
+  const [selectedUpdates, setSelectedUpdates] = useState<Set<string>>(new Set())
   const [manualCommand, setManualCommand] = useState('')
   const [manualBusy, setManualBusy] = useState(false)
   const [manualJobId, setManualJobId] = useState<string | null>(null)
@@ -321,6 +328,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const [restartState, setRestartState] = useState<RestartState>('idle')
   const [agentBusy, setAgentBusy] = useState<string | null>(null)
   const notifiedJobs = useRef<Set<string>>(new Set())
+  const installedLoaded = useRef(false)
+  const updateScrollY = useRef<number | null>(null)
 
   const notify = useCallback((message: string, tone: 'error' | 'info' = 'error') => {
     setNotice({ id: Date.now(), message, tone })
@@ -358,7 +367,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   }, [debouncedQuery, sort, category, page, seq, search, subpage])
 
   const refreshInstalled = useCallback(() => {
-    setInstalledLoading(true)
+    if (!installedLoaded.current) setInstalledLoading(true)
     void installed().then(
       (result) => {
         setInstalledMap(new Map(result.entries.map((entry) => [entry.packageName, entry])))
@@ -368,6 +377,10 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
           setInstallDirCustom(Boolean(result.installDirCustom))
         }
         setConflicts(result.conflicts ?? [])
+        setSelectedUpdates((current) => new Set(
+          [...current].filter((packageName) => result.entries.some((entry) => entry.packageName === packageName && entry.updateAvailable && entry.canUpdate)),
+        ))
+        installedLoaded.current = true
         setInstalledError(null)
         setInstalledLoading(false)
       },
@@ -506,8 +519,23 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   }, [restartState])
 
   const openConfirm = (mode: ConfirmRequest['mode'], repo: string, ref: string, packageName: string, command = ''): void => {
+    updateScrollY.current = window.scrollY
     setAcknowledged(false)
     setConfirm({ mode, repo, ref, packageName, command })
+  }
+
+  /** 记录更新操作前的位置，避免列表刷新后回到设置页顶部。 */
+  const restoreUpdateScroll = (): void => {
+    const scrollY = updateScrollY.current
+    updateScrollY.current = null
+    if (scrollY !== null) window.requestAnimationFrame(() => { window.scrollTo({ top: scrollY }) })
+  }
+
+  const openBatchUpdate = (entries: MarketplaceInstalledEntry[]): void => {
+    if (entries.length === 0) return
+    updateScrollY.current = window.scrollY
+    setAcknowledged(false)
+    setConfirm({ mode: 'batch-update', repo: '', ref: '', packageName: '', command: '', updates: entries })
   }
 
   const runConfirm = (): void => {
@@ -537,6 +565,25 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       }).finally(() => { setManualBusy(false) })
       return
     }
+    if (request.mode === 'batch-update') {
+      const updates = (request.updates ?? []).flatMap((entry) => entry.registryRepo !== null && entry.verifiedCommit !== null
+        ? [{ repo: entry.registryRepo, ref: entry.verifiedCommit }]
+        : [])
+      void updateBatch(updates).then((result) => {
+        for (const job of result.jobs) trackJob(job.jobId, 'update', job.packageName)
+        setSelectedUpdates(new Set())
+        if (result.failures.length > 0) {
+          notify(result.failures.map((failure) => failure.repo + ': ' + failure.message).join('\n'))
+        } else {
+          notify(fmt(t, 'batchUpdateQueued', { count: result.jobs.length }), 'info')
+        }
+        restoreUpdateScroll()
+      }).catch((error: unknown) => {
+        restoreUpdateScroll()
+        notify(error instanceof Error ? error.message : String(error))
+      })
+      return
+    }
     const jobKind = request.mode
     const start = jobKind === 'uninstall'
       ? uninstall(request.packageName)
@@ -547,8 +594,10 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     void start.then((jobId) => {
       setStartingAction(null)
       trackJob(jobId, jobKind, request.packageName)
+      restoreUpdateScroll()
     }).catch((error: unknown) => {
       setStartingAction(null)
+      restoreUpdateScroll()
       notify(error instanceof Error ? error.message : String(error))
     })
   }
@@ -695,17 +744,31 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const restartDisabled = restartState !== 'idle' || hasActiveJobs
   const isSelfUpdate = confirm?.mode === 'update' && confirm.packageName === SELF_PACKAGE
   const isManualInstall = confirm?.mode === 'manual-install'
+  const isBatchUpdate = confirm?.mode === 'batch-update'
   const manualJob = manualJobId === null ? undefined : jobs.get(manualJobId)
   const installedEntries = [...installedMap.values()].filter(entry => entry.isBundle)
   const installedNeedle = installedQuery.trim().toLocaleLowerCase()
-  const visibleInstalledEntries = installedNeedle === ''
-    ? installedEntries
-    : installedEntries.filter((entry) => [
+  const enabledInstalledCount = installedEntries.filter((entry) => entry.linked && entry.enabled).length
+  const disabledInstalledCount = installedEntries.filter((entry) => entry.linked && !entry.enabled).length
+  const updateableEntries = installedEntries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
+  const selectedUpdateEntries = updateableEntries.filter((entry) => selectedUpdates.has(entry.packageName))
+  const visibleInstalledEntries = installedEntries.filter((entry) => {
+    if (installedFilter === 'enabled' && (!entry.linked || !entry.enabled)) return false
+    if (installedFilter === 'disabled' && (!entry.linked || entry.enabled)) return false
+    return installedNeedle === '' || [
       entry.packageName,
       entry.description ?? '',
       entry.registryRepo ?? '',
       entry.version,
-    ].some(value => value.toLocaleLowerCase().includes(installedNeedle)))
+    ].some(value => value.toLocaleLowerCase().includes(installedNeedle))
+  })
+  const installedEmptyMessage = installedNeedle !== ''
+    ? t('emptyInstalledSearch')
+    : installedFilter === 'enabled'
+      ? t('emptyEnabledInstalled')
+      : installedFilter === 'disabled'
+        ? t('emptyDisabledInstalled')
+        : t('emptyInstalled')
 
   return (
     <div style={s.section} aria-busy={view.status === 'loading' || restartState !== 'idle'}>
@@ -827,13 +890,22 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
                 onChange={(event) => { setInstalledQuery(event.currentTarget.value) }}
               />
             </div>
+            <Pill active={installedFilter === 'all'} onClick={() => { setInstalledFilter('all') }}>
+              {fmt(t, 'allInstalled', { count: installedEntries.length })}
+            </Pill>
+            <Pill active={installedFilter === 'enabled'} onClick={() => { setInstalledFilter('enabled') }}>
+              {fmt(t, 'enabledInstalled', { count: enabledInstalledCount })}
+            </Pill>
+            <Pill active={installedFilter === 'disabled'} onClick={() => { setInstalledFilter('disabled') }}>
+              {fmt(t, 'disabledInstalled', { count: disabledInstalledCount })}
+            </Pill>
           </div>
           <InstalledList
             entries={visibleInstalledEntries}
             currentProfile={installedProfile}
             loading={installedLoading}
             error={installedError}
-            emptyMessage={installedNeedle === '' ? t('emptyInstalled') : t('emptyInstalledSearch')}
+            emptyMessage={installedEmptyMessage}
             t={t}
             onRetry={refreshInstalled}
             onUpdate={(entry) => {
@@ -841,6 +913,17 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
                 openConfirm('update', entry.registryRepo, entry.verifiedCommit, entry.packageName)
               }
             }}
+            selectedUpdates={selectedUpdates}
+            onToggleSelected={(entry) => {
+              setSelectedUpdates((current) => {
+                const next = new Set(current)
+                if (next.has(entry.packageName)) next.delete(entry.packageName)
+                else next.add(entry.packageName)
+                return next
+              })
+            }}
+            onUpdateSelected={() => { openBatchUpdate(selectedUpdateEntries) }}
+            onUpdateAll={() => { openBatchUpdate(updateableEntries) }}
             onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
             onSetEnabled={onSetEnabled}
             onAgentUpdate={(entry) => {
@@ -892,14 +975,14 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       )}
       <RiskConfirmation
         open={confirm !== null}
-        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : isManualInstall ? t('confirmManualInstallTitle') : isSelfUpdate ? t('confirmSelfUpdateTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
-        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : isManualInstall ? t('confirmManualInstallDescription') : isSelfUpdate ? t('confirmSelfUpdateDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
+        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : isBatchUpdate ? t('confirmBatchUpdateTitle') : isManualInstall ? t('confirmManualInstallTitle') : isSelfUpdate ? t('confirmSelfUpdateTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
+        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : isBatchUpdate ? fmt(t, 'confirmBatchUpdateDescription', { count: confirm?.updates?.length ?? 0 }) : isManualInstall ? t('confirmManualInstallDescription') : isSelfUpdate ? t('confirmSelfUpdateDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
         acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : isManualInstall ? t('acknowledgeManualInstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
-        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : isManualInstall ? t('confirmManualInstall') : isSelfUpdate ? t('selfUpdate') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
+        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : isBatchUpdate ? t('confirmBatchUpdate') : isManualInstall ? t('confirmManualInstall') : isSelfUpdate ? t('selfUpdate') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
-        onCancel={() => { setConfirm(null); setAcknowledged(false) }}
+        onCancel={() => { updateScrollY.current = null; setConfirm(null); setAcknowledged(false) }}
         onConfirm={runConfirm}
       />
       {notice !== null ? (
@@ -1041,6 +1124,10 @@ interface InstalledListProps {
   t: MarketplaceTabProps['t']
   onRetry: () => void
   onUpdate: (entry: MarketplaceInstalledEntry) => void
+  selectedUpdates: Set<string>
+  onToggleSelected: (entry: MarketplaceInstalledEntry) => void
+  onUpdateSelected: () => void
+  onUpdateAll: () => void
   onUninstall: (entry: MarketplaceInstalledEntry) => void
   onSetEnabled: (entry: MarketplaceInstalledEntry) => void
   onAgentUpdate: (entry: MarketplaceInstalledEntry) => void
@@ -1050,7 +1137,7 @@ interface InstalledListProps {
   startingAction: StartingAction | null
 }
 
-function InstalledList({ entries, currentProfile, loading, error, emptyMessage, t, onRetry, onUpdate, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy, jobs, startingAction }: InstalledListProps): ReactNode {
+function InstalledList({ entries, currentProfile, loading, error, emptyMessage, t, onRetry, onUpdate, selectedUpdates, onToggleSelected, onUpdateSelected, onUpdateAll, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy, jobs, startingAction }: InstalledListProps): ReactNode {
   if (loading) return <p style={s.muted}>{t('loadingInstalled')}</p>
   if (error !== null) {
     return (
@@ -1061,9 +1148,23 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
     )
   }
   if (entries.length === 0) return <p style={s.muted}>{emptyMessage}</p>
+  const updateable = entries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
+  const selectedCount = updateable.filter((entry) => selectedUpdates.has(entry.packageName)).length
   return (
-    <ul style={s.installedList}>
-      {entries.map((entry) => {
+    <>
+      {updateable.length > 0 ? (
+        <div style={s.bulkActions}>
+          <span style={s.muted}>{selectedCount > 0 ? fmt(t, 'selectForBatch', { count: selectedCount }) : t('batchUpdateHint')}</span>
+          <div style={s.fieldActions}>
+            <Button variant='outline' size='sm' disabled={selectedCount === 0} onClick={onUpdateSelected}>
+              {fmt(t, 'batchUpdateSelected', { count: selectedCount })}
+            </Button>
+            <Button variant='primary' size='sm' onClick={onUpdateAll}>{fmt(t, 'batchUpdateAll', { count: updateable.length })}</Button>
+          </div>
+        </div>
+      ) : null}
+      <ul style={s.installedList}>
+        {entries.map((entry) => {
         const job = latestJobForPackage(jobs, entry.packageName)
         const jobActive = job !== undefined && job.finishedAt === null
         const startingKind = startingAction?.packageName === entry.packageName ? startingAction.kind : null
@@ -1072,7 +1173,17 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
           <li key={entry.packageName} style={s.installedCard}>
             <div style={s.installedTop}>
               <div style={s.installedInfo}>
-                <strong style={s.title} title={entry.packageName}>{friendlyPackageName(entry.packageName)}</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                  {entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null ? (
+                    <input
+                      type='checkbox'
+                      checked={selectedUpdates.has(entry.packageName)}
+                      aria-label={fmt(t, 'selectUpdateFor', { package: friendlyPackageName(entry.packageName) })}
+                      onChange={() => { onToggleSelected(entry) }}
+                    />
+                  ) : null}
+                  <strong style={s.title} title={entry.packageName}>{friendlyPackageName(entry.packageName)}</strong>
+                </div>
                 <span style={s.meta}>{entry.packageName}</span>
                 <p style={s.installedDescription}>{entry.description ?? '—'}</p>
                 <div style={s.installedMetaRow}>
@@ -1137,8 +1248,9 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
             ) : null}
           </li>
         )
-      })}
-    </ul>
+        })}
+      </ul>
+    </>
   )
 }
 

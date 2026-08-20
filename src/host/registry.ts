@@ -263,6 +263,8 @@ export class RegistryClient {
     const url = new URL(source)
     let raw: unknown
     let etag: string | null = null
+    // 核心 Registry 与可选发现数据互不依赖，并行读取以缩短首次打开市场的等待。
+    const discovery = this.loadDiscovery(source)
     if (url.protocol === 'file:') {
       raw = JSON.parse(await readFile(url, 'utf8')) as unknown
     } else if (url.protocol === 'https:' || url.protocol === 'http:') {
@@ -279,7 +281,7 @@ export class RegistryClient {
     } else {
       throw new Error(`Unsupported Registry URL protocol ${JSON.stringify(url.protocol)}`)
     }
-    const registry = applyDiscovery(normalizeRegistry(raw), await this.loadDiscovery(source))
+    const registry = applyDiscovery(normalizeRegistry(raw), await discovery)
     const names = new Set<string>()
     for (const plugin of registry.plugins) {
       const key = plugin.fullName.toLocaleLowerCase()

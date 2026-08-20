@@ -48,7 +48,7 @@ for (const invocation of result.invocations) {
 console.log('typert host implementations callable: ' + String(result.invocations.length))
 
 const expected = new Set([
-  'search', 'details', 'guidedTask', 'installPlugin', 'manualInstall', 'update', 'uninstall',
+  'search', 'details', 'guidedTask', 'installPlugin', 'manualInstall', 'update', 'updateBatch', 'uninstall',
   'setEnabled', 'jobStatus', 'installed', 'installLocation', 'setInstallDir',
   'agentWorkspace', 'setAgentWorkspaceDir', 'diagnoseConflicts', 'restart',
 ])

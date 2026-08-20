@@ -22,6 +22,8 @@ import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type { ProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import type {
   MarketplaceAgentWorkspace,
+  MarketplaceBatchUpdateRequest,
+  MarketplaceBatchUpdateResult,
   MarketplaceConflict,
   MarketplaceDetailsRequest,
   MarketplaceDiagnoseConflictsResult,
@@ -143,6 +145,8 @@ export class MarketplaceService extends TypertRemoteService {
   private selfUpdateCache: { details: MarketplacePluginDetails; target: SelfUpdateTarget; expiresAt: number } | undefined
   private pendingInstallResolution = 0
   private restartPending = false
+  /** 同一 Profile 的写操作排队执行，避免批量更新并发改写锁文件。 */
+  private mutationTail: Promise<void> = Promise.resolve()
 
   constructor(ctx: Context, config: RegistryConfig) {
     super(ctx, 'marketplace')
@@ -290,6 +294,26 @@ export class MarketplaceService extends TypertRemoteService {
     return this.startJob('update', request.repo, request.ref ?? '')
   }
 
+  @Remote('updateBatch')
+  async updateBatch(request: MarketplaceBatchUpdateRequest): Promise<MarketplaceResult<MarketplaceBatchUpdateResult>> {
+    const unique = new Map<string, { repo: string; ref: string }>()
+    for (const update of request.updates) {
+      const repo = update.repo.trim()
+      if (repo !== '') unique.set(repo.toLocaleLowerCase(), { repo, ref: update.ref ?? '' })
+    }
+    if (unique.size === 0) return fail('empty-batch', 'Choose at least one plugin to update.')
+    const outcomes = await Promise.all([...unique.values()].map(async (update) => ({
+      repo: update.repo,
+      result: await this.startJob('update', update.repo, update.ref, true),
+    })))
+    return ok({
+      jobs: outcomes.flatMap(({ result }) => result.ok
+        ? [{ jobId: result.value.jobId, packageName: this.jobs.get(result.value.jobId)?.packageName ?? 'unknown' }]
+        : []),
+      failures: outcomes.flatMap(({ repo, result }) => result.ok ? [] : [{ repo, message: result.error.message }]),
+    })
+  }
+
   @Remote('uninstall')
   async uninstall(request: MarketplaceUninstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
     try {
@@ -394,8 +418,6 @@ export class MarketplaceService extends TypertRemoteService {
         entry.registryRepo = registered.fullName
         entry.description = registered.description
         entry.repositoryUrl = registered.htmlUrl
-        entry.availableVersion = registered.version
-        entry.availableVersionSource = 'registry'
         entry.verifiedCommit = registered.verifiedCommit
         entry.install = registered.install
         if (!entry.linked) {
@@ -405,10 +427,8 @@ export class MarketplaceService extends TypertRemoteService {
         }
         const versionOrder = compareSemver(registered.version, entry.version)
         entry.updateAvailable = versionOrder > 0
-          || (versionOrder === 0
-            && registered.install.source === 'github'
-            && isGitHubSpec(entry.currentSpec)
-            && !entry.currentSpec.toLocaleLowerCase().includes(registered.verifiedCommit.toLocaleLowerCase()))
+        entry.availableVersion = versionOrder > 0 ? registered.version : null
+        entry.availableVersionSource = versionOrder > 0 ? 'registry' : null
         entry.canUpdate = registered.install.mode === 'automatic'
           && (registered.install.source === 'github' || registered.install.source === 'npm')
           && registered.install.profiles.includes(profile.name)
@@ -553,11 +573,12 @@ export class MarketplaceService extends TypertRemoteService {
     kind: 'install' | 'update',
     repo: string,
     ref: string,
+    allowQueuedMutation = false,
   ): Promise<MarketplaceResult<{ jobId: string }>> {
     if (this.restartPending) {
       return fail('restart-pending', 'DSH is already preparing to restart.')
     }
-    if (this.profileMutationBusy()) {
+    if (!allowQueuedMutation && this.profileMutationBusy()) {
       return fail('job-running', 'Another Profile plugin operation is already in progress.')
     }
     this.pendingInstallResolution += 1
@@ -639,7 +660,7 @@ export class MarketplaceService extends TypertRemoteService {
       }
       const job = this.jobs.create(kind, packageName)
       const spec = executableSpec(registered)
-      void this.driveInstall(
+      this.enqueueMutation(() => this.driveInstall(
         job,
         profile,
         spec,
@@ -647,7 +668,7 @@ export class MarketplaceService extends TypertRemoteService {
         beforeDeclaresBundle,
         registered.install.requiresRestart,
         customTarget,
-      )
+      ))
       return ok({ jobId: job.jobId })
     } catch (error) {
       return toFailure(error)
@@ -658,6 +679,12 @@ export class MarketplaceService extends TypertRemoteService {
 
   private profileMutationBusy(): boolean {
     return this.pendingInstallResolution > 0 || this.jobs.hasActive()
+  }
+
+  private enqueueMutation(work: () => Promise<void>): void {
+    const scheduled = this.mutationTail.catch(() => undefined).then(work)
+    this.mutationTail = scheduled.catch(() => undefined)
+    void scheduled
   }
 
   /** Read main/package.json directly, then freeze the update to its resolved commit. */
@@ -903,10 +930,6 @@ function executableSpec(plugin: MarketplaceRegistryPlugin | SelfUpdateTarget): s
     return expected
   }
   throw new RegistryError('Only Registry entries pinned to an exact GitHub commit or verified npm release can be installed automatically.')
-}
-
-function isGitHubSpec(value: string): boolean {
-  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
 }
 
 function validPackageName(value: string): boolean {
