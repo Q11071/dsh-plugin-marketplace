@@ -27,7 +27,7 @@
 | 🧭 Installation Skill | Makes the Agent load a bundled safe workflow that chooses an exact source, isolated build, or hard stop |
 | 🧱 Agent workspace | Uses a marketplace-only workspace by default, with an existing-directory override to protect project workspaces |
 | ⌨️ Manual command install | Safely parses an official DSH GitHub install command and attaches the verified plugin to the active Profile |
-| 🧰 Installed plugin management | Update, uninstall, enable, disable, and safely restart DSH for the active Profile |
+| 🧰 Installed plugin management | Filter installed plugins; update one or many; uninstall, enable, disable, and safely restart DSH for the active Profile |
 | 📈 Discovery | Search by category, sort by Stars, and view seven-day Star growth |
 | 🔄 Marketplace self-update | Checks this repository directly and pins updates to a resolved commit |
 
@@ -58,7 +58,7 @@ Go to **Settings → Plugins → Plugin Marketplace**.
 The marketplace has three pages:
 
 - **Plugin Marketplace** — search, filter, sort, inspect validation details, and install plugins.
-- **Installed Plugins** — filter, check for updates, update, uninstall, enable, or disable plugins in the active Profile.
+- **Installed Plugins** — filter, check for updates, update one or many, uninstall, enable, or disable plugins in the active Profile.
 - **Management & diagnostics** — manually install a command, choose plugin storage, and diagnose conflicts.
 
 ## Installation modes
@@ -124,10 +124,15 @@ After a successful install, the Agent's final response must include **How to sta
 | Action | Behavior |
 | --- | --- |
 | Update | Checks the Registry and uses the corresponding automatic or guided update flow |
+| Batch update | Updates selected plugins or every automatically updateable plugin in the current search and filter results, up to 50 per batch |
 | Enable / disable | Updates `dsh.profile.bundles` without removing dependencies; takes effect after restart |
 | Uninstall | Removes the plugin dependency and matching bundle from the active Profile |
 | Restart DSH | Waits for active plugin jobs, then restarts with the same arguments and Profile |
 | Marketplace self-update | Reads the version from this repository, then pins the install source to an exact commit |
+
+Batch updates include only eligible entries visible under the active search and filters, so hidden plugins are never updated accidentally. Accepted jobs enter a queue and mutate the Profile sequentially in selection order, preventing concurrent pnpm processes from racing on the manifest or lockfile. A failed item reports its own error without stalling later jobs.
+
+Update detection is not limited to version numbers. For a plugin installed from an exact GitHub source, a different Registry-verified commit is offered as an update even when the Registry version is unchanged. npm sources continue to use verified exact release versions.
 
 The package includes the built `lib/` files and a Registry snapshot from the release. If the remote Registry is temporarily unavailable, the marketplace can continue using the bundled snapshot.
 
@@ -301,7 +306,7 @@ pnpm self-update:test
 pnpm guided-agent:test
 pnpm build
 pnpm verify
-pnpm exec tsc --noEmit
+pnpm typecheck
 ```
 
 Before a release, update the version, regenerate the Registry, rebuild `lib/`, commit the generated artifacts, and create a version tag.
