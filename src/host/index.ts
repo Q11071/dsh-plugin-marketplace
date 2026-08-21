@@ -269,6 +269,12 @@ export class MarketplaceService extends TypertRemoteService {
       if (!validPackageName(packageName)) {
         return fail('bad-package', 'The repository declares an invalid package name: ' + manifest.name)
       }
+      // Registry-backed operations may have been accepted while the manual
+      // GitHub source was resolving. Do not capture a stale Profile snapshot
+      // or let the manual pnpm process race the shared mutation queue.
+      if (this.jobs.hasActive()) {
+        return fail('job-running', 'Another Profile plugin operation is already in progress.')
+      }
       const before = readProfileManifest(NAME, profile.dir)
       if (before.dependencies?.[packageName] !== undefined) {
         return fail('already-installed', packageName + ' is already installed — uninstall it or use its update action.')
@@ -282,7 +288,7 @@ export class MarketplaceService extends TypertRemoteService {
 
       const job = this.jobs.create('install', packageName)
       const spec = 'github:' + details.repo + '#' + details.resolvedRef
-      void this.driveInstall(job, profile, spec, before, false, true, profile.custom ? target : null)
+      this.enqueueMutation(() => this.driveInstall(job, profile, spec, before, false, true, profile.custom ? target : null))
       return ok({
         jobId: job.jobId,
         packageName,
