@@ -13,6 +13,8 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type {
   MarketplaceAgentWorkspace,
   MarketplaceBatchUpdateResult,
+  MarketplaceBatchToggleResult,
+  MarketplaceBatchUninstallResult,
   MarketplaceConflict,
   MarketplaceDiagnoseConflictsResult,
   MarketplaceInstalled,
@@ -45,7 +47,9 @@ export interface MarketplaceTabInjected {
   update: (repo: string, ref: string) => Promise<string>
   updateBatch: (updates: Array<{ repo: string; ref: string }>) => Promise<MarketplaceBatchUpdateResult>
   uninstall: (packageName: string) => Promise<string>
+  uninstallBatch: (packageNames: string[]) => Promise<MarketplaceBatchUninstallResult>
   setEnabled: (packageName: string, enabled: boolean) => Promise<MarketplaceToggleResult>
+  setEnabledBatch: (packageNames: string[], enabled: boolean) => Promise<MarketplaceBatchToggleResult>
   installLocation: () => Promise<MarketplaceInstallLocation>
   setInstallDir: (installDir: string) => Promise<MarketplaceInstallLocation>
   chooseInstallDir: () => Promise<string | null>
@@ -54,6 +58,7 @@ export interface MarketplaceTabInjected {
   chooseAgentWorkspaceDir: () => Promise<string | null>
   diagnoseConflicts: () => Promise<MarketplaceDiagnoseConflictsResult>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
+  jobs: () => Promise<MarketplaceJobStatus[]>
   installed: () => Promise<MarketplaceInstalled>
   restart: () => Promise<MarketplaceRestartResult>
 }
@@ -70,7 +75,7 @@ type ViewState =
   | { status: 'ready'; page: MarketplaceSearchPage }
 
 type ConfirmRequest = {
-  mode: 'install' | 'manual-install' | 'update' | 'batch-update' | 'uninstall' | 'restart'
+  mode: 'install' | 'manual-install' | 'update' | 'batch-update' | 'uninstall' | 'batch-uninstall' | 'batch-enable' | 'batch-disable' | 'restart'
   repo: string
   ref: string
   packageName: string
@@ -81,8 +86,6 @@ type ConfirmRequest = {
 type Subpage = 'catalog' | 'installed' | 'management'
 type InstalledFilter = 'all' | 'enabled' | 'disabled'
 type RestartState = 'idle' | 'requesting' | 'restarting'
-
-type StartingAction = { packageName: string; kind: MarketplaceJobKind }
 
 type Notice = { id: number; message: string; tone: 'error' | 'info' }
 
@@ -179,6 +182,9 @@ const s = {
   installedList: { display: 'flex', flexDirection: 'column', gap: 10, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
   installedToolbar: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } as React.CSSProperties,
   bulkActions: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', borderRadius: 10, padding: '10px 12px' } as React.CSSProperties,
+  queuePanel: { display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-2)', borderRadius: 10, padding: '12px 14px' } as React.CSSProperties,
+  queueHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } as React.CSSProperties,
+  queueList: { display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0, listStyle: 'none' } as React.CSSProperties,
   installedCard: { display: 'flex', flexDirection: 'column', gap: 12, border: '1px solid var(--dsw-alias-border-l2)', background: 'var(--dsw-alias-bg-layer-3)', borderRadius: 10, padding: '16px 18px' } as React.CSSProperties,
   installedTop: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', gap: 20 } as React.CSSProperties,
   installedInfo: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 } as React.CSSProperties,
@@ -233,6 +239,7 @@ function jobKindLabel(kind: string, t: MarketplaceTabProps['t']): string {
 function jobPhaseLabel(phase: string, t: MarketplaceTabProps['t']): string {
   if (phase === 'done') return t('jobDone')
   if (phase === 'failed') return t('jobFailed')
+  if (phase === 'queued') return t('jobQueued')
   if (phase === 'reconciling') return t('jobReconciling')
   return t('jobRunning')
 }
@@ -260,12 +267,9 @@ function compactDate(value: string): string {
   return date.toLocaleDateString(undefined, options)
 }
 
-/** Failure notice: job headline plus the most relevant diagnostic log line. */
+/** 用本地化摘要提示失败，技术细节保留在可展开的队列日志中。 */
 function jobFailureNotice(job: MarketplaceJobStatus, t: MarketplaceTabProps['t']): string {
-  const heading = jobKindLabel(job.kind, t) + ' — ' + t('jobFailed') + ': ' + (job.failure?.message ?? t('error'))
-  const lines = job.log.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '')
-  const diagnostic = [...lines].reverse().find(line => /\b(ERR_|ERROR|Error:|failed|conflict|blocked)\b/i.test(line))
-  return diagnostic === undefined || heading.includes(diagnostic) ? heading : heading + '\n' + diagnostic
+  return fmt(t, 'jobFailureNotice', { package: friendlyPackageName(job.packageName) })
 }
 
 function latestJobForPackage(jobs: Map<string, MarketplaceJobStatus>, packageName: string): MarketplaceJobStatus | undefined {
@@ -286,7 +290,7 @@ function friendlyPackageName(packageName: string): string {
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
-export function MarketplaceTab({ search, details, guidedAgent, install, manualInstall, update, updateBatch, uninstall, setEnabled, installLocation, setInstallDir, chooseInstallDir, agentWorkspace, setAgentWorkspaceDir, chooseAgentWorkspaceDir, diagnoseConflicts, jobStatus, installed, restart, t }: MarketplaceTabProps): ReactNode {
+export function MarketplaceTab({ search, details, guidedAgent, install, manualInstall, update, updateBatch, uninstall, uninstallBatch, setEnabled, setEnabledBatch, installLocation, setInstallDir, chooseInstallDir, agentWorkspace, setAgentWorkspaceDir, chooseAgentWorkspaceDir, diagnoseConflicts, jobStatus, jobs: loadJobs, installed, restart, t }: MarketplaceTabProps): ReactNode {
 
   const [view, setView] = useState<ViewState>({ status: 'loading' })
   const [subpage, setSubpage] = useState<Subpage>('catalog')
@@ -307,7 +311,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const [installedLoading, setInstalledLoading] = useState(true)
   const [installedError, setInstalledError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Map<string, MarketplaceJobStatus>>(new Map())
-  const [startingAction, setStartingAction] = useState<StartingAction | null>(null)
+  const [startingActions, setStartingActions] = useState<Map<string, MarketplaceJobKind>>(new Map())
+  const [batchBusy, setBatchBusy] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [detailsMap, setDetailsMap] = useState<Map<string, MarketplacePluginDetails>>(new Map())
   const [detailErrors, setDetailErrors] = useState<Map<string, string>>(new Map())
@@ -335,10 +340,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     setNotice({ id: Date.now(), message, tone })
   }, [])
 
-  // Info notices auto-dismiss; errors stay until dismissed manually.
+  // 所有右上角通知都自动消失，避免旧错误长期遮挡后续操作。
   useEffect(() => {
     if (notice === null) return undefined
-    if (notice.tone === 'error') return undefined
     const handle = window.setTimeout(() => { setNotice(null) }, 8_000)
     return () => { window.clearTimeout(handle) }
   }, [notice])
@@ -378,7 +382,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
         }
         setConflicts(result.conflicts ?? [])
         setSelectedUpdates((current) => new Set(
-          [...current].filter((packageName) => result.entries.some((entry) => entry.packageName === packageName && entry.updateAvailable && entry.canUpdate)),
+          [...current].filter((packageName) => result.entries.some((entry) => entry.packageName === packageName && entry.isBundle && entry.linked)),
         ))
         installedLoaded.current = true
         setInstalledError(null)
@@ -454,6 +458,41 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       return next
     })
   }, [])
+
+  const markStarting = useCallback((packageName: string, kind: MarketplaceJobKind | null) => {
+    setStartingActions((current) => {
+      const next = new Map(current)
+      if (kind === null) next.delete(packageName)
+      else next.set(packageName, kind)
+      return next
+    })
+  }, [])
+
+  const markManyStarting = useCallback((entries: MarketplaceInstalledEntry[], kind: MarketplaceJobKind | null) => {
+    setStartingActions((current) => {
+      const next = new Map(current)
+      for (const entry of entries) {
+        if (kind === null) next.delete(entry.packageName)
+        else next.set(entry.packageName, kind)
+      }
+      return next
+    })
+  }, [])
+
+  // 从 Host 恢复任务队列；离开设置页不会丢失正在执行的更新。
+  useEffect(() => {
+    let current = true
+    void loadJobs().then((statuses) => {
+      if (!current) return
+      setJobs(new Map(statuses.map(status => [status.jobId, status])))
+      if (statuses.some(status => status.kind === 'update' && status.finishedAt === null)) {
+        setSubpage('installed')
+      }
+    }, () => {
+      // 旧版 Host 没有队列接口时，当前页面仍可跟踪本次会话创建的任务。
+    })
+    return () => { current = false }
+  }, [loadJobs])
 
   // Poll every unfinished job until it settles.
   useEffect(() => {
@@ -531,11 +570,13 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     if (scrollY !== null) window.requestAnimationFrame(() => { window.scrollTo({ top: scrollY }) })
   }
 
-  const openBatchUpdate = (entries: MarketplaceInstalledEntry[]): void => {
+  const openBatchOperation = (mode: 'batch-update' | 'batch-uninstall' | 'batch-enable' | 'batch-disable', entries: MarketplaceInstalledEntry[]): void => {
     if (entries.length === 0) return
+    const accepted = entries.slice(0, 50)
+    if (entries.length > accepted.length) notify(t('batchLimitNotice'), 'info')
     updateScrollY.current = window.scrollY
     setAcknowledged(false)
-    setConfirm({ mode: 'batch-update', repo: '', ref: '', packageName: '', command: '', updates: entries })
+    setConfirm({ mode, repo: '', ref: '', packageName: '', command: '', updates: accepted })
   }
 
   const runConfirm = (): void => {
@@ -566,59 +607,99 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       return
     }
     if (request.mode === 'batch-update') {
-      const updates = (request.updates ?? []).flatMap((entry) => entry.registryRepo !== null && entry.verifiedCommit !== null
+      setSubpage('installed')
+      const entries = request.updates ?? []
+      const updates = entries.flatMap((entry) => entry.registryRepo !== null && entry.verifiedCommit !== null
         ? [{ repo: entry.registryRepo, ref: entry.verifiedCommit }]
         : [])
+      setBatchBusy(true)
+      markManyStarting(entries, 'update')
       void updateBatch(updates).then((result) => {
         for (const job of result.jobs) trackJob(job.jobId, 'update', job.packageName)
         setSelectedUpdates(new Set())
         if (result.failures.length > 0) {
-          notify(result.failures.map((failure) => failure.repo + ': ' + failure.message).join('\n'))
-        } else {
-          notify(fmt(t, 'batchUpdateQueued', { count: result.jobs.length }), 'info')
+          notify(result.failures.map((failure) => failure.repo + '：' + t('queueRejected')).join('\n'))
         }
         restoreUpdateScroll()
       }).catch((error: unknown) => {
         restoreUpdateScroll()
         notify(error instanceof Error ? error.message : String(error))
-      })
+      }).finally(() => { setBatchBusy(false); markManyStarting(entries, null) })
+      return
+    }
+    if (request.mode === 'batch-uninstall') {
+      const entries = request.updates ?? []
+      setBatchBusy(true)
+      markManyStarting(entries, 'uninstall')
+      void uninstallBatch(entries.map(entry => entry.packageName)).then((result) => {
+        for (const job of result.jobs) trackJob(job.jobId, 'uninstall', job.packageName)
+        setSelectedUpdates(new Set())
+        if (result.failures.length > 0) {
+          notify(result.failures.map(failure => failure.packageName + '：' + t('queueRejected')).join('\n'))
+        }
+        restoreUpdateScroll()
+      }).catch((error: unknown) => {
+        restoreUpdateScroll()
+        notify(error instanceof Error ? error.message : String(error))
+      }).finally(() => { setBatchBusy(false); markManyStarting(entries, null) })
+      return
+    }
+    if (request.mode === 'batch-enable' || request.mode === 'batch-disable') {
+      const entries = request.updates ?? []
+      const enabled = request.mode === 'batch-enable'
+      setBatchBusy(true)
+      void setEnabledBatch(entries.map(entry => entry.packageName), enabled).then((result) => {
+        setInstalledMap((current) => {
+          const next = new Map(current)
+          for (const changed of result.results) {
+            const entry = next.get(changed.packageName)
+            if (entry !== undefined) next.set(changed.packageName, { ...entry, enabled: changed.enabled })
+          }
+          return next
+        })
+        setSelectedUpdates(new Set())
+        if (result.failures.length > 0) {
+          notify(result.failures.map(failure => failure.packageName + '：' + t('batchActionRejected')).join('\n'))
+        }
+        if (result.requiresRestart) setBanner(t('restartBanner'))
+        refreshInstalled()
+        restoreUpdateScroll()
+      }).catch((error: unknown) => {
+        restoreUpdateScroll()
+        notify(error instanceof Error ? error.message : String(error))
+      }).finally(() => { setBatchBusy(false) })
       return
     }
     const jobKind = request.mode
+    if (jobKind === 'update') setSubpage('installed')
     const start = jobKind === 'uninstall'
       ? uninstall(request.packageName)
       : jobKind === 'update'
         ? update(request.repo, request.ref)
         : install(request.repo, request.ref)
-    setStartingAction({ packageName: request.packageName, kind: jobKind })
+    markStarting(request.packageName, jobKind)
     void start.then((jobId) => {
-      setStartingAction(null)
+      markStarting(request.packageName, null)
       trackJob(jobId, jobKind, request.packageName)
       restoreUpdateScroll()
     }).catch((error: unknown) => {
-      setStartingAction(null)
+      markStarting(request.packageName, null)
       restoreUpdateScroll()
       notify(error instanceof Error ? error.message : String(error))
     })
   }
 
   const onInstall = (item: MarketplaceRegistryPlugin): void => {
-    void loadDetails(
+    if (installedMap.has(item.packageName)) {
+      notify(t('alreadyInstalled'), 'info')
+      return
+    }
+    openConfirm(
+      'install',
       item.fullName === '' ? item.owner + '/' + item.repo : item.fullName,
       item.verifiedCommit,
-    ).then((result) => {
-      if (result.manifest === null || result.manifest.bundlePatch === null) {
-        notify(t('notAPlugin'), 'info')
-        return
-      }
-      if (installedMap.has(result.manifest.name)) {
-        notify(t('alreadyInstalled'), 'info')
-        return
-      }
-      openConfirm('install', result.repo, result.resolvedRef, result.manifest.name)
-    }).catch((error: unknown) => {
-      notify(error instanceof Error ? error.message : String(error))
-    })
+      item.packageName,
+    )
   }
 
   const onGuidedAgent = (repo: string, ref: string, packageName: string, operation: 'install' | 'update'): void => {
@@ -741,17 +822,18 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const ready = view.status === 'ready' ? view.page : null
   const rate = ready?.rate ?? null
   const hasActiveJobs = [...jobs.values()].some((job) => job.finishedAt === null)
-  const restartDisabled = restartState !== 'idle' || hasActiveJobs
+  const restartDisabled = restartState !== 'idle' || hasActiveJobs || batchBusy || startingActions.size > 0
   const isSelfUpdate = confirm?.mode === 'update' && confirm.packageName === SELF_PACKAGE
   const isManualInstall = confirm?.mode === 'manual-install'
   const isBatchUpdate = confirm?.mode === 'batch-update'
+  const isBatchUninstall = confirm?.mode === 'batch-uninstall'
+  const isBatchEnable = confirm?.mode === 'batch-enable'
+  const isBatchDisable = confirm?.mode === 'batch-disable'
   const manualJob = manualJobId === null ? undefined : jobs.get(manualJobId)
   const installedEntries = [...installedMap.values()].filter(entry => entry.isBundle)
   const installedNeedle = installedQuery.trim().toLocaleLowerCase()
   const enabledInstalledCount = installedEntries.filter((entry) => entry.linked && entry.enabled).length
   const disabledInstalledCount = installedEntries.filter((entry) => entry.linked && !entry.enabled).length
-  const updateableEntries = installedEntries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
-  const selectedUpdateEntries = updateableEntries.filter((entry) => selectedUpdates.has(entry.packageName))
   const visibleInstalledEntries = installedEntries.filter((entry) => {
     if (installedFilter === 'enabled' && (!entry.linked || !entry.enabled)) return false
     if (installedFilter === 'disabled' && (!entry.linked || entry.enabled)) return false
@@ -762,6 +844,12 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       entry.version,
     ].some(value => value.toLocaleLowerCase().includes(installedNeedle))
   })
+  const visibleUpdateableEntries = visibleInstalledEntries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
+  const selectedEntries = visibleInstalledEntries.filter(entry => entry.linked && selectedUpdates.has(entry.packageName))
+  const selectedUpdateEntries = selectedEntries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
+  const selectedEnabledEntries = selectedEntries.filter(entry => entry.enabled)
+  const selectedDisabledEntries = selectedEntries.filter(entry => !entry.enabled)
+  const operationQueue = [...jobs.values()].sort((left, right) => left.startedAt - right.startedAt)
   const installedEmptyMessage = installedNeedle !== ''
     ? t('emptyInstalledSearch')
     : installedFilter === 'enabled'
@@ -769,9 +857,37 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       : installedFilter === 'disabled'
         ? t('emptyDisabledInstalled')
         : t('emptyInstalled')
+  const confirmCount = confirm?.updates?.length ?? 0
+  const confirmationTitle = confirm?.mode === 'restart' ? t('confirmRestartTitle')
+    : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle')
+      : isBatchUninstall ? t('confirmBatchUninstallTitle')
+        : isBatchEnable ? t('confirmBatchEnableTitle')
+          : isBatchDisable ? t('confirmBatchDisableTitle')
+            : isBatchUpdate ? t('confirmBatchUpdateTitle')
+              : isManualInstall ? t('confirmManualInstallTitle')
+                : isSelfUpdate ? t('confirmSelfUpdateTitle')
+                  : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')
+  const confirmationDescription = confirm?.mode === 'restart' ? t('confirmRestartDescription')
+    : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription')
+      : isBatchUninstall ? fmt(t, 'confirmBatchUninstallDescription', { count: confirmCount })
+        : isBatchEnable ? fmt(t, 'confirmBatchEnableDescription', { count: confirmCount })
+          : isBatchDisable ? fmt(t, 'confirmBatchDisableDescription', { count: confirmCount })
+            : isBatchUpdate ? fmt(t, 'confirmBatchUpdateDescription', { count: confirmCount })
+              : isManualInstall ? t('confirmManualInstallDescription')
+                : isSelfUpdate ? t('confirmSelfUpdateDescription')
+                  : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')
+  const confirmationLabel = confirm?.mode === 'restart' ? t('confirmRestart')
+    : confirm?.mode === 'uninstall' ? t('confirmUninstall')
+      : isBatchUninstall ? t('confirmBatchUninstall')
+        : isBatchEnable ? t('confirmBatchEnable')
+          : isBatchDisable ? t('confirmBatchDisable')
+            : isBatchUpdate ? t('confirmBatchUpdate')
+              : isManualInstall ? t('confirmManualInstall')
+                : isSelfUpdate ? t('selfUpdate')
+                  : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')
 
   return (
-    <div style={s.section} aria-busy={view.status === 'loading' || restartState !== 'idle'}>
+    <div style={s.section} aria-busy={view.status === 'loading' || restartState !== 'idle' || batchBusy}>
       {banner !== null ? (
         <div style={s.banner} role={banner === t('restartBanner') || restartState !== 'idle' ? 'status' : 'alert'}>
           <span style={s.bannerText}>{banner}</span>
@@ -795,6 +911,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
           ) : null}
         </div>
       </div>
+      {operationQueue.length > 0 ? <OperationQueuePanel jobs={operationQueue} t={t} /> : null}
       {subpage === 'catalog' ? (
         <>
           <div style={s.toolbar}>
@@ -853,7 +970,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
                   profileAvailable={installedError === null && installedProfile !== ''}
                   isInstalled={installedMap.has(item.packageName)}
                   job={latestJobForPackage(jobs, item.packageName)}
-                  startingKind={startingAction?.packageName === item.packageName ? startingAction.kind : null}
+                  startingKind={startingActions.get(item.packageName) ?? null}
                   expanded={expanded === item.fullName}
                   detail={detailsMap.get(item.fullName)}
                   detailError={detailErrors.get(item.fullName)}
@@ -922,8 +1039,24 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
                 return next
               })
             }}
-            onUpdateSelected={() => { openBatchUpdate(selectedUpdateEntries) }}
-            onUpdateAll={() => { openBatchUpdate(updateableEntries) }}
+            onSelectVisible={() => {
+              setSelectedUpdates((current) => {
+                const next = new Set(current)
+                const visibleLinked = visibleInstalledEntries.filter(entry => entry.linked)
+                const allSelected = visibleLinked.every(entry => next.has(entry.packageName))
+                for (const entry of visibleLinked) {
+                  if (allSelected) next.delete(entry.packageName)
+                  else next.add(entry.packageName)
+                }
+                return next
+              })
+            }}
+            onClearSelection={() => { setSelectedUpdates(new Set()) }}
+            onUpdateSelected={() => { openBatchOperation('batch-update', selectedUpdateEntries) }}
+            onUpdateAll={() => { openBatchOperation('batch-update', visibleUpdateableEntries) }}
+            onEnableSelected={() => { openBatchOperation('batch-enable', selectedDisabledEntries) }}
+            onDisableSelected={() => { openBatchOperation('batch-disable', selectedEnabledEntries) }}
+            onUninstallSelected={() => { openBatchOperation('batch-uninstall', selectedEntries) }}
             onUninstall={(entry) => { openConfirm('uninstall', '', '', entry.packageName) }}
             onSetEnabled={onSetEnabled}
             onAgentUpdate={(entry) => {
@@ -933,7 +1066,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
             agentBusy={agentBusy}
             toggleBusy={toggleBusy}
             jobs={jobs}
-            startingAction={startingAction}
+            startingActions={startingActions}
+            batchBusy={batchBusy}
           />
         </>
       ) : (
@@ -975,11 +1109,11 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       )}
       <RiskConfirmation
         open={confirm !== null}
-        title={confirm?.mode === 'restart' ? t('confirmRestartTitle') : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle') : isBatchUpdate ? t('confirmBatchUpdateTitle') : isManualInstall ? t('confirmManualInstallTitle') : isSelfUpdate ? t('confirmSelfUpdateTitle') : confirm?.mode === 'update' ? t('confirmUpdateTitle') : t('confirmTitle')}
-        description={confirm?.mode === 'restart' ? t('confirmRestartDescription') : confirm?.mode === 'uninstall' ? t('confirmUninstallDescription') : isBatchUpdate ? fmt(t, 'confirmBatchUpdateDescription', { count: confirm?.updates?.length ?? 0 }) : isManualInstall ? t('confirmManualInstallDescription') : isSelfUpdate ? t('confirmSelfUpdateDescription') : confirm?.mode === 'update' ? t('confirmUpdateDescription') : t('confirmDescription')}
-        acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' ? t('acknowledgeUninstall') : isManualInstall ? t('acknowledgeManualInstall') : t('acknowledge')}
+        title={confirmationTitle}
+        description={confirmationDescription}
+        acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' || isBatchUninstall ? t('acknowledgeUninstall') : isManualInstall ? t('acknowledgeManualInstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
-        confirmLabel={confirm?.mode === 'restart' ? t('confirmRestart') : confirm?.mode === 'uninstall' ? t('confirmUninstall') : isBatchUpdate ? t('confirmBatchUpdate') : isManualInstall ? t('confirmManualInstall') : isSelfUpdate ? t('selfUpdate') : confirm?.mode === 'update' ? t('confirmUpdate') : t('confirm')}
+        confirmLabel={confirmationLabel}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
         onCancel={() => { updateScrollY.current = null; setConfirm(null); setAcknowledged(false) }}
@@ -1126,18 +1260,40 @@ interface InstalledListProps {
   onUpdate: (entry: MarketplaceInstalledEntry) => void
   selectedUpdates: Set<string>
   onToggleSelected: (entry: MarketplaceInstalledEntry) => void
+  onSelectVisible: () => void
+  onClearSelection: () => void
   onUpdateSelected: () => void
   onUpdateAll: () => void
+  onEnableSelected: () => void
+  onDisableSelected: () => void
+  onUninstallSelected: () => void
   onUninstall: (entry: MarketplaceInstalledEntry) => void
   onSetEnabled: (entry: MarketplaceInstalledEntry) => void
   onAgentUpdate: (entry: MarketplaceInstalledEntry) => void
   agentBusy: string | null
   toggleBusy: string | null
   jobs: Map<string, MarketplaceJobStatus>
-  startingAction: StartingAction | null
+  startingActions: Map<string, MarketplaceJobKind>
+  batchBusy: boolean
 }
 
-function InstalledList({ entries, currentProfile, loading, error, emptyMessage, t, onRetry, onUpdate, selectedUpdates, onToggleSelected, onUpdateSelected, onUpdateAll, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy, jobs, startingAction }: InstalledListProps): ReactNode {
+function OperationQueuePanel({ jobs, t }: { jobs: MarketplaceJobStatus[]; t: MarketplaceTabProps['t'] }): ReactNode {
+  const active = jobs.filter(job => job.finishedAt === null).length
+  const failed = jobs.filter(job => job.failure !== null).length
+  return (
+    <section style={s.queuePanel} aria-label={t('operationQueueTitle')}>
+      <div style={s.queueHead}>
+        <strong style={s.title}>{t('operationQueueTitle')}</strong>
+        <span style={s.muted}>{fmt(t, 'operationQueueSummary', { active, total: jobs.length, failed })}</span>
+      </div>
+      <ol style={s.queueList}>
+        {jobs.map(job => <li key={job.jobId}><JobPanel job={job} t={t} /></li>)}
+      </ol>
+    </section>
+  )
+}
+
+function InstalledList({ entries, currentProfile, loading, error, emptyMessage, t, onRetry, onUpdate, selectedUpdates, onToggleSelected, onSelectVisible, onClearSelection, onUpdateSelected, onUpdateAll, onEnableSelected, onDisableSelected, onUninstallSelected, onUninstall, onSetEnabled, onAgentUpdate, agentBusy, toggleBusy, jobs, startingActions, batchBusy }: InstalledListProps): ReactNode {
   if (loading) return <p style={s.muted}>{t('loadingInstalled')}</p>
   if (error !== null) {
     return (
@@ -1148,18 +1304,27 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
     )
   }
   if (entries.length === 0) return <p style={s.muted}>{emptyMessage}</p>
+  const selectable = entries.filter(entry => entry.linked)
+  const selected = selectable.filter(entry => selectedUpdates.has(entry.packageName))
   const updateable = entries.filter((entry) => entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null)
-  const selectedCount = updateable.filter((entry) => selectedUpdates.has(entry.packageName)).length
+  const selectedUpdateCount = updateable.filter((entry) => selectedUpdates.has(entry.packageName)).length
+  const selectedEnabledCount = selected.filter(entry => entry.enabled).length
+  const selectedDisabledCount = selected.filter(entry => !entry.enabled).length
   return (
     <>
-      {updateable.length > 0 ? (
+      {selectable.length > 0 ? (
         <div style={s.bulkActions}>
-          <span style={s.muted}>{selectedCount > 0 ? fmt(t, 'selectForBatch', { count: selectedCount }) : t('batchUpdateHint')}</span>
+          <span style={s.muted}>{selected.length > 0 ? fmt(t, 'selectForBatch', { count: selected.length }) : t('batchOperationHint')}</span>
           <div style={s.fieldActions}>
-            <Button variant='outline' size='sm' disabled={selectedCount === 0} onClick={onUpdateSelected}>
-              {fmt(t, 'batchUpdateSelected', { count: selectedCount })}
+            <Button variant='outline' size='sm' disabled={batchBusy} onClick={onSelectVisible}>{t('selectVisible')}</Button>
+            <Button variant='outline' size='sm' disabled={batchBusy || selected.length === 0} onClick={onClearSelection}>{t('clearSelection')}</Button>
+            <Button variant='outline' size='sm' disabled={batchBusy || selectedUpdateCount === 0} onClick={onUpdateSelected}>
+              {fmt(t, 'batchUpdateSelected', { count: selectedUpdateCount })}
             </Button>
-            <Button variant='primary' size='sm' onClick={onUpdateAll}>{fmt(t, 'batchUpdateAll', { count: updateable.length })}</Button>
+            <Button variant='outline' size='sm' disabled={batchBusy || updateable.length === 0} onClick={onUpdateAll}>{fmt(t, 'batchUpdateAll', { count: updateable.length })}</Button>
+            <Button variant='outline' size='sm' disabled={batchBusy || selectedDisabledCount === 0} onClick={onEnableSelected}>{fmt(t, 'batchEnableSelected', { count: selectedDisabledCount })}</Button>
+            <Button variant='outline' size='sm' disabled={batchBusy || selectedEnabledCount === 0} onClick={onDisableSelected}>{fmt(t, 'batchDisableSelected', { count: selectedEnabledCount })}</Button>
+            <Button variant='primary' size='sm' disabled={batchBusy || selected.length === 0} onClick={onUninstallSelected}>{fmt(t, 'batchUninstallSelected', { count: selected.length })}</Button>
           </div>
         </div>
       ) : null}
@@ -1167,18 +1332,19 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
         {entries.map((entry) => {
         const job = latestJobForPackage(jobs, entry.packageName)
         const jobActive = job !== undefined && job.finishedAt === null
-        const startingKind = startingAction?.packageName === entry.packageName ? startingAction.kind : null
+        const startingKind = startingActions.get(entry.packageName) ?? null
         const operationActive = startingKind !== null || jobActive
         return (
           <li key={entry.packageName} style={s.installedCard}>
             <div style={s.installedTop}>
               <div style={s.installedInfo}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                  {entry.updateAvailable && entry.canUpdate && entry.registryRepo !== null && entry.verifiedCommit !== null ? (
+                  {entry.linked ? (
                     <input
                       type='checkbox'
                       checked={selectedUpdates.has(entry.packageName)}
-                      aria-label={fmt(t, 'selectUpdateFor', { package: friendlyPackageName(entry.packageName) })}
+                      aria-label={fmt(t, 'selectPluginFor', { package: friendlyPackageName(entry.packageName) })}
+                      disabled={batchBusy}
                       onChange={() => { onToggleSelected(entry) }}
                     />
                   ) : null}
@@ -1219,7 +1385,7 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
                 ) : operationActive ? (
                   <Button style={s.installedActionButton} variant='primary' size='sm' disabled>{activeJobLabel({ kind: job?.kind ?? startingKind ?? 'install' }, t)}</Button>
                 ) : entry.updateAvailable && entry.canUpdate ? (
-                  <Button style={s.installedActionButton} variant='primary' size='sm' onClick={() => { onUpdate(entry) }}>
+                  <Button style={s.installedActionButton} variant='primary' size='sm' disabled={batchBusy} onClick={() => { onUpdate(entry) }}>
                     {entry.packageName === SELF_PACKAGE ? t('selfUpdate') : t('update')}
                   </Button>
                 ) : entry.updateAvailable
@@ -1227,7 +1393,7 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
                   && entry.registryRepo !== null
                   && entry.verifiedCommit !== null
                   && (entry.install.profiles.length === 0 || entry.install.profiles.includes(currentProfile)) ? (
-                    <Button style={s.installedActionButton} variant='primary' size='sm' disabled={agentBusy === entry.registryRepo} onClick={() => { onAgentUpdate(entry) }}>
+                    <Button style={s.installedActionButton} variant='primary' size='sm' disabled={batchBusy || agentBusy === entry.registryRepo} onClick={() => { onAgentUpdate(entry) }}>
                       {agentBusy === entry.registryRepo ? t('agentStarting') : t('agentUpdate')}
                     </Button>
                 ) : entry.updateAvailable && entry.install !== null ? (
@@ -1235,10 +1401,10 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
                 ) : (
                   <Button style={s.installedActionButton} variant='outline' size='sm' disabled>{t('upToDate')}</Button>
                 )}
-                <Button style={s.installedActionButton} variant='outline' size='sm' disabled={!entry.linked || operationActive || toggleBusy === entry.packageName} onClick={() => { onSetEnabled(entry) }}>
+                <Button style={s.installedActionButton} variant='outline' size='sm' disabled={batchBusy || !entry.linked || operationActive || toggleBusy === entry.packageName} onClick={() => { onSetEnabled(entry) }}>
                   {entry.enabled ? t('disable') : t('enable')}
                 </Button>
-                <Button style={s.installedActionButton} variant='outline' size='sm' disabled={!entry.linked || operationActive} onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
+                <Button style={s.installedActionButton} variant='outline' size='sm' disabled={batchBusy || !entry.linked || operationActive} onClick={() => { onUninstall(entry) }}>{t('uninstall')}</Button>
               </div>
             </div>
             {job !== undefined ? (

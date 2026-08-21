@@ -155,6 +155,7 @@ export class RegistryError extends Error {
 /** Read, cache, validate, and search one central Registry document. */
 export class RegistryClient {
   private cache: RegistryCache | undefined
+  private loading: Promise<MarketplaceRegistry> | undefined
   private readonly source: string
   private readonly bundledSource: string
   private readonly cacheMs: number
@@ -241,6 +242,18 @@ export class RegistryClient {
 
   private async load(): Promise<MarketplaceRegistry> {
     if (this.cache !== undefined && Date.now() < this.cache.expiresAt) return this.cache.registry
+    if (this.loading !== undefined) return this.loading
+    const loading = this.loadUncached()
+    this.loading = loading
+    try {
+      return await loading
+    } finally {
+      if (this.loading === loading) this.loading = undefined
+    }
+  }
+
+  /** Perform one Registry refresh shared by every concurrent caller. */
+  private async loadUncached(): Promise<MarketplaceRegistry> {
     try {
       return await this.loadSource(this.source)
     } catch (error) {

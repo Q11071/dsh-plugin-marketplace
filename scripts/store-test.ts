@@ -7,7 +7,7 @@ import { strict as assert } from 'node:assert'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { JobTable, linkedPnpmStore, pnpmArgsFor } from '../src/host/installer.ts'
+import { JobTable, MutationQueue, linkedPnpmStore, pnpmArgsFor } from '../src/host/installer.ts'
 
 let passed = 0
 function ok(name: string, fn: () => void): void {
@@ -89,12 +89,35 @@ try {
 
   const jobs = new JobTable()
   const first = jobs.create('install', 'first-plugin')
-  ok('Profile mutations are globally serialized across package names', () => {
-    assert.throws(() => jobs.create('update', 'second-plugin'), /another Profile plugin operation/i)
+  const second = jobs.create('update', 'second-plugin', 'queued')
+  ok('multiple Profile mutations can be represented in one serialized queue', () => {
+    assert.equal(jobs.hasActive(), true)
+    assert.equal(jobs.hasActivePackage('second-plugin'), true)
+    assert.deepEqual(jobs.list().map(job => [job.packageName, job.phase]), [
+      ['first-plugin', 'spawning'],
+      ['second-plugin', 'queued'],
+    ])
   })
   jobs.settle(first, { packageName: 'first-plugin', version: '1.0.0', requiresRestart: true })
-  ok('a new Profile mutation can start after the previous job settles', () => {
-    assert.equal(jobs.create('update', 'second-plugin').packageName, 'second-plugin')
+  ok('a queued mutation remains active after the previous job settles', () => {
+    assert.equal(jobs.hasActive(), true)
+  })
+  jobs.settle(second, { packageName: 'second-plugin', version: '2.0.0', requiresRestart: true })
+  ok('the queue becomes idle after every mutation settles', () => assert.equal(jobs.hasActive(), false))
+
+  const capacity = new JobTable()
+  for (let index = 0; index < 50; index += 1) capacity.create('update', 'plugin-' + String(index), 'queued')
+  ok('the operation queue caps active jobs at the upstream batch limit', () => {
+    assert.equal(capacity.atCapacity(), true)
+  })
+
+  const mutations = new MutationQueue()
+  const order: string[] = []
+  mutations.enqueue(async () => { order.push('first'); throw new Error('expected failure') })
+  mutations.enqueue(async () => { order.push('second') })
+  await mutations.drain()
+  ok('a failed mutation does not block the next queued mutation', () => {
+    assert.deepEqual(order, ['first', 'second'])
   })
 } finally {
   rmSync(tmp, { recursive: true, force: true })

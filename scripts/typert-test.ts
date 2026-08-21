@@ -48,8 +48,8 @@ for (const invocation of result.invocations) {
 console.log('typert host implementations callable: ' + String(result.invocations.length))
 
 const expected = new Set([
-  'search', 'details', 'guidedTask', 'installPlugin', 'manualInstall', 'update', 'updateBatch', 'uninstall',
-  'setEnabled', 'jobStatus', 'installed', 'installLocation', 'setInstallDir',
+  'search', 'details', 'guidedTask', 'installPlugin', 'manualInstall', 'update', 'updateBatch', 'uninstall', 'uninstallBatch',
+  'setEnabled', 'setEnabledBatch', 'jobStatus', 'jobs', 'installed', 'installLocation', 'setInstallDir',
   'agentWorkspace', 'setAgentWorkspaceDir', 'diagnoseConflicts', 'restart',
 ])
 const actual = new Set(result.invocations.map((invocation) => (invocation as { method: string }).method))

@@ -129,6 +129,10 @@ After a successful install, the Agent's final response must include **How to sta
 | Restart DSH | Waits for active plugin jobs, then restarts with the same arguments and Profile |
 | Marketplace self-update | Reads the version from this repository, then pins the install source to an exact commit |
 
+Install, update, and uninstall share one FIFO plugin-operation queue. Confirmation immediately creates a placeholder job and blocks duplicate submissions for the same plugin; GitHub verification may prefetch in the background, while Profile and lockfile writes remain strictly serialized and one failure does not stop later jobs.
+
+Installed plugins can be selected from the current filtered view and updated, enabled, disabled, or uninstalled in bulk. A batch accepts at most 50 plugins; bulk enable checks the combined state for newly introduced conflicts, and bulk enable/disable writes the Profile manifest once.
+
 The package includes the built `lib/` files and a Registry snapshot from the release. If the remote Registry is temporarily unavailable, the marketplace can continue using the bundled snapshot.
 
 ## Install location, Agent workspace, and conflict diagnostics
