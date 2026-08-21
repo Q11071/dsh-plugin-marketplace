@@ -131,7 +131,7 @@ export interface MarketplaceSearchPage {
 }
 
 export type MarketplaceJobKind = 'install' | 'update' | 'uninstall'
-export type MarketplaceJobPhase = 'spawning' | 'running' | 'reconciling' | 'done' | 'failed'
+export type MarketplaceJobPhase = 'queued' | 'spawning' | 'running' | 'reconciling' | 'done' | 'failed'
 
 /** Live projection of one install/uninstall/update job (polled). */
 export interface MarketplaceJobStatus {
@@ -259,6 +259,29 @@ export interface MarketplaceBatchUpdateResult {
   failures: Array<{ repo: string; message: string }>
 }
 
+/** 最多 50 个已安装插件的批量操作请求。 */
+export interface MarketplaceBatchPackageRequest {
+  packageNames: string[]
+}
+
+/** 批量启用或停用已安装插件。 */
+export interface MarketplaceBatchToggleRequest extends MarketplaceBatchPackageRequest {
+  enabled: boolean
+}
+
+/** 批量卸载进入操作队列的任务与拒绝项。 */
+export interface MarketplaceBatchUninstallResult {
+  jobs: MarketplaceBatchUpdateJob[]
+  failures: Array<{ packageName: string; message: string }>
+}
+
+/** 一次批量启用或停用的逐插件结果。 */
+export interface MarketplaceBatchToggleResult {
+  results: MarketplaceToggleResult[]
+  failures: Array<{ packageName: string; message: string }>
+  requiresRestart: boolean
+}
+
 /** Restricted command-line install request; the Host parses it without a shell. */
 export interface MarketplaceManualInstallRequest {
   command: string
@@ -275,8 +298,11 @@ export type MarketplaceSearchOutcome = MarketplaceResult<MarketplaceSearchPage>
 export type MarketplaceDetailsOutcome = MarketplaceResult<MarketplacePluginDetails>
 export type MarketplaceInstallOutcome = MarketplaceResult<MarketplaceJobHandle>
 export type MarketplaceBatchUpdateOutcome = MarketplaceResult<MarketplaceBatchUpdateResult>
+export type MarketplaceBatchUninstallOutcome = MarketplaceResult<MarketplaceBatchUninstallResult>
+export type MarketplaceBatchToggleOutcome = MarketplaceResult<MarketplaceBatchToggleResult>
 export type MarketplaceManualInstallOutcome = MarketplaceResult<MarketplaceManualInstallResult>
 export type MarketplaceJobStatusOutcome = MarketplaceResult<MarketplaceJobStatus>
+export type MarketplaceJobsOutcome = MarketplaceResult<MarketplaceJobStatus[]>
 export type MarketplaceInstalledOutcome = MarketplaceResult<MarketplaceInstalled>
 export type MarketplaceToggleOutcome = MarketplaceResult<MarketplaceToggleResult>
 export type MarketplaceRestartOutcome = MarketplaceResult<MarketplaceRestartResult>

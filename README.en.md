@@ -130,7 +130,9 @@ After a successful install, the Agent's final response must include **How to sta
 | Restart DSH | Waits for active plugin jobs, then restarts with the same arguments and Profile |
 | Marketplace self-update | Reads the version from this repository, then pins the install source to an exact commit |
 
-Batch updates include only eligible entries visible under the active search and filters, so hidden plugins are never updated accidentally. Accepted jobs enter a queue and mutate the Profile sequentially in selection order, preventing concurrent pnpm processes from racing on the manifest or lockfile. A failed item reports its own error without stalling later jobs.
+Install, update, and uninstall share one FIFO plugin-operation queue. Confirmation immediately creates a placeholder job and blocks duplicate submissions for the same plugin; GitHub verification may prefetch in the background, while Profile and lockfile writes remain strictly serialized and one failure does not stop later jobs.
+
+Installed plugins can be selected from the current filtered view and updated, enabled, disabled, or uninstalled in bulk. A batch accepts at most 50 plugins; bulk enable checks the combined state for newly introduced conflicts, and bulk enable/disable writes the Profile manifest once.
 
 Update detection is not limited to version numbers. For a plugin installed from an exact GitHub source, a different Registry-verified commit is offered as an update even when the Registry version is unchanged. npm sources continue to use verified exact release versions.
 
