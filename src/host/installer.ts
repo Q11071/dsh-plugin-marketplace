@@ -14,6 +14,7 @@ import type {
 
 const MAX_LOG_CHARS = 65536
 const MAX_JOBS = 64
+const MAX_ACTIVE_JOBS = 50
 const WINDOWS_ABSOLUTE_PATH = /^(?:[A-Za-z]:[\\/]|\\\\)/
 
 function resolveStoreDir(dir: string, storeDir: string): string {
@@ -50,16 +51,17 @@ export class JobTable {
   private readonly jobs = new Map<string, JobRecord>()
   private seq = 0
 
-  create(kind: MarketplaceJobKind, packageName: string, allowQueued = false): JobRecord {
-    if (!allowQueued && this.hasActive()) {
-      throw new Error('Another Profile plugin operation is already in progress.')
-    }
+  create(
+    kind: MarketplaceJobKind,
+    packageName: string,
+    phase: MarketplaceJobPhase = 'spawning',
+  ): JobRecord {
     this.seq += 1
     const record: JobRecord = {
       jobId: 'mkt-' + String(this.seq) + '-' + Date.now().toString(36),
       kind,
       packageName,
-      phase: 'spawning',
+      phase,
       log: '',
       exitCode: null,
       startedAt: Date.now(),
@@ -80,9 +82,32 @@ export class JobTable {
     return this.jobs.get(jobId)
   }
 
+  list(): MarketplaceJobStatus[] {
+    return [...this.jobs.values()]
+      .sort((left, right) => left.startedAt - right.startedAt)
+      .map(job => this.snapshot(job))
+  }
+
   hasActive(): boolean {
     for (const job of this.jobs.values()) {
       if (job.finishedAt === null) return true
+    }
+    return false
+  }
+
+  atCapacity(): boolean {
+    let active = 0
+    for (const job of this.jobs.values()) {
+      if (job.finishedAt !== null) continue
+      active += 1
+      if (active >= MAX_ACTIVE_JOBS) return true
+    }
+    return false
+  }
+
+  hasActivePackage(packageName: string): boolean {
+    for (const job of this.jobs.values()) {
+      if (job.packageName === packageName && job.finishedAt === null) return true
     }
     return false
   }
@@ -127,14 +152,18 @@ export class JobTable {
   }
 }
 
-/** Serialize Profile mutations while allowing every accepted job to be tracked. */
-export class ProfileMutationQueue {
+/** Profile 写操作的先进先出串行队列；单项拒绝不会阻断后续任务。 */
+export class MutationQueue {
   private tail: Promise<void> = Promise.resolve()
 
-  enqueue(work: () => Promise<void>): Promise<void> {
+  enqueue(work: () => Promise<void>): void {
     const scheduled = this.tail.catch(() => undefined).then(work)
     this.tail = scheduled.catch(() => undefined)
-    return scheduled
+    void scheduled
+  }
+
+  async drain(): Promise<void> {
+    await this.tail
   }
 }
 

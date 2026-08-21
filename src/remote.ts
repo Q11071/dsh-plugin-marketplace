@@ -13,6 +13,10 @@ import type {
   MarketplaceDetailsRequest,
   MarketplaceBatchUpdateRequest,
   MarketplaceBatchUpdateResult,
+  MarketplaceBatchPackageRequest,
+  MarketplaceBatchToggleRequest,
+  MarketplaceBatchToggleResult,
+  MarketplaceBatchUninstallResult,
   MarketplaceDiagnoseConflictsResult,
   MarketplaceGuidedAgentRequest,
   MarketplaceGuidedAgentTask,
@@ -47,8 +51,11 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     update: (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     updateBatch: (request: MarketplaceBatchUpdateRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchUpdateResult>>>
     uninstall: (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    uninstallBatch: (request: MarketplaceBatchPackageRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchUninstallResult>>>
     setEnabled: (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
+    setEnabledBatch: (request: MarketplaceBatchToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchToggleResult>>>
     jobStatus: (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
+    jobs: () => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus[]>>>
     installed: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
     installLocation: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     setInstallDir: (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
@@ -66,8 +73,11 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/update': (request: MarketplaceInstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
     'marketplace/updateBatch': (request: MarketplaceBatchUpdateRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchUpdateResult>>>
     'marketplace/uninstall': (request: MarketplaceUninstallRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobHandle>>>
+    'marketplace/uninstallBatch': (request: MarketplaceBatchPackageRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchUninstallResult>>>
     'marketplace/setEnabled': (request: MarketplaceToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceToggleResult>>>
+    'marketplace/setEnabledBatch': (request: MarketplaceBatchToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchToggleResult>>>
     'marketplace/jobStatus': (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
+    'marketplace/jobs': () => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus[]>>>
     'marketplace/installed': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
     'marketplace/installLocation': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     'marketplace/setInstallDir': (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>

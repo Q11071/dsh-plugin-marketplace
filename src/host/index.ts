@@ -24,6 +24,10 @@ import type {
   MarketplaceAgentWorkspace,
   MarketplaceBatchUpdateRequest,
   MarketplaceBatchUpdateResult,
+  MarketplaceBatchPackageRequest,
+  MarketplaceBatchToggleRequest,
+  MarketplaceBatchToggleResult,
+  MarketplaceBatchUninstallResult,
   MarketplaceConflict,
   MarketplaceDetailsRequest,
   MarketplaceDiagnoseConflictsResult,
@@ -47,11 +51,11 @@ import type {
   MarketplaceToggleRequest,
   MarketplaceToggleResult,
 } from '../types.ts'
-import { readProfileManifest } from '@deepseek-ai/dsh-app-boot'
+import { readProfileManifest, writeProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
 import { buildGuidedAgentTask } from './guided-agent.ts'
 import { loadInstallSkill, type MarketplaceSkillRegistration } from './install-skill.ts'
-import { JobTable, ProfileMutationQueue, runPnpmJob, type JobRecord } from './installer.ts'
+import { JobTable, MutationQueue, runPnpmJob, type JobRecord } from './installer.ts'
 import { parseManualInstall } from './manual-install.ts'
 import { scheduleProcessRestart } from './restart.ts'
 import {
@@ -77,7 +81,6 @@ import {
   packageManifestPath,
   profileLocation,
   reconcileBundle,
-  setBundleEnabled,
   writeProfileDependency,
 } from './profile.ts'
 import {
@@ -113,6 +116,10 @@ const DEFAULT_REGISTRY_URL = 'https://raw.githubusercontent.com/YELEBAI/dsh-plug
 
 type Ok<T> = { ok: true; value: T }
 type Err = { ok: false; error: { code: string; message: string; details: object } }
+type InstallSource = {
+  registered: MarketplaceRegistryPlugin | SelfUpdateTarget
+  details: MarketplacePluginDetails
+}
 
 function ok<T>(value: T): Ok<T> {
   return { ok: true, value }
@@ -145,8 +152,8 @@ export class MarketplaceService extends TypertRemoteService {
   private selfUpdateCache: { details: MarketplacePluginDetails; target: SelfUpdateTarget; expiresAt: number } | undefined
   private pendingInstallResolution = 0
   private restartPending = false
-  /** 同一 Profile 的写操作排队执行，避免批量更新并发改写锁文件。 */
-  private readonly mutationQueue = new ProfileMutationQueue()
+  /** 同一 Profile 的写操作排队执行，避免批量操作并发改写锁文件。 */
+  private readonly mutationQueue = new MutationQueue()
 
   constructor(ctx: Context, config: RegistryConfig) {
     super(ctx, 'marketplace')
@@ -304,7 +311,7 @@ export class MarketplaceService extends TypertRemoteService {
     if (unique.size === 0) return fail('empty-batch', 'Choose at least one plugin to update.')
     const outcomes = await Promise.all([...unique.values()].map(async (update) => ({
       repo: update.repo,
-      result: await this.startJob('update', update.repo, update.ref, true),
+      result: await this.startJob('update', update.repo, update.ref),
     })))
     return ok({
       jobs: outcomes.flatMap(({ result }) => result.ok
@@ -316,48 +323,59 @@ export class MarketplaceService extends TypertRemoteService {
 
   @Remote('uninstall')
   async uninstall(request: MarketplaceUninstallRequest): Promise<MarketplaceResult<{ jobId: string }>> {
-    try {
-      if (this.restartPending) {
-        return fail('restart-pending', 'DSH is already preparing to restart.')
-      }
-      const packageName = request.packageName.trim()
-      if (packageName === '' || !/^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
-        return fail('bad-package', 'Malformed package name: ' + request.packageName)
-      }
-      const profile = installLocation(this.ctx, this.config)
-      ensureProfile(profile.dir, profile.name)
-      if (this.profileMutationBusy()) {
-        return fail('job-running', 'Another Profile plugin operation is already in progress.')
-      }
-      const before = readProfileManifest(NAME, profile.dir)
-      const beforeDeclaresBundle = exportsPatch(packageName, profile.dir)
-      const job = this.jobs.create('uninstall', packageName)
-      void this.driveUninstall(job, profile, before, beforeDeclaresBundle)
-      return ok({ jobId: job.jobId })
-    } catch (error) {
-      return toFailure(error)
-    }
+    return this.startUninstallJob(request.packageName)
+  }
+
+  @Remote('uninstallBatch')
+  async uninstallBatch(request: MarketplaceBatchPackageRequest): Promise<MarketplaceResult<MarketplaceBatchUninstallResult>> {
+    const packageNames = uniquePackageNames(request.packageNames)
+    if (packageNames.length === 0) return fail('empty-batch', 'Choose at least one plugin to uninstall.')
+    const outcomes = packageNames.map(packageName => ({ packageName, result: this.startUninstallJob(packageName) }))
+    return ok({
+      jobs: outcomes.flatMap(({ result }) => result.ok
+        ? [{ jobId: result.value.jobId, packageName: this.jobs.get(result.value.jobId)?.packageName ?? 'unknown' }]
+        : []),
+      failures: outcomes.flatMap(({ packageName, result }) => result.ok ? [] : [{ packageName, message: result.error.message }]),
+    })
   }
 
   @Remote('setEnabled')
   async setEnabled(request: MarketplaceToggleRequest): Promise<MarketplaceResult<MarketplaceToggleResult>> {
+    const result = await this.setEnabledBatch({ packageNames: [request.packageName], enabled: request.enabled })
+    if (!result.ok) return result
+    const first = result.value.results[0]
+    if (first !== undefined) return ok(first)
+    const failure = result.value.failures[0]
+    return fail('not-a-dsh-plugin', failure?.message ?? request.packageName + ' is not an installed DSH bundle.')
+  }
+
+  @Remote('setEnabledBatch')
+  async setEnabledBatch(request: MarketplaceBatchToggleRequest): Promise<MarketplaceResult<MarketplaceBatchToggleResult>> {
     try {
       if (this.restartPending) {
         return fail('restart-pending', 'DSH is already preparing to restart.')
-      }
-      const packageName = request.packageName.trim()
-      if (packageName === '' || !/^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(packageName)) {
-        return fail('bad-package', 'Malformed package name: ' + request.packageName)
       }
       if (this.profileMutationBusy()) {
         return fail('job-running', 'Another Profile plugin operation is already in progress.')
       }
       const profile = installLocation(this.ctx, this.config)
       ensureProfile(profile.dir, profile.name)
+      const packageNames = uniquePackageNames(request.packageNames)
+      if (packageNames.length === 0) return fail('empty-batch', 'Choose at least one plugin to change.')
+      const manifest = readProfileManifest(NAME, profile.dir)
+      const failures: Array<{ packageName: string; message: string }> = []
+      const accepted = packageNames.filter((packageName) => {
+        if (!validPackageName(packageName) || manifest.dependencies?.[packageName] === undefined || !exportsPatch(packageName, profile.dir)) {
+          failures.push({ packageName, message: packageName + ' is not an installed DSH bundle in profile ' + profile.name + '.' })
+          return false
+        }
+        return true
+      })
+      if (accepted.length === 0) return ok({ results: [], failures, requiresRestart: false })
+      let bundles = manifest.dsh?.profile?.bundles ?? []
+      for (const packageName of accepted) bundles = toggleBundleName(bundles, packageName, request.enabled)
       if (request.enabled) {
-        const manifest = readProfileManifest(NAME, profile.dir)
         const beforeKeys = new Set(computeConflicts(manifest, profile.dir).map(conflictIdentity))
-        const bundles = toggleBundleName(manifest.dsh?.profile?.bundles ?? [], packageName, true)
         const prospective = {
           ...manifest,
           dsh: { ...manifest.dsh, profile: { ...manifest.dsh?.profile, bundles } },
@@ -375,10 +393,15 @@ export class MarketplaceService extends TypertRemoteService {
           )
         }
       }
-      if (!setBundleEnabled(packageName, request.enabled, profile.dir)) {
-        return fail('not-a-dsh-plugin', packageName + ' is not an installed DSH bundle in profile ' + profile.name + '.')
-      }
-      return ok({ packageName, enabled: request.enabled, requiresRestart: true })
+      writeProfileManifest(profile.dir, {
+        ...manifest,
+        dsh: { ...manifest.dsh, profile: { ...manifest.dsh?.profile, bundles } },
+      })
+      return ok({
+        results: accepted.map(packageName => ({ packageName, enabled: request.enabled, requiresRestart: true })),
+        failures,
+        requiresRestart: true,
+      })
     } catch (error) {
       return toFailure(error)
     }
@@ -391,6 +414,11 @@ export class MarketplaceService extends TypertRemoteService {
       return fail('job-missing', 'Unknown job: ' + request.jobId)
     }
     return ok(this.jobs.snapshot(job))
+  }
+
+  @Remote('jobs')
+  async listJobs(): Promise<MarketplaceResult<MarketplaceJobStatus[]>> {
+    return ok(this.jobs.list())
   }
 
   @Remote('installed')
@@ -429,7 +457,7 @@ export class MarketplaceService extends TypertRemoteService {
         entry.updateAvailable = versionOrder > 0
           || (versionOrder === 0
             && registered.install.source === 'github'
-            && isGitHubSpec(entry.currentSpec)
+            && /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(entry.currentSpec)
             && !entry.currentSpec.toLocaleLowerCase().includes(registered.verifiedCommit.toLocaleLowerCase()))
         entry.availableVersion = versionOrder > 0 ? registered.version : null
         entry.availableVersionSource = versionOrder > 0 ? 'registry' : null
@@ -572,107 +600,48 @@ export class MarketplaceService extends TypertRemoteService {
     return null
   }
 
-  /** Shared install/update pipeline: resolve → gate → spawn detached job. */
+  /** 接受任务后立即返回；GitHub 校验与 Profile 写入在后台队列中继续。 */
   private async startJob(
     kind: 'install' | 'update',
     repo: string,
     ref: string,
-    allowQueuedMutation = false,
   ): Promise<MarketplaceResult<{ jobId: string }>> {
     if (this.restartPending) {
       return fail('restart-pending', 'DSH is already preparing to restart.')
-    }
-    if (!allowQueuedMutation && this.profileMutationBusy()) {
-      return fail('job-running', 'Another Profile plugin operation is already in progress.')
     }
     this.pendingInstallResolution += 1
     try {
       const directSelfUpdate = kind === 'update'
         && repo.trim().toLocaleLowerCase() === SELF_REPOSITORY.toLocaleLowerCase()
-      let registered: MarketplaceRegistryPlugin | SelfUpdateTarget | undefined
-      let details: MarketplacePluginDetails | undefined
-      if (directSelfUpdate) {
-        const live = await this.liveSelfUpdate(true)
-        registered = live.target
-        details = live.details
-      } else {
-        registered = await this.registry.find(repo)
-      }
-      if (registered === undefined) {
+      const registered = directSelfUpdate ? undefined : await this.registry.find(repo)
+      if (!directSelfUpdate && registered === undefined) {
         return fail('not-in-registry', repo + ' is not present in the verified DSH plugin Registry.')
       }
-      if (!directSelfUpdate && ref !== '' && ref.toLocaleLowerCase() !== registered.verifiedCommit.toLocaleLowerCase()) {
+      if (!directSelfUpdate && ref !== '' && ref.toLocaleLowerCase() !== registered!.verifiedCommit.toLocaleLowerCase()) {
         return fail('unverified-ref', 'The requested ref is not the commit approved by the DSH plugin Registry.', {
           requestedRef: ref,
-          verifiedCommit: registered.verifiedCommit,
+          verifiedCommit: registered!.verifiedCommit,
         })
       }
-      details ??= await this.github.details(registered.fullName, registered.verifiedCommit)
-      const manifest = details.manifest
-      if (manifest === null || manifest.bundlePatch === null || details.patch === null) {
-        return fail(
-          'not-a-dsh-plugin',
-          details.repo + ' no longer provides the Registry-verified DSH bundle files.',
-        )
+      const packageName = directSelfUpdate ? SELF_PACKAGE : registered!.packageName
+      if (this.jobs.atCapacity()) return fail('queue-full', 'The plugin operation queue already contains 50 active jobs.')
+      if (this.jobs.hasActivePackage(packageName)) {
+        return fail('job-duplicate', packageName + ' already has an active plugin operation.')
       }
-      if (manifest.name !== registered.packageName || manifest.bundlePatch !== registered.bundlePatch) {
-        return fail('registry-mismatch', details.repo + ' no longer matches its verified Registry identity.')
-      }
-      const packageName = manifest.name
-      const profile = installLocation(this.ctx, this.config)
-      ensureProfile(profile.dir, profile.name)
-      if (registered.install.mode !== 'automatic'
-        || !registered.install.profiles.includes(profile.name)
-        || registered.install.spec === '') {
-        return fail('guided-install', 'This plugin needs its author\'s guided installation steps.', {
-          profile: profile.name,
-          supportedProfiles: registered.install.profiles,
-          instructionsUrl: registered.install.instructionsUrl,
-        })
-      }
-      const before = readProfileManifest(NAME, profile.dir)
-      if (kind === 'install' && before.dependencies?.[packageName] !== undefined) {
-        return fail('already-installed', packageName + ' is already installed — use Update instead.')
-      }
-      if (kind === 'update' && before.dependencies?.[packageName] === undefined) {
-        return fail('not-installed', packageName + ' is not installed in profile ' + profile.name + '.')
-      }
-      const beforeDeclaresBundle = exportsPatch(packageName, profile.dir)
-      const existingCustomTarget = kind === 'update'
-        ? managedInstalledPluginTarget(profile, packageName, before)
-        : null
-      const customTarget = kind === 'install' && profile.custom
-        ? pluginTarget(profile, packageName)
-        : existingCustomTarget
-      const target = customTarget ?? profilePackagePath(profile.dir, packageName)
-      if (kind === 'install' && existsSync(target)) {
-        return fail('plugin-dir-exists', 'Install blocked: target directory already exists: ' + target, { target })
-      }
-      if (kind === 'update' && existsSync(target)) {
+      const job = this.jobs.create(kind, packageName, this.jobs.hasActive() ? 'queued' : 'spawning')
+      const source: Promise<InstallSource> = directSelfUpdate
+        ? this.liveSelfUpdate(true).then(({ target, details }) => ({ registered: target, details }))
+        : this.github.details(registered!.fullName, registered!.verifiedCommit)
+          .then(details => ({ registered: registered!, details }))
+      void source.catch(() => undefined)
+      this.enqueueMutation(async () => {
+        this.jobs.phase(job, 'spawning')
         try {
-          const targetManifest = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')) as { name?: unknown }
-          if (targetManifest.name !== packageName) {
-            return fail('plugin-dir-conflict', 'Update blocked: ' + target + ' belongs to ' + String(targetManifest.name ?? 'another package') + '.', { target })
-          }
+          await this.runInstallJob(job, kind, await source)
         } catch (error) {
-          return fail('plugin-dir-invalid', 'Update blocked: cannot validate existing plugin directory ' + target + '.', { target, cause: error instanceof Error ? error.message : String(error) })
+          this.failPreparedJob(job, error)
         }
-      }
-      if (kind === 'install') {
-        const conflict = this.installConflict(details, before, profile.dir)
-        if (conflict !== null) return conflict
-      }
-      const job = this.jobs.create(kind, packageName, allowQueuedMutation)
-      const spec = executableSpec(registered)
-      void this.mutationQueue.enqueue(() => this.driveInstall(
-        job,
-        profile,
-        spec,
-        before,
-        beforeDeclaresBundle,
-        registered.install.requiresRestart,
-        customTarget,
-      ))
+      })
       return ok({ jobId: job.jobId })
     } catch (error) {
       return toFailure(error)
@@ -681,8 +650,106 @@ export class MarketplaceService extends TypertRemoteService {
     }
   }
 
+  private async runInstallJob(job: JobRecord, kind: 'install' | 'update', source: InstallSource): Promise<void> {
+    const { registered, details } = source
+    const manifest = details.manifest
+    if (manifest === null || manifest.bundlePatch === null || details.patch === null) {
+      throw new Error(details.repo + ' no longer provides the Registry-verified DSH bundle files.')
+    }
+    if (manifest.name !== registered.packageName || manifest.bundlePatch !== registered.bundlePatch) {
+      throw new Error(details.repo + ' no longer matches its verified Registry identity.')
+    }
+    const packageName = manifest.name
+    const profile = installLocation(this.ctx, this.config)
+    ensureProfile(profile.dir, profile.name)
+    if (registered.install.mode !== 'automatic'
+      || !registered.install.profiles.includes(profile.name)
+      || registered.install.spec === '') {
+      throw new Error("This plugin needs its author's guided installation steps.")
+    }
+    const before = readProfileManifest(NAME, profile.dir)
+    if (kind === 'install' && before.dependencies?.[packageName] !== undefined) {
+      throw new Error(packageName + ' is already installed — use Update instead.')
+    }
+    if (kind === 'update' && before.dependencies?.[packageName] === undefined) {
+      throw new Error(packageName + ' is not installed in profile ' + profile.name + '.')
+    }
+    const beforeDeclaresBundle = exportsPatch(packageName, profile.dir)
+    const existingCustomTarget = kind === 'update'
+      ? managedInstalledPluginTarget(profile, packageName, before)
+      : null
+    const customTarget = kind === 'install' && profile.custom
+      ? pluginTarget(profile, packageName)
+      : existingCustomTarget
+    const target = customTarget ?? profilePackagePath(profile.dir, packageName)
+    if (kind === 'install' && existsSync(target)) {
+      throw new Error('Install blocked: target directory already exists: ' + target)
+    }
+    if (kind === 'update' && existsSync(target)) {
+      let targetManifest: { name?: unknown }
+      try {
+        targetManifest = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')) as { name?: unknown }
+      } catch (error) {
+        throw new Error('Update blocked: cannot validate existing plugin directory ' + target + '.', { cause: error })
+      }
+      if (targetManifest.name !== packageName) {
+        throw new Error('Update blocked: ' + target + ' belongs to ' + String(targetManifest.name ?? 'another package') + '.')
+      }
+    }
+    if (kind === 'install') {
+      const conflict = this.installConflict(details, before, profile.dir)
+      if (conflict !== null) throw new Error(conflict.error.message)
+    }
+    await this.driveInstall(
+      job,
+      profile,
+      executableSpec(registered),
+      before,
+      beforeDeclaresBundle,
+      registered.install.requiresRestart,
+      customTarget,
+    )
+  }
+
+  private startUninstallJob(rawPackageName: string): MarketplaceResult<{ jobId: string }> {
+    if (this.restartPending) return fail('restart-pending', 'DSH is already preparing to restart.')
+    const packageName = rawPackageName.trim()
+    if (!validPackageName(packageName)) return fail('bad-package', 'Malformed package name: ' + rawPackageName)
+    if (this.jobs.atCapacity()) return fail('queue-full', 'The plugin operation queue already contains 50 active jobs.')
+    if (this.jobs.hasActivePackage(packageName)) {
+      return fail('job-duplicate', packageName + ' already has an active plugin operation.')
+    }
+    const job = this.jobs.create('uninstall', packageName, this.jobs.hasActive() ? 'queued' : 'spawning')
+    this.enqueueMutation(async () => {
+      this.jobs.phase(job, 'spawning')
+      try {
+        const profile = installLocation(this.ctx, this.config)
+        ensureProfile(profile.dir, profile.name)
+        const before = readProfileManifest(NAME, profile.dir)
+        if (before.dependencies?.[packageName] === undefined) {
+          throw new Error(packageName + ' is not installed in profile ' + profile.name + '.')
+        }
+        await this.driveUninstall(job, profile, before, exportsPatch(packageName, profile.dir))
+      } catch (error) {
+        this.failPreparedJob(job, error)
+      }
+    })
+    return ok({ jobId: job.jobId })
+  }
+
+  private failPreparedJob(job: JobRecord, error: unknown): void {
+    if (job.finishedAt !== null) return
+    const failure = toFailure(error).error
+    this.jobs.append(job, 'Operation preparation failed: ' + failure.message + '\n')
+    this.jobs.fail(job, { code: failure.code, message: failure.message })
+  }
+
   private profileMutationBusy(): boolean {
     return this.pendingInstallResolution > 0 || this.jobs.hasActive()
+  }
+
+  private enqueueMutation(work: () => Promise<void>): void {
+    this.mutationQueue.enqueue(work)
   }
 
   /** Read main/package.json directly, then freeze the update to its resolved commit. */
@@ -930,12 +997,17 @@ function executableSpec(plugin: MarketplaceRegistryPlugin | SelfUpdateTarget): s
   throw new RegistryError('Only Registry entries pinned to an exact GitHub commit or verified npm release can be installed automatically.')
 }
 
-function isGitHubSpec(value: string): boolean {
-  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
-}
-
 function validPackageName(value: string): boolean {
   return /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(value)
+}
+
+function uniquePackageNames(values: string[]): string[] {
+  const unique = new Map<string, string>()
+  for (const value of values) {
+    const packageName = value.trim()
+    if (packageName !== '') unique.set(packageName.toLocaleLowerCase(), packageName)
+  }
+  return [...unique.values()]
 }
 
 export default MarketplaceService

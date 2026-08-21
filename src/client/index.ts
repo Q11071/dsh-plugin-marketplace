@@ -31,15 +31,14 @@ export const NS = 'settings.pluginMarketplace'
 /** Service required before this plugin can mount its own Remote namespace. */
 export const inject = ['remote', 'connection']
 
-/** Unwrap a RemoteResult into its value; failures throw for the UI. */
-function unwrap<T>(result: RemoteResult<T>): T {
-  if (!result.ok) throw new Error(result.error.message)
-  return result.value
-}
-
-/** Unwrap the transport result followed by the marketplace business outcome. */
-function unwrapMarketplace<T>(result: RemoteResult<MarketplaceResult<T>>): T {
-  return unwrap(unwrap(result))
+/** Unwrap one marketplace call without leaking Host-side English errors into Chinese notices. */
+function unwrapMarketplace<T>(
+  result: RemoteResult<MarketplaceResult<T>>,
+  t: (key: PluginMarketplaceLocaleKey) => string,
+): T {
+  if (!result.ok) throw new Error(t('requestFailed'))
+  if (!result.value.ok) throw new Error(t('operationFailed') + ' [' + result.value.error.code + ']')
+  return result.value.value
 }
 
 /** Mount the marketplace Remote contribution, then register its Settings tab. */
@@ -53,10 +52,10 @@ export async function apply(ctx: ClientContext): Promise<void> {
     const t = scope.locale.bind(NS)
     const { api } = scope.get('connection') as ConnectionHandle
     const injected = (): MarketplaceTabInjected => ({
-      search: async (query, page, sort, category) => unwrapMarketplace(await scope.remote.marketplace.search({ query, page, sort, category })),
-      details: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.details({ repo, ref })),
+      search: async (query, page, sort, category) => unwrapMarketplace(await scope.remote.marketplace.search({ query, page, sort, category }), t),
+      details: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.details({ repo, ref }), t),
       guidedAgent: async (repo, ref, operation) => {
-        const task = unwrapMarketplace(await scope.remote.marketplace.guidedTask({ repo, ref, operation }))
+        const task = unwrapMarketplace(await scope.remote.marketplace.guidedTask({ repo, ref, operation }), t)
         let target: Awaited<ReturnType<typeof scope.workspaces.create>>
         try {
           target = await createGuidedAgentWorkspace(scope.workspaces, task.workspaceDir)
@@ -80,16 +79,18 @@ export async function apply(ctx: ClientContext): Promise<void> {
         if (!prompted.ok) throw new Error(prompted.error.message)
         scope.sessions.open(created.result.value.sessionId)
       },
-      install: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.installPlugin({ repo, ref })).jobId,
-      manualInstall: async (command) => unwrapMarketplace(await scope.remote.marketplace.manualInstall({ command })),
-      update: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.update({ repo, ref })).jobId,
-      updateBatch: async (updates) => unwrapMarketplace(await scope.remote.marketplace.updateBatch({ updates })),
-      uninstall: async (packageName) => unwrapMarketplace(await scope.remote.marketplace.uninstall({ packageName })).jobId,
-      setEnabled: async (packageName, enabled) => unwrapMarketplace(await scope.remote.marketplace.setEnabled({ packageName, enabled })),
-      installLocation: async () => unwrapMarketplace(await scope.remote.marketplace.installLocation()),
-      setInstallDir: async (installDir) => unwrapMarketplace(await scope.remote.marketplace.setInstallDir({ installDir })),
-      agentWorkspace: async () => unwrapMarketplace(await scope.remote.marketplace.agentWorkspace()),
-      setAgentWorkspaceDir: async (workspaceDir) => unwrapMarketplace(await scope.remote.marketplace.setAgentWorkspaceDir({ workspaceDir })),
+      install: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.installPlugin({ repo, ref }), t).jobId,
+      manualInstall: async (command) => unwrapMarketplace(await scope.remote.marketplace.manualInstall({ command }), t),
+      update: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.update({ repo, ref }), t).jobId,
+      updateBatch: async (updates) => unwrapMarketplace(await scope.remote.marketplace.updateBatch({ updates }), t),
+      uninstall: async (packageName) => unwrapMarketplace(await scope.remote.marketplace.uninstall({ packageName }), t).jobId,
+      uninstallBatch: async (packageNames) => unwrapMarketplace(await scope.remote.marketplace.uninstallBatch({ packageNames }), t),
+      setEnabled: async (packageName, enabled) => unwrapMarketplace(await scope.remote.marketplace.setEnabled({ packageName, enabled }), t),
+      setEnabledBatch: async (packageNames, enabled) => unwrapMarketplace(await scope.remote.marketplace.setEnabledBatch({ packageNames, enabled }), t),
+      installLocation: async () => unwrapMarketplace(await scope.remote.marketplace.installLocation(), t),
+      setInstallDir: async (installDir) => unwrapMarketplace(await scope.remote.marketplace.setInstallDir({ installDir }), t),
+      agentWorkspace: async () => unwrapMarketplace(await scope.remote.marketplace.agentWorkspace(), t),
+      setAgentWorkspaceDir: async (workspaceDir) => unwrapMarketplace(await scope.remote.marketplace.setAgentWorkspaceDir({ workspaceDir }), t),
       chooseInstallDir: async () => {
         try {
           return await scope.workspaces.pickDirectory()
@@ -104,10 +105,11 @@ export async function apply(ctx: ClientContext): Promise<void> {
           throw new Error(t('agentWorkspacePickerFailed') + ': ' + (error instanceof Error ? error.message : String(error)))
         }
       },
-      diagnoseConflicts: async () => unwrapMarketplace(await scope.remote.marketplace.diagnoseConflicts()),
-      jobStatus: async (jobId) => unwrapMarketplace(await scope.remote.marketplace.jobStatus({ jobId })),
-      installed: async () => unwrapMarketplace(await scope.remote.marketplace.installed()),
-      restart: async () => unwrapMarketplace(await scope.remote.marketplace.restart()),
+      diagnoseConflicts: async () => unwrapMarketplace(await scope.remote.marketplace.diagnoseConflicts(), t),
+      jobStatus: async (jobId) => unwrapMarketplace(await scope.remote.marketplace.jobStatus({ jobId }), t),
+      jobs: async () => unwrapMarketplace(await scope.remote.marketplace.jobs(), t),
+      installed: async () => unwrapMarketplace(await scope.remote.marketplace.installed(), t),
+      restart: async () => unwrapMarketplace(await scope.remote.marketplace.restart(), t),
     })
 
     scope.slots.inject('settings.plugins.tab', () => scope.slots.register({

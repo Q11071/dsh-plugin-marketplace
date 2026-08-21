@@ -126,6 +126,8 @@ const jobStatusValueSchema = z.object({
   }), z.null()]),
 })
 
+const jobsValueSchema = z.array(jobStatusValueSchema)
+
 const conflictProviderSchema = z.object({
   bundle: z.string(),
   packageName: z.string(),
@@ -193,6 +195,12 @@ const batchUpdateRequestSchema = z.object({
   updates: z.array(installRequestSchema).min(1).max(50),
 })
 
+const batchPackageRequestSchema = z.object({
+  packageNames: z.array(z.string()).min(1).max(50),
+})
+
+const batchToggleRequestSchema = batchPackageRequestSchema.extend({ enabled: z.boolean() })
+
 const manualInstallRequestSchema = z.object({ command: z.string() })
 
 const manualInstallValueSchema = z.object({
@@ -249,6 +257,17 @@ const batchUpdateValueSchema = z.object({
   failures: z.array(z.object({ repo: z.string(), message: z.string() })),
 })
 
+const batchUninstallValueSchema = z.object({
+  jobs: z.array(z.object({ jobId: z.string(), packageName: z.string() })),
+  failures: z.array(z.object({ packageName: z.string(), message: z.string() })),
+})
+
+const batchToggleValueSchema = z.object({
+  results: z.array(toggleValueSchema),
+  failures: z.array(z.object({ packageName: z.string(), message: z.string() })),
+  requiresRestart: z.boolean(),
+})
+
 const diagnoseConflictsValueSchema = z.object({
   conflicts: z.array(conflictSchema),
   scannedAt: z.number(),
@@ -287,13 +306,19 @@ function result(schema: z.ZodTypeAny, typeSymbol: string) {
 const PKG = 'dsh-plugin-marketplace'
 const NS = 'marketplace'
 
-function invocation(method: string, parameters: ReturnType<typeof param>[], codec: ReturnType<typeof result>) {
+function invocation(
+  method: string,
+  parameters: ReturnType<typeof param>[],
+  codec: ReturnType<typeof result>,
+  implementation?: string,
+) {
   return {
     id: `${PKG}#${NS}/${method}`,
     service: NS,
     namespace: NS,
     method,
     invocation: { kind: 'direct' as const },
+    ...implementation === undefined ? {} : { implementation },
     parameters,
     result: codec,
   }
@@ -315,8 +340,11 @@ export const TYPERT = {
     invocation('update', [param('request', installRequestSchema, `${REQUEST_TYPES}MarketplaceInstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
     invocation('updateBatch', [param('request', batchUpdateRequestSchema, `${REQUEST_TYPES}MarketplaceBatchUpdateRequest`)], result(resultSchema(batchUpdateValueSchema), `${REQUEST_TYPES}MarketplaceBatchUpdateOutcome`)),
     invocation('uninstall', [param('request', uninstallRequestSchema, `${REQUEST_TYPES}MarketplaceUninstallRequest`)], result(resultSchema(jobIdValueSchema), `${REQUEST_TYPES}MarketplaceInstallOutcome`)),
+    invocation('uninstallBatch', [param('request', batchPackageRequestSchema, `${REQUEST_TYPES}MarketplaceBatchPackageRequest`)], result(resultSchema(batchUninstallValueSchema), `${REQUEST_TYPES}MarketplaceBatchUninstallOutcome`)),
     invocation('setEnabled', [param('request', toggleRequestSchema, `${REQUEST_TYPES}MarketplaceToggleRequest`)], result(resultSchema(toggleValueSchema), `${REQUEST_TYPES}MarketplaceToggleOutcome`)),
+    invocation('setEnabledBatch', [param('request', batchToggleRequestSchema, `${REQUEST_TYPES}MarketplaceBatchToggleRequest`)], result(resultSchema(batchToggleValueSchema), `${REQUEST_TYPES}MarketplaceBatchToggleOutcome`)),
     invocation('jobStatus', [param('request', jobStatusRequestSchema, `${REQUEST_TYPES}MarketplaceJobStatusRequest`)], result(resultSchema(jobStatusValueSchema), `${REQUEST_TYPES}MarketplaceJobStatusOutcome`)),
+    invocation('jobs', [], result(resultSchema(jobsValueSchema), `${REQUEST_TYPES}MarketplaceJobsOutcome`), 'listJobs'),
     invocation('installed', [], result(resultSchema(installedValueSchema), `${REQUEST_TYPES}MarketplaceInstalledOutcome`)),
     invocation('installLocation', [], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallLocationOutcome`)),
     invocation('setInstallDir', [param('request', installDirRequestSchema, `${REQUEST_TYPES}MarketplaceInstallDirRequest`)], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallDirOutcome`)),
