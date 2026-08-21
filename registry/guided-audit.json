@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-21T20:50:50.662Z",
-  "total": 838,
+  "generatedAt": "2026-08-21T22:52:29.744Z",
+  "total": 834,
   "groups": {
     "local-or-unparsed-command-only": 424,
-    "no-install-command-found": 136,
-    "remote-command-found": 278
+    "no-install-command-found": 133,
+    "remote-command-found": 277
   },
   "rows": [
     {
@@ -5969,7 +5969,7 @@
       "repository": "chnjames/dsh-plugin-market",
       "packageName": "dsh-plugin-market",
       "version": "0.3.0",
-      "verifiedCommit": "8b721e1721032293cd883e5a7ce5a36097961c7a",
+      "verifiedCommit": "157eb39e5e42cbd8afb618ba276e0515a409977a",
       "readmePath": "README.md",
       "commands": [
         {
@@ -6459,7 +6459,7 @@
       "repository": "CNSeniorious000/dsh-generative-ui",
       "packageName": "dsh-generative-ui",
       "version": "0.0.0",
-      "verifiedCommit": "acd349771817eaddf3524c32659e49a162cab6b3",
+      "verifiedCommit": "85ecf498ece6cfddda126543a62b2934538b48ce",
       "readmePath": "README.md",
       "commands": [
         {
@@ -9328,6 +9328,82 @@
         "reviewReasons": [
           "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
         ]
+      }
+    },
+    {
+      "repository": "fandc520/dsh-comfyui",
+      "packageName": "dsh-comfyui",
+      "version": "0.3.0-beta.3",
+      "verifiedCommit": "5e7444913e7f3dc176104309a561d8e278887ae2",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-comfyui",
+          "profile": "web",
+          "spec": "dsh-comfyui",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile desktop add dsh-comfyui",
+          "profile": "desktop",
+          "spec": "dsh-comfyui",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile web add <本仓库路径>`（pnpm 链接目录），重启 Web 服务，改动后 `npm run build` 重新构建。",
+          "profile": "web",
+          "spec": "<本仓库路径>",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-comfyui",
+          "profile": "web",
+          "spec": "dsh-comfyui",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile desktop add dsh-comfyui",
+          "profile": "desktop",
+          "spec": "dsh-comfyui",
+          "source": "npm"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-comfyui",
+          "profile": "web",
+          "spec": "dsh-comfyui",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile desktop add dsh-comfyui",
+          "profile": "desktop",
+          "spec": "dsh-comfyui",
+          "source": "npm"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-comfyui@0.3.0-beta.3",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-version-not-published"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "desktop",
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
       }
     },
     {
@@ -20234,201 +20310,6 @@
       }
     },
     {
-      "repository": "Max-Null/dsh-chinese-thinking",
-      "packageName": "@max-null/dsh-chinese-thinking",
-      "version": "0.3.0",
-      "verifiedCommit": "7443cf320d50259b166bc9473643a962bad7c2fc",
-      "readmePath": "README.md",
-      "commands": [],
-      "targetedCommands": [],
-      "remoteCommands": [],
-      "npmVerification": {
-        "verified": false,
-        "spec": "@max-null/dsh-chinese-thinking@0.3.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-no-matching-remote-command",
-        "reason": "readme-does-not-document-a-remote-install-for-this-package"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "headless",
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
-      "repository": "Max-Null/dsh-guardian",
-      "packageName": "@max-null/dsh-guardian",
-      "version": "0.2.0",
-      "verifiedCommit": "a091ce610099fd5245946f9c9a0360a3b01d906c",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile <name> add @max-null/dsh-guardian`.",
-          "profile": "<name>",
-          "spec": "@max-null/dsh-guardian",
-          "source": "npm"
-        }
-      ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile <name> add @max-null/dsh-guardian`.",
-          "profile": "<name>",
-          "spec": "@max-null/dsh-guardian",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile <name> add @max-null/dsh-guardian`.",
-          "profile": "<name>",
-          "spec": "@max-null/dsh-guardian",
-          "source": "npm"
-        }
-      ],
-      "npmVerification": {
-        "verified": false,
-        "spec": "@max-null/dsh-guardian@0.2.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-npm-unverified",
-        "reason": "npm-version-not-published"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "headless",
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
-      "repository": "Max-Null/dsh-habit",
-      "packageName": "@max-null/dsh-habit",
-      "version": "0.2.0",
-      "verifiedCommit": "857d7921153592c3f1c6a9a72184607ba5e38524",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile <name> add @max-null/dsh-habit`.",
-          "profile": "<name>",
-          "spec": "@max-null/dsh-habit",
-          "source": "npm"
-        }
-      ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile <name> add @max-null/dsh-habit`.",
-          "profile": "<name>",
-          "spec": "@max-null/dsh-habit",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile <name> add @max-null/dsh-habit`.",
-          "profile": "<name>",
-          "spec": "@max-null/dsh-habit",
-          "source": "npm"
-        }
-      ],
-      "npmVerification": {
-        "verified": false,
-        "spec": "@max-null/dsh-habit@0.2.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-npm-unverified",
-        "reason": "npm-version-not-published"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "headless",
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
-      "repository": "Max-Null/dsh-memory",
-      "packageName": "@max-null/dsh-memory",
-      "version": "0.5.0",
-      "verifiedCommit": "9f0e5291a315ae9fba5fa3dbfaf395e05604dc85",
-      "readmePath": "README.md",
-      "commands": [],
-      "targetedCommands": [],
-      "remoteCommands": [],
-      "npmVerification": {
-        "verified": false,
-        "spec": "@max-null/dsh-memory@0.5.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-no-matching-remote-command",
-        "reason": "readme-does-not-document-a-remote-install-for-this-package"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
-      "repository": "Max-Null/dsh-node-appearance",
-      "packageName": "@max-null/dsh-node-appearance",
-      "version": "0.3.0",
-      "verifiedCommit": "4773fe1722973cacbad3bf9cb0a94e85e65b589d",
-      "readmePath": "README.md",
-      "commands": [],
-      "targetedCommands": [],
-      "remoteCommands": [],
-      "npmVerification": {
-        "verified": false,
-        "spec": "@max-null/dsh-node-appearance@0.3.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-no-matching-remote-command",
-        "reason": "readme-does-not-document-a-remote-install-for-this-package"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
       "repository": "Max-Null/dsh-sidebar-preview-select",
       "packageName": "dsh-sidebar-preview-select",
       "version": "0.1.0",
@@ -29784,8 +29665,8 @@
     {
       "repository": "sperictao/dsh-auth-tailscale",
       "packageName": "@dsh-external/dsh-auth-tailscale",
-      "version": "0.1.0-rc.6-auth.1",
-      "verifiedCommit": "ea7ca9fa3db4ef237cb6f9194bb34e4ee3593ada",
+      "version": "0.1.0-rc.8-auth.1",
+      "verifiedCommit": "01666104af5391c78be563611b33d90a081a2c49",
       "readmePath": "README.md",
       "commands": [
         {
@@ -29799,7 +29680,7 @@
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "@dsh-external/dsh-auth-tailscale@0.1.0-rc.6-auth.1",
+        "spec": "@dsh-external/dsh-auth-tailscale@0.1.0-rc.8-auth.1",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -29824,8 +29705,8 @@
     {
       "repository": "sperictao/dsh-client-connection-authz",
       "packageName": "@dsh-external/dsh-client-connection-authz",
-      "version": "0.1.0-rc.6-authz.1",
-      "verifiedCommit": "873c465f140310e5ecc54ff797932e27bccb8f0e",
+      "version": "0.1.0-rc.8-authz.1",
+      "verifiedCommit": "62ab96c0b1260aeb851e409aef95f23830e61096",
       "readmePath": "README.md",
       "commands": [
         {
@@ -29839,7 +29720,7 @@
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "@dsh-external/dsh-client-connection-authz@0.1.0-rc.6-authz.1",
+        "spec": "@dsh-external/dsh-client-connection-authz@0.1.0-rc.8-authz.1",
         "reason": "npm-version-not-published"
       },
       "assessment": {
