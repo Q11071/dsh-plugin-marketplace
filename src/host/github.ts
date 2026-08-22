@@ -64,6 +64,10 @@ function isSafePatchPath(value: string): boolean {
     && !value.split('/').includes('..')
 }
 
+function contentsPath(value: string): string {
+  return value.split('/').map(encodeURIComponent).join('/')
+}
+
 export class GitHubClient {
   private readonly token: string | undefined = process.env.GITHUB_TOKEN ?? undefined
   private readonly cache = new Map<string, CacheEntry>()
@@ -124,6 +128,31 @@ export class GitHubClient {
     }
   }
 
+  /** Raw CDN 不可用时回退到已认证的 Contents API。 */
+  private async textFile(owner: string, repo: string, ref: string, file: string): Promise<string | null> {
+    const rawUrl = RAW_BASE + '/' + owner + '/' + repo + '/' + ref + '/' + file
+    try {
+      const response = await fetch(rawUrl, {
+        headers: { accept: 'application/vnd.github+json', 'user-agent': USER_AGENT },
+        cache: 'no-store',
+      })
+      if (response.ok) return await response.text()
+    } catch {
+      // 继续通过 API 读取；桌面端代理偶尔无法访问 raw.githubusercontent.com。
+    }
+    try {
+      const { body } = await this.api(
+        '/repos/' + owner + '/' + repo + '/contents/' + contentsPath(file) + '?ref=' + encodeURIComponent(ref),
+      )
+      const entry = body as { type?: unknown; encoding?: unknown; content?: unknown }
+      if (entry.type !== 'file' || entry.encoding !== 'base64' || typeof entry.content !== 'string') return null
+      return Buffer.from(entry.content.replace(/\s/g, ''), 'base64').toString('utf8')
+    } catch (error) {
+      if (error instanceof GitHubError && error.code === 'not-found') return null
+      throw error
+    }
+  }
+
   /**
    * Resolve the concrete commit for a repo: an explicit tag, branch, or SHA;
    * otherwise the latest release tag, then the default branch.
@@ -161,15 +190,13 @@ export class GitHubClient {
   async details(repoSpec: string, ref: string): Promise<MarketplacePluginDetails> {
     const { owner, repo } = parseRepo(repoSpec)
     const resolved = await this.resolveRef(owner, repo, ref)
-    const rawBase = RAW_BASE + '/' + owner + '/' + repo + '/' + resolved.ref
     let manifest: MarketplacePluginManifest | null = null
     let patch: string | null = null
     let entrySource: string | null = null
-    const headers: Record<string, string> = { accept: 'application/vnd.github+json', 'user-agent': USER_AGENT }
     try {
-      const response = await fetch(rawBase + '/package.json', { headers })
-      if (response.ok) {
-        const pkg = await response.json() as Record<string, unknown>
+      const packageText = await this.textFile(owner, repo, resolved.ref, 'package.json')
+      if (packageText !== null) {
+        const pkg = JSON.parse(packageText) as Record<string, unknown>
         const dsh = pkg.dsh as Record<string, unknown> | undefined
         const bundle = dsh?.bundle as Record<string, unknown> | undefined
         const client = dsh?.client as Record<string, unknown> | undefined
@@ -197,14 +224,12 @@ export class GitHubClient {
           throw new GitHubError('bad-manifest', owner + '/' + repo + ' package.json has no name field.')
         }
         if (manifest.bundlePatch !== null) {
-          const patchResponse = await fetch(rawBase + '/' + manifest.bundlePatch, { headers })
-          patch = patchResponse.ok ? (await patchResponse.text()).slice(0, MAX_PATCH_CHARS) : null
+          patch = (await this.textFile(owner, repo, resolved.ref, manifest.bundlePatch))?.slice(0, MAX_PATCH_CHARS) ?? null
         }
         if (manifest.entry !== null) {
-          const entryResponse = await fetch(rawBase + '/' + manifest.entry, { headers })
-          entrySource = entryResponse.ok ? (await entryResponse.text()).slice(0, MAX_PATCH_CHARS) : null
+          entrySource = (await this.textFile(owner, repo, resolved.ref, manifest.entry))?.slice(0, MAX_PATCH_CHARS) ?? null
         }
-      } else if (response.status === 404) {
+      } else {
         manifest = null
       }
     } catch (error) {
