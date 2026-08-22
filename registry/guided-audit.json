@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-21T22:52:29.744Z",
-  "total": 834,
+  "generatedAt": "2026-08-22T01:59:31.341Z",
+  "total": 841,
   "groups": {
-    "local-or-unparsed-command-only": 424,
-    "no-install-command-found": 133,
-    "remote-command-found": 277
+    "local-or-unparsed-command-only": 429,
+    "no-install-command-found": 134,
+    "remote-command-found": 278
   },
   "rows": [
     {
@@ -1524,13 +1524,13 @@
       "repository": "ai-daming/clickvibe",
       "packageName": "clickvibe",
       "version": "0.1.0",
-      "verifiedCommit": "7b012d7db7a49c7ef71ff2489162394768fb63a6",
+      "verifiedCommit": "1205b1080dedfe97b7862ba098042e91c676cc6f",
       "readmePath": "README.md",
       "commands": [
         {
-          "raw": "dsh plugin --profile web add link:/Users/yinwm/work/clickvibe",
+          "raw": "dsh plugin --profile web add link:/path/to/clickvibe",
           "profile": "web",
-          "spec": "link:/Users/yinwm/work/clickvibe",
+          "spec": "link:/path/to/clickvibe",
           "source": "local"
         }
       ],
@@ -3775,7 +3775,7 @@
       "repository": "BlackBearCC/dsh-pet-sprite",
       "packageName": "dsh-pet-sprite",
       "version": "0.3.0",
-      "verifiedCommit": "f269db9d6f2b4860d6593f1c088914ed53e2f684",
+      "verifiedCommit": "fe57bce7d6a5a9cb9aaf681274673a373d6ebbf4",
       "readmePath": "README.md",
       "commands": [
         {
@@ -5969,7 +5969,7 @@
       "repository": "chnjames/dsh-plugin-market",
       "packageName": "dsh-plugin-market",
       "version": "0.3.0",
-      "verifiedCommit": "157eb39e5e42cbd8afb618ba276e0515a409977a",
+      "verifiedCommit": "9dc6ab280a58b8fbf4c3825a62d96b0eddec6597",
       "readmePath": "README.md",
       "commands": [
         {
@@ -6459,7 +6459,7 @@
       "repository": "CNSeniorious000/dsh-generative-ui",
       "packageName": "dsh-generative-ui",
       "version": "0.0.0",
-      "verifiedCommit": "85ecf498ece6cfddda126543a62b2934538b48ce",
+      "verifiedCommit": "d4b7593ac14c61c448602d9e02dd9634297511e7",
       "readmePath": "README.md",
       "commands": [
         {
@@ -8283,7 +8283,7 @@
       "repository": "dingzhenyao/dsh-plugin-directory",
       "packageName": "dsh-plugin-directory",
       "version": "0.1.0-rc.1",
-      "verifiedCommit": "1cf69e9a63f311309a17a34bace3c4e2cbd5928a",
+      "verifiedCommit": "337519782c8026b5d5545a201df69837f368f62a",
       "readmePath": "README.md",
       "commands": [
         {
@@ -8991,6 +8991,43 @@
       }
     },
     {
+      "repository": "enterhalf/dsh-web-network-optimizer",
+      "packageName": "dsh-web-network-optimizer",
+      "version": "0.2.1",
+      "verifiedCommit": "90c3c782bd0f6e4748f2522383fd80f3b03653e9",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add /path/to/dsh-web-network-optimizer",
+          "profile": "web",
+          "spec": "/path/to/dsh-web-network-optimizer",
+          "source": "local"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-web-network-optimizer@0.2.1",
+        "reason": "npm-tarball-has-no-bundle-patch"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
       "repository": "EricXu20266/dsh-discovery",
       "packageName": "dsh-discovery",
       "version": "0.1.0",
@@ -9404,6 +9441,53 @@
         "lifecycleScripts": [],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
+      }
+    },
+    {
+      "repository": "fastengiel-kurai/dsh-peekfile-everything",
+      "packageName": "@kurai/dsh-peekfile-everything",
+      "version": "0.1.0",
+      "verifiedCommit": "79dbd970237f4f4e21786457de59639a3ab4e603",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add github:fastengiel-kurai/dsh-peekfile-everything",
+          "profile": "web",
+          "spec": "github:fastengiel-kurai/dsh-peekfile-everything",
+          "source": "unknown"
+        },
+        {
+          "raw": "dsh plugin --profile web add dsh-better-sidebar@latest",
+          "profile": "web",
+          "spec": "dsh-better-sidebar@latest",
+          "source": "npm"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "@kurai/dsh-peekfile-everything@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": [
+          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
+        ]
       }
     },
     {
@@ -12886,7 +12970,7 @@
       "repository": "helibeiqi/dsh-time-travel",
       "packageName": "dsh-time-travel",
       "version": "0.1.0",
-      "verifiedCommit": "c8fa7d31119562a81c353afad03b0e09e385586c",
+      "verifiedCommit": "f4276e815c6081d0d30e7c027d772552d859c265",
       "readmePath": "README.md",
       "commands": [
         {
@@ -12915,7 +12999,9 @@
         ],
         "requiresBuildApproval": true,
         "manualSteps": true,
-        "lifecycleScripts": [],
+        "lifecycleScripts": [
+          "prepare"
+        ],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
       }
@@ -12961,6 +13047,175 @@
         "lifecycleScripts": [
           "prepare"
         ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "Hilbert-beinghappy/dsh-plugin-auxiliary-runtime",
+      "packageName": "dsh-plugin-auxiliary-runtime",
+      "version": "0.1.1",
+      "verifiedCommit": "2dec2293ad9d033a8b3cffa5d9f0ce0d356bb534",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile tui add ./dsh-plugin-auxiliary-runtime-0.1.1.tgz",
+          "profile": "tui",
+          "spec": "./dsh-plugin-auxiliary-runtime-0.1.1.tgz",
+          "source": "local"
+        },
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/seektty/releases/download/v1.2.0/seektty-1.2.0.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/seektty/releases/download/v1.2.0/seektty-1.2.0.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "source": "tarball"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "source": "tarball"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "source": "tarball"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-plugin-auxiliary-runtime@0.1.1",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-tarball-unverified",
+        "reason": "release-tarball-not-statically-verified"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "tui"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "Hilbert-beinghappy/dsh-plugin-clarify",
+      "packageName": "dsh-plugin-clarify",
+      "version": "0.2.2",
+      "verifiedCommit": "e956a470aeee0b49e259037912c91f77d690ee85",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/seektty/releases/download/v1.2.0/seektty-1.2.0.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/seektty/releases/download/v1.2.0/seektty-1.2.0.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "profile": "web",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-auxiliary-runtime/releases/download/v0.1.0/dsh-plugin-auxiliary-runtime-0.1.0.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "profile": "web",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile web add /path/to/dsh-plugin-auxiliary-runtime-0.1.1.tgz",
+          "profile": "web",
+          "spec": "/path/to/dsh-plugin-auxiliary-runtime-0.1.1.tgz",
+          "source": "local"
+        },
+        {
+          "raw": "dsh plugin --profile web add ./dsh-plugin-clarify-0.2.2.tgz",
+          "profile": "web",
+          "spec": "./dsh-plugin-clarify-0.2.2.tgz",
+          "source": "local"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "profile": "web",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "source": "tarball"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile tui add https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "profile": "tui",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "source": "tarball"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "profile": "web",
+          "spec": "https://github.com/Hilbert-beinghappy/dsh-plugin-clarify/releases/download/v0.2.1/dsh-plugin-clarify-0.2.1.tgz",
+          "source": "tarball"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-plugin-clarify@0.2.2",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-tarball-unverified",
+        "reason": "release-tarball-not-statically-verified"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "tui",
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
       }
@@ -17922,7 +18177,7 @@
       "repository": "Leshm0321/dsh-plugin-local-agent-bridge",
       "packageName": "dsh-plugin-local-agent-bridge",
       "version": "0.1.0",
-      "verifiedCommit": "9d6d280474d7e249274a286826848fdc6ccd19ec",
+      "verifiedCommit": "478786572a33a66076ad8624b7642f0cfa16bfe1",
       "readmePath": "README.md",
       "commands": [
         {
@@ -18155,7 +18410,7 @@
       "repository": "Li3NGa/DHS-multi-agent-plugin",
       "packageName": "dhs-multi-agent",
       "version": "0.1.0",
-      "verifiedCommit": "bb4287dd6a24f667e9233f6bb9fd083af4f1351d",
+      "verifiedCommit": "a4135b0992c2c02ad71bad0d6c25bd0a68e9b0da",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
@@ -20586,7 +20841,7 @@
       "repository": "megatronyy/dsh-skin-background",
       "packageName": "dsh-skin-background",
       "version": "0.1.0",
-      "verifiedCommit": "13f6ccb76b7395a0cbf071b0fc9bd779ee9815a7",
+      "verifiedCommit": "958f59ee93b33bffa3b76407896e0587dfa2135e",
       "readmePath": "README.md",
       "commands": [
         {
@@ -20610,6 +20865,44 @@
       "auditErrors": [],
       "current": {
         "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "megatronyy/dsh-tradingagents",
+      "packageName": "dsh-tradingagents",
+      "version": "0.1.0",
+      "verifiedCommit": "5dc410b9495148b5f6e072ee75de0c33e876db5a",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add /path/to/dsh-tradingagents",
+          "profile": "web",
+          "spec": "/path/to/dsh-tradingagents",
+          "source": "local"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-tradingagents@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "headless",
           "web"
         ],
         "requiresBuildApproval": true,
@@ -21778,7 +22071,7 @@
       "repository": "moyu-good/dsh-lark-bridge",
       "packageName": "@deepseek-ai/dsh-lark-bridge",
       "version": "0.3.1",
-      "verifiedCommit": "9be931716b8e959e786e6c3ab455bd5d4fc0d3f0",
+      "verifiedCommit": "75f3305eb37df68c2cb30286e9f583a3df1ea0ef",
       "readmePath": "README.md",
       "commands": [
         {
@@ -21865,10 +22158,55 @@
       }
     },
     {
+      "repository": "mqhe2007/dsh-pm",
+      "packageName": "dsh-pm",
+      "version": "0.1.0",
+      "verifiedCommit": "64d5748f3bb10384bdd8d2458dc237fcc3f39257",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add ./dsh-pm        # 在 dsh-pm checkout 目录执行",
+          "profile": "web",
+          "spec": "./dsh-pm",
+          "source": "local"
+        },
+        {
+          "raw": "dsh plugin ... add github:mengqinghe/dsh-pm` 会跑 `prepare` 构建脚本，pnpm 会拦截，需把报错里给出的 key 加进 profile 的 `pnpm-workspace.yaml` 的 `allowBuilds` 后重试。",
+          "profile": null,
+          "spec": "github:mengqinghe/dsh-pm",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-pm@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
       "repository": "Mr-Neutr0n/dsh-medseek",
       "packageName": "dsh-medseek",
       "version": "0.1.0",
-      "verifiedCommit": "138db1c72090f20c5cbc3768a9816d2ac38535a2",
+      "verifiedCommit": "fa2e20ea698246758bc8e193a8252c418d8f0fc1",
       "readmePath": "README.md",
       "commands": [
         {
@@ -21878,7 +22216,7 @@
           "source": "npm"
         },
         {
-          "raw": "dsh plugin --profile web add ./",
+          "raw": "dsh plugin --profile web remove dsh-medseek`. From a local checkout: clone, `pnpm install && pnpm verify`, then `dsh plugin --profile web add ./`.",
           "profile": "web",
           "spec": "./",
           "source": "local"
@@ -23726,7 +24064,7 @@
       "repository": "omdsh-dev/ex-setting",
       "packageName": "@deepseek-ai/dsh-ex-setting",
       "version": "0.3.2",
-      "verifiedCommit": "c811b0c92da5d2ce2f0b802531266805a7436b20",
+      "verifiedCommit": "7b7916c19549a6406147f231d824199c46b17875",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
@@ -23858,15 +24196,15 @@
     {
       "repository": "omdsh-dev/sandbox-mxc",
       "packageName": "@deepseek-ai/dsh-sandbox-mxc",
-      "version": "0.0.2",
-      "verifiedCommit": "61ed9e8dd1359d8ccc9c0deeaa4cabaa0e074808",
+      "version": "0.1.0",
+      "verifiedCommit": "3d9315f41c17d32c445b71ffdda00cc362dfcbb8",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "@deepseek-ai/dsh-sandbox-mxc@0.0.2",
+        "spec": "@deepseek-ai/dsh-sandbox-mxc@0.1.0",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -25300,7 +25638,7 @@
       "repository": "phelpsyacht/dshmath-manim",
       "packageName": "dshmath-manim",
       "version": "0.1.0",
-      "verifiedCommit": "289110f8d99047869f98f7d59a3bb48240776a55",
+      "verifiedCommit": "42f0aa62dfb0742b84941baa995d8a6ec7f7ee9a",
       "readmePath": "README.md",
       "commands": [
         {
@@ -27279,14 +27617,14 @@
     {
       "repository": "rqwj/oh-my-ticket",
       "packageName": "oh-my-ticket",
-      "version": "0.2.24",
-      "verifiedCommit": "cc711c5c45e646143af2f7333f920c0e8be49bec",
+      "version": "0.4.1",
+      "verifiedCommit": "876d205f93062b0ae62ed5c6aa6cdb6ffea6304a",
       "readmePath": "README.md",
       "commands": [
         {
-          "raw": "dsh plugin --profile <profile> add /path/to/oh-my-ticket-0.2.24.tgz",
+          "raw": "dsh plugin --profile <profile> add /path/to/oh-my-ticket-0.4.1.tgz",
           "profile": "<profile>",
-          "spec": "/path/to/oh-my-ticket-0.2.24.tgz",
+          "spec": "/path/to/oh-my-ticket-0.4.1.tgz",
           "source": "local"
         }
       ],
@@ -27294,7 +27632,7 @@
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "oh-my-ticket@0.2.24",
+        "spec": "oh-my-ticket@0.4.1",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -31333,6 +31671,51 @@
       "current": {
         "profiles": [
           "headless",
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "tang-zhilei/dsh-group-chat-view",
+      "packageName": "dsh-group-chat-view",
+      "version": "1.0.0",
+      "verifiedCommit": "406121027b1cdf74fe3bf31180f875ce3c940a2b",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin add github:tang-zhilei/dsh-group-chat-view",
+          "profile": null,
+          "spec": "github:tang-zhilei/dsh-group-chat-view",
+          "source": "unknown"
+        },
+        {
+          "raw": "dsh plugin add` 即可。",
+          "profile": null,
+          "spec": "即可。",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-group-chat-view@1.0.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
           "web"
         ],
         "requiresBuildApproval": true,
@@ -36540,7 +36923,7 @@
       "repository": "xiaoshihou514/dsh-tui",
       "packageName": "dsh-tui",
       "version": "0.1.0",
-      "verifiedCommit": "ceb0eb056b311e66a351eec40c1ba5258524ab49",
+      "verifiedCommit": "8b58105741f7e5400724393fcaa1b9640a31fe89",
       "readmePath": "README.md",
       "commands": [
         {
@@ -38139,6 +38522,37 @@
         "lifecycleScripts": [
           "prepare"
         ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "yushuosun/dsh-cost-governor",
+      "packageName": "dsh-cost-governor",
+      "version": "0.1.0",
+      "verifiedCommit": "941b32eb2e899fba08a9911bfb5ee4a4533d0b18",
+      "readmePath": "README.md",
+      "commands": [],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-cost-governor@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "headless",
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
       }
@@ -40118,65 +40532,6 @@
         "requiresBuildApproval": true,
         "manualSteps": true,
         "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
-      "repository": "zx490336534/dsh-spec-collab",
-      "packageName": "dsh-spec-collab",
-      "version": "0.2.1",
-      "verifiedCommit": "7722e6a1354737cc3aa0ab2c5280269aa691208d",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-spec-collab@latest",
-          "profile": "web",
-          "spec": "dsh-spec-collab@latest",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add \"link:$(pwd)\"",
-          "profile": "web",
-          "spec": "link:$(pwd",
-          "source": "local"
-        }
-      ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-spec-collab@latest",
-          "profile": "web",
-          "spec": "dsh-spec-collab@latest",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-spec-collab@latest",
-          "profile": "web",
-          "spec": "dsh-spec-collab@latest",
-          "source": "npm"
-        }
-      ],
-      "npmVerification": {
-        "verified": false,
-        "spec": "dsh-spec-collab@0.2.1",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-npm-unverified",
-        "reason": "npm-version-not-published"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [
-          "prepare"
-        ],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
       }
