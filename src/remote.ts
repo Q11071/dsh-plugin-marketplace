@@ -26,6 +26,7 @@ import type {
   MarketplaceManualInstallRequest,
   MarketplaceManualInstallResult,
   MarketplaceInstalled,
+  MarketplaceInstalledRequest,
   MarketplaceJobHandle,
   MarketplaceJobStatus,
   MarketplaceJobStatusRequest,
@@ -56,7 +57,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     setEnabledBatch: (request: MarketplaceBatchToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchToggleResult>>>
     jobStatus: (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     jobs: () => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus[]>>>
-    installed: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
+    installed: (request: MarketplaceInstalledRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
     installLocation: () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     setInstallDir: (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     agentWorkspace: () => Promise<RemoteResult<MarketplaceResult<MarketplaceAgentWorkspace>>>
@@ -78,7 +79,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'marketplace/setEnabledBatch': (request: MarketplaceBatchToggleRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceBatchToggleResult>>>
     'marketplace/jobStatus': (request: MarketplaceJobStatusRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus>>>
     'marketplace/jobs': () => Promise<RemoteResult<MarketplaceResult<MarketplaceJobStatus[]>>>
-    'marketplace/installed': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
+    'marketplace/installed': (request: MarketplaceInstalledRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstalled>>>
     'marketplace/installLocation': () => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     'marketplace/setInstallDir': (request: MarketplaceInstallDirRequest) => Promise<RemoteResult<MarketplaceResult<MarketplaceInstallLocation>>>
     'marketplace/agentWorkspace': () => Promise<RemoteResult<MarketplaceResult<MarketplaceAgentWorkspace>>>

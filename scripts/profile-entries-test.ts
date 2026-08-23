@@ -109,6 +109,10 @@ try {
   ok('linked dependencies are not duplicated by the directory scan', () => {
     assert.equal(scanned.filter(entry => entry.packageName === 'linked-plugin').length, 1)
   })
+  ok('default node_modules scans can skip unlinked directory discovery', () => {
+    const linkedOnly = installedEntries(manifest, profileDir, pluginDir, false)
+    assert.deepEqual(linkedOnly.map(entry => entry.packageName), ['linked-plugin'])
+  })
 } finally {
   rmSync(tmp, { recursive: true, force: true })
 }

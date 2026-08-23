@@ -174,6 +174,8 @@ const installedValueSchema = z.object({
   })),
 })
 
+const installedRequestSchema = z.object({ refresh: z.boolean() })
+
 const searchRequestSchema = z.object({
   query: z.string(),
   page: z.number(),
@@ -205,6 +207,7 @@ const manualInstallRequestSchema = z.object({ command: z.string() })
 
 const manualInstallValueSchema = z.object({
   jobId: z.string(),
+  operation: z.union([z.literal('install'), z.literal('update')]),
   packageName: z.string(),
   repository: z.string(),
   verifiedCommit: z.string(),
@@ -241,6 +244,8 @@ const restartValueSchema = z.object({
 const installDirRequestSchema = z.object({ installDir: z.string() })
 
 const installDirValueSchema = z.object({
+  profile: z.string(),
+  packageNames: z.array(z.string()),
   installDir: z.string(),
   installDirCustom: z.boolean(),
 })
@@ -345,7 +350,7 @@ export const TYPERT = {
     invocation('setEnabledBatch', [param('request', batchToggleRequestSchema, `${REQUEST_TYPES}MarketplaceBatchToggleRequest`)], result(resultSchema(batchToggleValueSchema), `${REQUEST_TYPES}MarketplaceBatchToggleOutcome`)),
     invocation('jobStatus', [param('request', jobStatusRequestSchema, `${REQUEST_TYPES}MarketplaceJobStatusRequest`)], result(resultSchema(jobStatusValueSchema), `${REQUEST_TYPES}MarketplaceJobStatusOutcome`)),
     invocation('jobs', [], result(resultSchema(jobsValueSchema), `${REQUEST_TYPES}MarketplaceJobsOutcome`), 'listJobs'),
-    invocation('installed', [], result(resultSchema(installedValueSchema), `${REQUEST_TYPES}MarketplaceInstalledOutcome`)),
+    invocation('installed', [param('request', installedRequestSchema, `${REQUEST_TYPES}MarketplaceInstalledRequest`)], result(resultSchema(installedValueSchema), `${REQUEST_TYPES}MarketplaceInstalledOutcome`)),
     invocation('installLocation', [], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallLocationOutcome`)),
     invocation('setInstallDir', [param('request', installDirRequestSchema, `${REQUEST_TYPES}MarketplaceInstallDirRequest`)], result(resultSchema(installDirValueSchema), `${REQUEST_TYPES}MarketplaceInstallDirOutcome`)),
     invocation('agentWorkspace', [], result(resultSchema(agentWorkspaceValueSchema), `${REQUEST_TYPES}MarketplaceAgentWorkspaceOutcome`)),

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { buildGuidedAgentTask, guidedInstallRoute } from '../src/host/guided-agent.ts'
@@ -8,7 +9,12 @@ import { createGuidedAgentWorkspace } from '../src/client/agent-workspace.ts'
 
 const registryUrl = pathToFileURL(path.resolve('registry/plugins.json')).href
 const registry = new RegistryClient(registryUrl, registryUrl, 60_000, 10_000)
-const plugin = (await registry.search('', 1, 'stars', 'all')).items.find(item => item.install.mode === 'guided')
+// 热门第一页可能全部是一键安装条目；从完整快照选定引导型 fixture，再通过客户端读取。
+const snapshot = JSON.parse(readFileSync('registry/plugins.json', 'utf8')) as {
+  plugins: Array<{ fullName: string; install: { mode: string } }>
+}
+const guidedFixture = snapshot.plugins.find(item => item.install.mode === 'guided')
+const plugin = guidedFixture === undefined ? undefined : await registry.find(guidedFixture.fullName)
 assert(plugin, 'Registry needs at least one guided fixture')
 
 const evidence = await registry.guidedEvidence(plugin.fullName)

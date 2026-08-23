@@ -156,21 +156,28 @@ export class RegistryError extends Error {
 export class RegistryClient {
   private cache: RegistryCache | undefined
   private loading: Promise<MarketplaceRegistry> | undefined
+  private backgroundRefresh: Promise<MarketplaceRegistry> | undefined
+  private bootstrapped = false
+  private readonly repositories = new Map<string, MarketplaceRegistryPlugin>()
+  private readonly packages = new Map<string, MarketplaceRegistryPlugin>()
   private readonly source: string
   private readonly bundledSource: string
   private readonly cacheMs: number
   private readonly timeoutMs: number
+  private readonly preferBundledFirst: boolean
 
   constructor(
     source: string,
     bundledSource: string,
     cacheMs: number,
     timeoutMs: number,
+    preferBundledFirst = false,
   ) {
     this.source = source
     this.bundledSource = bundledSource
     this.cacheMs = cacheMs
     this.timeoutMs = timeoutMs
+    this.preferBundledFirst = preferBundledFirst
   }
 
   /** Search only centrally verified entries. */
@@ -216,12 +223,34 @@ export class RegistryClient {
   /** Find one currently verified repository, case-insensitively. */
   async find(repo: string): Promise<MarketplaceRegistryPlugin | undefined> {
     const normalized = repo.trim().toLocaleLowerCase()
-    return (await this.load()).plugins.find(plugin => plugin.fullName.toLocaleLowerCase() === normalized)
+    await this.load()
+    return this.repositories.get(normalized)
   }
 
   /** Find the Registry owner of one installed npm package name. */
   async findByPackage(packageName: string): Promise<MarketplaceRegistryPlugin | undefined> {
-    return (await this.load()).plugins.find(plugin => plugin.packageName === packageName)
+    await this.load()
+    return this.packages.get(packageName)
+  }
+
+  /** 批量命中已安装包；Registry 只加载一次，每项查找为 O(1)。 */
+  async findByPackages(packageNames: Iterable<string>): Promise<Map<string, MarketplaceRegistryPlugin>> {
+    await this.load()
+    const result = new Map<string, MarketplaceRegistryPlugin>()
+    for (const packageName of packageNames) {
+      const plugin = this.packages.get(packageName)
+      if (plugin !== undefined) result.set(packageName, plugin)
+    }
+    return result
+  }
+
+  /** 显式检查更新时绕过 TTL，重新读取远程 Registry 与发现数据。 */
+  async refresh(): Promise<void> {
+    if (this.loading !== undefined) await this.loading.catch(() => undefined)
+    if (this.backgroundRefresh !== undefined) await this.backgroundRefresh.catch(() => undefined)
+    this.bootstrapped = true
+    this.cache = undefined
+    await this.load()
   }
 
   /** Read the scanner's evidence for one still-guided repository, when available. */
@@ -254,6 +283,17 @@ export class RegistryClient {
 
   /** Perform one Registry refresh shared by every concurrent caller. */
   private async loadUncached(): Promise<MarketplaceRegistry> {
+    if (this.preferBundledFirst && !this.bootstrapped && this.source !== this.bundledSource) {
+      this.bootstrapped = true
+      const registry = await this.loadSource(this.bundledSource)
+      const backgroundRefresh = this.loadSource(this.source)
+      this.backgroundRefresh = backgroundRefresh
+      void backgroundRefresh.catch(() => undefined).finally(() => {
+        if (this.backgroundRefresh === backgroundRefresh) this.backgroundRefresh = undefined
+      })
+      return registry
+    }
+    this.bootstrapped = true
     try {
       return await this.loadSource(this.source)
     } catch (error) {
@@ -312,6 +352,12 @@ export class RegistryClient {
       }
     }
     this.cache = { registry, etag, expiresAt: Date.now() + this.cacheMs, source }
+    this.repositories.clear()
+    this.packages.clear()
+    for (const plugin of registry.plugins) {
+      this.repositories.set(plugin.fullName.toLocaleLowerCase(), plugin)
+      if (!this.packages.has(plugin.packageName)) this.packages.set(plugin.packageName, plugin)
+    }
     return registry
   }
 

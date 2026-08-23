@@ -8,7 +8,32 @@ Registry refresh commits are grouped instead of listed individually.
 
 ## [Unreleased]
 
-No unreleased changes yet.
+### Added and improved
+
+- Manual GitHub commands can now install a new plugin or update an installed package with the same name.
+- Installed plugins now include an Updates filter and an explicit refresh that bypasses the Registry TTL.
+- The default catalog renders the bundled Registry snapshot first and refreshes the remote source in the
+  background. Full installed-plugin scanning is deferred until its page is opened.
+- Default `node_modules` no longer receives an unlinked-directory walk. Registry lookups now use repository
+  and package indexes with one batch lookup for installed packages.
+- The operation queue appears only on Installed plugins, restores active jobs only, retains at most 12
+  finished jobs for 10 minutes, and can clear finished history.
+- Installed descriptions expose the full original text on hover, prefer Chinese segments in the Chinese UI,
+  and retain the local package-manifest description when Registry metadata is empty.
+
+### Fixed
+
+- Profile writes now use a cross-process lock and bounded retries for transient Windows `writeLockfile`,
+  `EBUSY`, and `EPERM` failures.
+- Profile-linked pnpm Store paths now collapse repeatedly expanded Windows separators and convert the
+  `.modules.yaml` version directory back to the pnpm configuration root, preventing nested Stores.
+- Enable/disable writes share the same Profile lock; the UI clarifies that the setting applies after restart
+  and does not open another persistent CLI.
+
+### Tests
+
+- Added regressions for forced Registry refresh, skipped default-directory orphan scans, manual command
+  updates, and exclusion of finished jobs from restored queue state.
 
 ## [0.9.2] - 2026-08-17
 

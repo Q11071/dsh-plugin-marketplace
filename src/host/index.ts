@@ -38,6 +38,7 @@ import type {
   MarketplaceManualInstallRequest,
   MarketplaceManualInstallResult,
   MarketplaceInstalled,
+  MarketplaceInstalledRequest,
   MarketplaceJobStatus,
   MarketplaceJobStatusRequest,
   MarketplacePluginDetails,
@@ -55,7 +56,7 @@ import { readProfileManifest, writeProfileManifest } from '@deepseek-ai/dsh-app-
 import { GitHubClient, GitHubError } from './github.ts'
 import { buildGuidedAgentTask } from './guided-agent.ts'
 import { loadInstallSkill, type MarketplaceSkillRegistration } from './install-skill.ts'
-import { JobTable, MutationQueue, runPnpmJob, type JobRecord } from './installer.ts'
+import { JobTable, MutationQueue, runPnpmJob, runProfilePnpmJob, withProfileMutationLock, type JobRecord } from './installer.ts'
 import { parseManualInstall } from './manual-install.ts'
 import { scheduleProcessRestart } from './restart.ts'
 import {
@@ -129,12 +130,26 @@ function fail(code: string, message: string, details: object = {}): Err {
   return { ok: false, error: { code, message, details } }
 }
 
+class MarketplaceOperationError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+    readonly details: object = {},
+  ) {
+    super(message)
+    this.name = 'MarketplaceOperationError'
+  }
+}
+
 /** Normalize any thrown value into the Remote error branch. */
 function toFailure(error: unknown): Err {
   if (error instanceof GitHubError) {
     return fail(error.code, error.message, error.details)
   }
   if (error instanceof RegistryError) {
+    return fail(error.code, error.message, error.details)
+  }
+  if (error instanceof MarketplaceOperationError) {
     return fail(error.code, error.message, error.details)
   }
   const message = error instanceof Error ? error.message : String(error)
@@ -167,6 +182,7 @@ export class MarketplaceService extends TypertRemoteService {
       BUNDLED_REGISTRY_URL,
       config.registryCacheMinutes * 60_000,
       config.registryRequestTimeoutMs,
+      source === DEFAULT_REGISTRY_URL,
     )
   }
 
@@ -275,22 +291,74 @@ export class MarketplaceService extends TypertRemoteService {
       if (this.jobs.hasActive()) {
         return fail('job-running', 'Another Profile plugin operation is already in progress.')
       }
-      const before = readProfileManifest(NAME, profile.dir)
-      if (before.dependencies?.[packageName] !== undefined) {
-        return fail('already-installed', packageName + ' is already installed — uninstall it or use its update action.')
-      }
-      const target = profile.custom ? pluginTarget(profile, packageName) : profilePackagePath(profile.dir, packageName)
-      if (existsSync(target)) {
-        return fail('plugin-dir-exists', 'Install blocked: target directory already exists: ' + target, { target })
-      }
-      const conflict = this.installConflict(details, before, profile.dir)
-      if (conflict !== null) return conflict
-
-      const job = this.jobs.create('install', packageName)
+      const initial = readProfileManifest(NAME, profile.dir)
+      const initialOperation = initial.dependencies?.[packageName] === undefined ? 'install' : 'update'
+      const job = this.jobs.create(initialOperation, packageName)
       const spec = 'github:' + details.repo + '#' + details.resolvedRef
-      this.enqueueMutation(() => this.driveInstall(job, profile, spec, before, false, true, profile.custom ? target : null))
+      let resolvePrepared!: (operation: 'install' | 'update') => void
+      let rejectPrepared!: (error: unknown) => void
+      let preparedSettled = false
+      const prepared = new Promise<'install' | 'update'>((resolve, reject) => {
+        resolvePrepared = resolve
+        rejectPrepared = reject
+      })
+      this.enqueueMutation(async () => {
+        this.jobs.phase(job, 'spawning')
+        try {
+          await withProfileMutationLock(profile.dir, async () => {
+            // The Profile may have changed in another DSH process while this
+            // request was resolving GitHub or waiting for the file lock.
+            const before = readProfileManifest(NAME, profile.dir)
+            const operation = before.dependencies?.[packageName] === undefined ? 'install' : 'update'
+            job.kind = operation
+            const existingCustomTarget = operation === 'update'
+              ? managedInstalledPluginTarget(profile, packageName, before)
+              : null
+            const target = operation === 'install' && profile.custom
+              ? pluginTarget(profile, packageName)
+              : existingCustomTarget ?? profilePackagePath(profile.dir, packageName)
+            if (operation === 'install' && existsSync(target)) {
+              throw new MarketplaceOperationError(
+                'plugin-dir-exists',
+                'Install blocked: target directory already exists: ' + target,
+                { target },
+              )
+            }
+            if (operation === 'install') {
+              const conflict = this.installConflict(details, before, profile.dir)
+              if (conflict !== null) {
+                throw new MarketplaceOperationError(
+                  conflict.error.code,
+                  conflict.error.message,
+                  conflict.error.details,
+                )
+              }
+            }
+            const beforeDeclaresBundle = operation === 'update' ? exportsPatch(packageName, profile.dir) : false
+            preparedSettled = true
+            resolvePrepared(operation)
+            await this.driveInstall(
+              job,
+              profile,
+              spec,
+              before,
+              beforeDeclaresBundle,
+              true,
+              operation === 'install' ? (profile.custom ? target : null) : existingCustomTarget,
+            )
+          })
+        } catch (error) {
+          if (!preparedSettled) {
+            preparedSettled = true
+            rejectPrepared(error)
+          }
+          this.failPreparedJob(job, error)
+        }
+      })
+      const operation = await prepared
       return ok({
         jobId: job.jobId,
+        operation,
         packageName,
         repository: details.repo,
         verifiedCommit: details.resolvedRef,
@@ -368,45 +436,47 @@ export class MarketplaceService extends TypertRemoteService {
       ensureProfile(profile.dir, profile.name)
       const packageNames = uniquePackageNames(request.packageNames)
       if (packageNames.length === 0) return fail('empty-batch', 'Choose at least one plugin to change.')
-      const manifest = readProfileManifest(NAME, profile.dir)
-      const failures: Array<{ packageName: string; message: string }> = []
-      const accepted = packageNames.filter((packageName) => {
-        if (!validPackageName(packageName) || manifest.dependencies?.[packageName] === undefined || !exportsPatch(packageName, profile.dir)) {
-          failures.push({ packageName, message: packageName + ' is not an installed DSH bundle in profile ' + profile.name + '.' })
-          return false
+      return await withProfileMutationLock(profile.dir, async () => {
+        const manifest = readProfileManifest(NAME, profile.dir)
+        const failures: Array<{ packageName: string; message: string }> = []
+        const accepted = packageNames.filter((packageName) => {
+          if (!validPackageName(packageName) || manifest.dependencies?.[packageName] === undefined || !exportsPatch(packageName, profile.dir)) {
+            failures.push({ packageName, message: packageName + ' is not an installed DSH bundle in profile ' + profile.name + '.' })
+            return false
+          }
+          return true
+        })
+        if (accepted.length === 0) return ok({ results: [], failures, requiresRestart: false })
+        let bundles = manifest.dsh?.profile?.bundles ?? []
+        for (const packageName of accepted) bundles = toggleBundleName(bundles, packageName, request.enabled)
+        if (request.enabled) {
+          const beforeKeys = new Set(computeConflicts(manifest, profile.dir).map(conflictIdentity))
+          const prospective = {
+            ...manifest,
+            dsh: { ...manifest.dsh, profile: { ...manifest.dsh?.profile, bundles } },
+          }
+          const introduced = computeConflicts(prospective, profile.dir)
+            .find(conflict => !beforeKeys.has(conflictIdentity(conflict)))
+          if (introduced !== undefined) {
+            const subject = introduced.kind === 'service'
+              ? "service '" + introduced.service + "'"
+              : "bundle id '" + introduced.id + "'"
+            return fail(
+              'plugin-conflict',
+              'Enable blocked: ' + subject + ' conflicts with ' + introduced.packages.join(', ') + '. DSH was left unchanged.',
+              introduced,
+            )
+          }
         }
-        return true
-      })
-      if (accepted.length === 0) return ok({ results: [], failures, requiresRestart: false })
-      let bundles = manifest.dsh?.profile?.bundles ?? []
-      for (const packageName of accepted) bundles = toggleBundleName(bundles, packageName, request.enabled)
-      if (request.enabled) {
-        const beforeKeys = new Set(computeConflicts(manifest, profile.dir).map(conflictIdentity))
-        const prospective = {
+        writeProfileManifest(profile.dir, {
           ...manifest,
           dsh: { ...manifest.dsh, profile: { ...manifest.dsh?.profile, bundles } },
-        }
-        const introduced = computeConflicts(prospective, profile.dir)
-          .find(conflict => !beforeKeys.has(conflictIdentity(conflict)))
-        if (introduced !== undefined) {
-          const subject = introduced.kind === 'service'
-            ? "service '" + introduced.service + "'"
-            : "bundle id '" + introduced.id + "'"
-          return fail(
-            'plugin-conflict',
-            'Enable blocked: ' + subject + ' conflicts with ' + introduced.packages.join(', ') + '. DSH was left unchanged.',
-            introduced,
-          )
-        }
-      }
-      writeProfileManifest(profile.dir, {
-        ...manifest,
-        dsh: { ...manifest.dsh, profile: { ...manifest.dsh?.profile, bundles } },
-      })
-      return ok({
-        results: accepted.map(packageName => ({ packageName, enabled: request.enabled, requiresRestart: true })),
-        failures,
-        requiresRestart: true,
+        })
+        return ok({
+          results: accepted.map(packageName => ({ packageName, enabled: request.enabled, requiresRestart: true })),
+          failures,
+          requiresRestart: true,
+        })
       })
     } catch (error) {
       return toFailure(error)
@@ -428,36 +498,35 @@ export class MarketplaceService extends TypertRemoteService {
   }
 
   @Remote('installed')
-  async installed(): Promise<MarketplaceResult<MarketplaceInstalled>> {
+  async installed(request: MarketplaceInstalledRequest): Promise<MarketplaceResult<MarketplaceInstalled>> {
     try {
+      if (request.refresh) await this.registry.refresh()
       const profile = installLocation(this.ctx, this.config)
       const manifest = readProfileManifest(NAME, profile.dir)
-      const entries = installedEntries(manifest, profile.dir, profile.pluginDir)
-      let liveSelf: SelfUpdateTarget | undefined
-      if (entries.some(entry => entry.packageName === SELF_PACKAGE)) {
-        try {
-          liveSelf = (await this.liveSelfUpdate()).target
-        } catch {
-          // A repository outage must not hide the installed list. The normal
-          // Registry lookup below remains available as a conservative fallback.
-        }
-      }
-      await Promise.all(entries.map(async (entry) => {
+      const entries = installedEntries(manifest, profile.dir, profile.pluginDir, profile.custom)
+      const liveSelfPromise: Promise<SelfUpdateTarget | undefined> = entries.some(entry => entry.packageName === SELF_PACKAGE)
+        ? this.liveSelfUpdate(request.refresh).then(({ target }) => target, () => undefined)
+        : Promise.resolve(undefined)
+      const [registeredPackages, liveSelf] = await Promise.all([
+        this.registry.findByPackages(entries.map(entry => entry.packageName)),
+        liveSelfPromise,
+      ])
+      for (const entry of entries) {
         if (entry.packageName === SELF_PACKAGE && liveSelf !== undefined) {
           Object.assign(entry, applySelfUpdate(entry, liveSelf, profile.name))
-          return
+          continue
         }
-        const registered = await this.registry.findByPackage(entry.packageName)
-        if (registered === undefined) return
+        const registered = registeredPackages.get(entry.packageName)
+        if (registered === undefined) continue
         entry.registryRepo = registered.fullName
-        entry.description = registered.description
+        entry.description = registered.description?.trim() ? registered.description : (entry.description ?? null)
         entry.repositoryUrl = registered.htmlUrl
         entry.verifiedCommit = registered.verifiedCommit
         entry.install = registered.install
         if (!entry.linked) {
           entry.updateAvailable = false
           entry.canUpdate = false
-          return
+          continue
         }
         const versionOrder = compareSemver(registered.version, entry.version)
         entry.updateAvailable = versionOrder > 0
@@ -471,7 +540,7 @@ export class MarketplaceService extends TypertRemoteService {
           && (registered.install.source === 'github' || registered.install.source === 'npm')
           && registered.install.profiles.includes(profile.name)
           && registered.install.spec !== ''
-      }))
+      }
       let conflicts: MarketplaceConflict[] = []
       try {
         conflicts = computeConflicts(manifest, profile.dir)
@@ -494,7 +563,14 @@ export class MarketplaceService extends TypertRemoteService {
   async installLocation(): Promise<MarketplaceResult<MarketplaceInstallLocation>> {
     try {
       const profile = installLocation(this.ctx, this.config)
-      return ok({ installDir: profile.pluginDir, installDirCustom: profile.custom })
+      ensureProfile(profile.dir, profile.name)
+      const manifest = readProfileManifest(NAME, profile.dir)
+      return ok({
+        profile: profile.name,
+        packageNames: Object.keys(manifest.dependencies ?? {}),
+        installDir: profile.pluginDir,
+        installDirCustom: profile.custom,
+      })
     } catch (error) {
       return toFailure(error)
     }
@@ -511,7 +587,10 @@ export class MarketplaceService extends TypertRemoteService {
       }
       const value = typeof request.installDir === 'string' ? request.installDir.trim() : ''
       const profile = profileLocation(this.ctx)
-      return ok(persistInstallLocation(profile.dir, value))
+      ensureProfile(profile.dir, profile.name)
+      const location = persistInstallLocation(profile.dir, value)
+      const manifest = readProfileManifest(NAME, profile.dir)
+      return ok({ profile: profile.name, packageNames: Object.keys(manifest.dependencies ?? {}), ...location })
     } catch (error) {
       return toFailure(error)
     }
@@ -668,53 +747,55 @@ export class MarketplaceService extends TypertRemoteService {
     const packageName = manifest.name
     const profile = installLocation(this.ctx, this.config)
     ensureProfile(profile.dir, profile.name)
-    if (registered.install.mode !== 'automatic'
-      || !registered.install.profiles.includes(profile.name)
-      || registered.install.spec === '') {
-      throw new Error("This plugin needs its author's guided installation steps.")
-    }
-    const before = readProfileManifest(NAME, profile.dir)
-    if (kind === 'install' && before.dependencies?.[packageName] !== undefined) {
-      throw new Error(packageName + ' is already installed — use Update instead.')
-    }
-    if (kind === 'update' && before.dependencies?.[packageName] === undefined) {
-      throw new Error(packageName + ' is not installed in profile ' + profile.name + '.')
-    }
-    const beforeDeclaresBundle = exportsPatch(packageName, profile.dir)
-    const existingCustomTarget = kind === 'update'
-      ? managedInstalledPluginTarget(profile, packageName, before)
-      : null
-    const customTarget = kind === 'install' && profile.custom
-      ? pluginTarget(profile, packageName)
-      : existingCustomTarget
-    const target = customTarget ?? profilePackagePath(profile.dir, packageName)
-    if (kind === 'install' && existsSync(target)) {
-      throw new Error('Install blocked: target directory already exists: ' + target)
-    }
-    if (kind === 'update' && existsSync(target)) {
-      let targetManifest: { name?: unknown }
-      try {
-        targetManifest = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')) as { name?: unknown }
-      } catch (error) {
-        throw new Error('Update blocked: cannot validate existing plugin directory ' + target + '.', { cause: error })
+    await withProfileMutationLock(profile.dir, async () => {
+      if (registered.install.mode !== 'automatic'
+        || !registered.install.profiles.includes(profile.name)
+        || registered.install.spec === '') {
+        throw new Error("This plugin needs its author's guided installation steps.")
       }
-      if (targetManifest.name !== packageName) {
-        throw new Error('Update blocked: ' + target + ' belongs to ' + String(targetManifest.name ?? 'another package') + '.')
+      const before = readProfileManifest(NAME, profile.dir)
+      if (kind === 'install' && before.dependencies?.[packageName] !== undefined) {
+        throw new Error(packageName + ' is already installed — use Update instead.')
       }
-    }
-    if (kind === 'install') {
-      const conflict = this.installConflict(details, before, profile.dir)
-      if (conflict !== null) throw new Error(conflict.error.message)
-    }
-    await this.driveInstall(
-      job,
-      profile,
-      executableSpec(registered),
-      before,
-      beforeDeclaresBundle,
-      registered.install.requiresRestart,
-      customTarget,
-    )
+      if (kind === 'update' && before.dependencies?.[packageName] === undefined) {
+        throw new Error(packageName + ' is not installed in profile ' + profile.name + '.')
+      }
+      const beforeDeclaresBundle = exportsPatch(packageName, profile.dir)
+      const existingCustomTarget = kind === 'update'
+        ? managedInstalledPluginTarget(profile, packageName, before)
+        : null
+      const customTarget = kind === 'install' && profile.custom
+        ? pluginTarget(profile, packageName)
+        : existingCustomTarget
+      const target = customTarget ?? profilePackagePath(profile.dir, packageName)
+      if (kind === 'install' && existsSync(target)) {
+        throw new Error('Install blocked: target directory already exists: ' + target)
+      }
+      if (kind === 'update' && existsSync(target)) {
+        let targetManifest: { name?: unknown }
+        try {
+          targetManifest = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8')) as { name?: unknown }
+        } catch (error) {
+          throw new Error('Update blocked: cannot validate existing plugin directory ' + target + '.', { cause: error })
+        }
+        if (targetManifest.name !== packageName) {
+          throw new Error('Update blocked: ' + target + ' belongs to ' + String(targetManifest.name ?? 'another package') + '.')
+        }
+      }
+      if (kind === 'install') {
+        const conflict = this.installConflict(details, before, profile.dir)
+        if (conflict !== null) throw new Error(conflict.error.message)
+      }
+      await this.driveInstall(
+        job,
+        profile,
+        executableSpec(registered),
+        before,
+        beforeDeclaresBundle,
+        registered.install.requiresRestart,
+        customTarget,
+      )
+    })
   }
 
   private startUninstallJob(rawPackageName: string): MarketplaceResult<{ jobId: string }> {
@@ -731,11 +812,13 @@ export class MarketplaceService extends TypertRemoteService {
       try {
         const profile = installLocation(this.ctx, this.config)
         ensureProfile(profile.dir, profile.name)
-        const before = readProfileManifest(NAME, profile.dir)
-        if (before.dependencies?.[packageName] === undefined) {
-          throw new Error(packageName + ' is not installed in profile ' + profile.name + '.')
-        }
-        await this.driveUninstall(job, profile, before, exportsPatch(packageName, profile.dir))
+        await withProfileMutationLock(profile.dir, async () => {
+          const before = readProfileManifest(NAME, profile.dir)
+          if (before.dependencies?.[packageName] === undefined) {
+            throw new Error(packageName + ' is not installed in profile ' + profile.name + '.')
+          }
+          await this.driveUninstall(job, profile, before, exportsPatch(packageName, profile.dir))
+        })
       } catch (error) {
         this.failPreparedJob(job, error)
       }
@@ -826,7 +909,7 @@ export class MarketplaceService extends TypertRemoteService {
       if (linkedPeers.length > 0) this.jobs.append(job, 'Linked DSH host dependencies: ' + linkedPeers.join(', ') + '\n')
       writeProfileDependency(job.packageName, localDependencySpec(profile.dir, target), profile.dir)
       manifestWritten = true
-      code = await runPnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
+      code = await runProfilePnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile lockfile update failed: pnpm exited with code ' + String(code) + '.')
       profilePackageState = createProfilePackageLink(profile.dir, job.packageName, target, job.jobId)
       this.jobs.phase(job, 'reconciling')
@@ -876,7 +959,7 @@ export class MarketplaceService extends TypertRemoteService {
       const conflict = stagedInstallConflict(job.packageName, stageDir, before, profile.dir)
       if (conflict !== null) throw new Error(conflict.message)
       profileAttempted = true
-      code = await runPnpmJob(job, ['add', spec, '--ignore-scripts', '--config.auto-install-peers=false'], profile.dir, this.jobs, profile.storeDir)
+      code = await runProfilePnpmJob(job, ['add', spec, '--ignore-scripts', '--config.auto-install-peers=false'], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile install failed: pnpm exited with code ' + String(code) + '.')
       this.jobs.phase(job, 'reconciling')
       reconcileBundle(before, beforeDeclaresBundle, job.packageName, profile.dir)
@@ -913,7 +996,7 @@ export class MarketplaceService extends TypertRemoteService {
       this.jobs.phase(job, 'running')
       writeProfileDependency(job.packageName, undefined, profile.dir)
       manifestWritten = true
-      const code = await runPnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
+      const code = await runProfilePnpmJob(job, ['install', '--lockfile-only', '--ignore-scripts'], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile unlink failed: pnpm exited with code ' + String(code) + '.')
       this.jobs.phase(job, 'reconciling')
       reconcileBundle(before, beforeDeclaresBundle, job.packageName, profile.dir)
@@ -945,7 +1028,7 @@ export class MarketplaceService extends TypertRemoteService {
   ): Promise<void> {
     try {
       this.jobs.phase(job, 'running')
-      const code = await runPnpmJob(job, ['remove', job.packageName], profile.dir, this.jobs, profile.storeDir)
+      const code = await runProfilePnpmJob(job, ['remove', job.packageName], profile.dir, this.jobs, profile.storeDir)
       if (code !== 0) throw new Error(code === null ? 'pnpm could not be spawned — is pnpm on PATH?' : 'Profile uninstall failed: pnpm exited with code ' + String(code) + '.')
       this.jobs.phase(job, 'reconciling')
       reconcileBundle(before, beforeDeclaresBundle, job.packageName, profile.dir)
@@ -976,7 +1059,7 @@ export class MarketplaceService extends TypertRemoteService {
     const args = lockfileOnly
       ? ['install', '--lockfile-only', '--ignore-scripts']
       : ['install', '--ignore-scripts']
-    const rollbackCode = await runPnpmJob(job, args, profile.dir, this.jobs, profile.storeDir)
+    const rollbackCode = await runProfilePnpmJob(job, args, profile.dir, this.jobs, profile.storeDir)
     if (rollbackCode !== 0) this.jobs.append(job, 'Warning: automatic Profile rollback did not complete.\n')
   }
 }

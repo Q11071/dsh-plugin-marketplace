@@ -1,7 +1,7 @@
 /** 已构建 Host 的快速接单、重复抑制与卸载失败隔离测试。 */
 
 import { strict as assert } from 'node:assert'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -93,8 +93,13 @@ type ManualTestService = {
   ctx: { baseUrl: URL }
   config: { registryCacheMinutes: number; registryRequestTimeoutMs: number }
   github: { details: () => Promise<typeof manualDetails> }
-  driveInstall: (job: ReturnType<JobTable['create']>) => Promise<void>
-  manualInstall: (request: { command: string }) => Promise<{ ok: boolean; value?: { jobId: string }; error?: { code: string } }>
+  driveInstall: (
+    job: ReturnType<JobTable['create']>,
+    profile?: unknown,
+    spec?: unknown,
+    before?: { dependencies?: Record<string, unknown> },
+  ) => Promise<void>
+  manualInstall: (request: { command: string }) => Promise<{ ok: boolean; value?: { jobId: string; operation: 'install' | 'update' }; error?: { code: string } }>
 }
 
 try {
@@ -118,8 +123,10 @@ try {
   manualService.config = { registryCacheMinutes: 15, registryRequestTimeoutMs: 10_000 }
   manualService.github = { details: async () => pendingManual }
   let driveCalls = 0
-  manualService.driveInstall = async (job) => {
+  let lastDriveDependency: unknown
+  manualService.driveInstall = async (job, _profile, _spec, before) => {
     driveCalls += 1
+    lastDriveDependency = before?.dependencies?.['manual-plugin']
     manualService.jobs.settle(job, { packageName: job.packageName, version: '1.0.0', requiresRestart: true })
   }
 
@@ -133,15 +140,57 @@ try {
   assert.equal(driveCalls, 0, 'manual install must not race an operation accepted while GitHub details resolve')
   manualService.jobs.fail(competing, { code: 'fixture', message: 'finished fixture operation' })
 
+  const activeOnly = new JobTable()
+  const finishedJob = activeOnly.create('update', 'finished-plugin')
+  activeOnly.settle(finishedJob, { packageName: 'finished-plugin', version: '1.0.0', requiresRestart: false })
+  const activeJob = activeOnly.create('update', 'active-plugin')
+  assert.deepEqual(activeOnly.list().map(job => job.jobId), [activeJob.jobId], 'restored queue must exclude finished history')
+
   manualService.github = { details: async () => manualDetails }
   const acceptedManual = await manualService.manualInstall({ command })
   assert.equal(acceptedManual.ok, true)
+  assert.equal(acceptedManual.value?.operation, 'install')
   await manualService.mutationQueue.drain()
   assert.equal(driveCalls, 1, 'manual install must execute through the shared mutation queue')
+
+  const crossProcessLock = join(manualProfile, '.dsh-marketplace-mutation.lock')
+  writeFileSync(crossProcessLock, JSON.stringify({
+    pid: process.pid,
+    createdAt: Date.now(),
+    token: 'other-service',
+  }))
+  let updatePrepared = false
+  let earlyUpdateResult: unknown
+  const pendingUpdate = manualService.manualInstall({ command }).then((result) => {
+    earlyUpdateResult = result
+    return result
+  }).finally(() => { updatePrepared = true })
+  await new Promise(resolve => setTimeout(resolve, 25))
+  assert.equal(updatePrepared, false, 'manual operation identity must wait for the cross-process Profile lock: ' + JSON.stringify(earlyUpdateResult))
+
+  mkdirSync(join(manualProfile, 'node_modules', 'manual-plugin'), { recursive: true })
+  writeFileSync(join(manualProfile, 'node_modules', 'manual-plugin', 'package.json'), JSON.stringify({
+    name: 'manual-plugin',
+    version: '0.9.0',
+    dsh: { bundle: { patch: './cordis.patch.yml' } },
+  }, null, 2) + '\n')
+  writeFileSync(join(manualProfile, 'package.json'), JSON.stringify({
+    name: 'visual-test-profile',
+    private: true,
+    dependencies: { 'manual-plugin': 'github:owner/manual-plugin#' + 'a'.repeat(40) },
+    dsh: { profile: { bundles: ['manual-plugin'] } },
+  }, null, 2) + '\n')
+  unlinkSync(crossProcessLock)
+  const acceptedUpdate = await pendingUpdate
+  assert.equal(acceptedUpdate.ok, true)
+  assert.equal(acceptedUpdate.value?.operation, 'update', 'manual source must also update an installed package')
+  assert.equal(manualService.jobs.get(acceptedUpdate.value!.jobId)?.kind, 'update')
+  await manualService.mutationQueue.drain()
+  assert.equal(lastDriveDependency, 'github:owner/manual-plugin#' + 'a'.repeat(40), 'manual update must use the Profile snapshot captured under the lock')
 } finally {
   if (previousDshHome === undefined) delete process.env.DSH_HOME
   else process.env.DSH_HOME = previousDshHome
   rmSync(manualRoot, { recursive: true, force: true })
 }
 
-console.log('operation queue tests passed: 5')
+console.log('operation queue tests passed: 7')

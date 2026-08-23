@@ -120,6 +120,46 @@ export function installedPackageSummary(packageName: string, dir: string): { des
   }
 }
 
+interface InstalledPackageFacts {
+  version: string
+  isBundle: boolean
+  location: string
+  description: string | null
+  repositoryUrl: string | null
+}
+
+/** 一次解析已安装包清单，避免列表扫描对同一 package.json 重复 resolve/read。 */
+function installedPackageFacts(packageName: string, dir: string): InstalledPackageFacts | null {
+  const manifestPath = packageManifestPath(packageName, dir)
+  if (manifestPath === null) return null
+  try {
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+      version?: unknown
+      description?: unknown
+      homepage?: unknown
+      repository?: unknown
+      dsh?: { bundle?: { patch?: unknown } }
+    }
+    if (typeof manifest.version !== 'string') return null
+    const repository = typeof manifest.repository === 'string'
+      ? manifest.repository
+      : (manifest.repository as { url?: unknown } | undefined)?.url
+    return {
+      version: manifest.version,
+      isBundle: typeof manifest.dsh?.bundle?.patch === 'string',
+      location: dirname(manifestPath),
+      description: typeof manifest.description === 'string' && manifest.description.trim() !== '' ? manifest.description.trim() : null,
+      repositoryUrl: typeof manifest.homepage === 'string' && manifest.homepage.trim() !== ''
+        ? manifest.homepage.trim()
+        : typeof repository === 'string' && repository.trim() !== ''
+          ? repository.replace(/^git\+/, '').replace(/\.git$/, '')
+          : null,
+    }
+  } catch {
+    return null
+  }
+}
+
 /**
  * Reconcile one package's bundle layer after a marketplace mutation. New
  * bundles and dependencies that gain a bundle declaration join the stack;
@@ -189,27 +229,24 @@ function sameNames(left: readonly string[], right: readonly string[]): boolean {
  * linked to the Profile. Scoped folders (@scope/pkg) are scanned one level
  * deeper so marketplace-managed scoped packages are still discovered.
  */
-export function installedEntries(manifest: ProfileManifest, dir: string, pluginDir: string): MarketplaceInstalledEntry[] {
+export function installedEntries(manifest: ProfileManifest, dir: string, pluginDir: string, scanUnlinkedDirectories = true): MarketplaceInstalledEntry[] {
   const bundles = new Set(manifest.dsh?.profile?.bundles ?? [])
   const entries: MarketplaceInstalledEntry[] = []
   const linkedPackages = new Set(Object.keys(manifest.dependencies ?? {}))
   for (const packageName of Object.keys(manifest.dependencies ?? {})) {
-    const version = installedVersion(packageName, dir)
-    if (version === null) continue
-    const manifestPath = packageManifestPath(packageName, dir)
-    const summary = installedPackageSummary(packageName, dir)
+    const facts = installedPackageFacts(packageName, dir)
+    if (facts === null) continue
     const declared = manifest.dependencies?.[packageName]
-    const isBundle = exportsPatch(packageName, dir)
     entries.push({
       packageName,
-      version,
-      isBundle,
+      version: facts.version,
+      isBundle: facts.isBundle,
       linked: true,
-      location: manifestPath === null ? '' : dirname(manifestPath),
-      enabled: isBundle && bundles.has(packageName),
+      location: facts.location,
+      enabled: facts.isBundle && bundles.has(packageName),
       currentSpec: typeof declared === 'string' ? declared : '',
-      description: summary.description,
-      repositoryUrl: summary.repositoryUrl,
+      description: facts.description,
+      repositoryUrl: facts.repositoryUrl,
       registryRepo: null,
       availableVersion: null,
       availableVersionSource: null,
@@ -258,6 +295,7 @@ export function installedEntries(manifest: ProfileManifest, dir: string, pluginD
       // Not a readable plugin entity — ignore.
     }
   }
+  if (!scanUnlinkedDirectories) return entries.sort((a, b) => a.packageName.localeCompare(b.packageName))
   try {
     for (const item of readdirSync(pluginDir, { withFileTypes: true })) {
       if (!item.isDirectory()) continue
