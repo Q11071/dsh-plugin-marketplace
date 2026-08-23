@@ -4,8 +4,8 @@
  */
 
 import { spawn } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { isAbsolute, join, resolve } from 'node:path'
+import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { basename, dirname, isAbsolute, join, resolve, win32 } from 'node:path'
 import type {
   MarketplaceJobKind,
   MarketplaceJobPhase,
@@ -13,14 +13,26 @@ import type {
 } from '../types.ts'
 
 const MAX_LOG_CHARS = 65536
-const MAX_JOBS = 64
 const MAX_ACTIVE_JOBS = 50
+const MAX_FINISHED_JOBS = 12
+const FINISHED_JOB_TTL_MS = 10 * 60_000
+const PROFILE_LOCK_FILE = '.dsh-marketplace-mutation.lock'
+const PROFILE_LOCK_TIMEOUT_MS = 2 * 60_000
+const PROFILE_LOCK_STALE_MS = 15 * 60_000
 const WINDOWS_ABSOLUTE_PATH = /^(?:[A-Za-z]:[\\/]|\\\\)/
 
 function resolveStoreDir(dir: string, storeDir: string): string {
-  return isAbsolute(storeDir) || WINDOWS_ABSOLUTE_PATH.test(storeDir)
-    ? storeDir
-    : resolve(dir, storeDir)
+  const normalized = WINDOWS_ABSOLUTE_PATH.test(storeDir) ? win32.normalize(storeDir) : storeDir
+  return isAbsolute(normalized) || WINDOWS_ABSOLUTE_PATH.test(normalized)
+    ? normalized
+    : resolve(dir, normalized)
+}
+
+/** `.modules.yaml` 记录的是实际版本目录；pnpm 配置应接收其 Store 根目录。 */
+function configuredStoreDir(storeDir: string): string {
+  const leaf = WINDOWS_ABSOLUTE_PATH.test(storeDir) ? win32.basename(storeDir) : basename(storeDir)
+  if (!/^v\d+$/i.test(leaf)) return storeDir
+  return WINDOWS_ABSOLUTE_PATH.test(storeDir) ? win32.dirname(storeDir) : dirname(storeDir)
 }
 
 export interface JobOutcome {
@@ -56,6 +68,7 @@ export class JobTable {
     packageName: string,
     phase: MarketplaceJobPhase = 'spawning',
   ): JobRecord {
+    this.pruneFinished()
     this.seq += 1
     const record: JobRecord = {
       jobId: 'mkt-' + String(this.seq) + '-' + Date.now().toString(36),
@@ -70,11 +83,7 @@ export class JobTable {
       failure: null,
     }
     this.jobs.set(record.jobId, record)
-    while (this.jobs.size > MAX_JOBS) {
-      const oldestFinished = [...this.jobs.entries()].find(([, job]) => job.finishedAt !== null)?.[0]
-      if (oldestFinished === undefined) break
-      this.jobs.delete(oldestFinished)
-    }
+    this.pruneFinished()
     return record
   }
 
@@ -83,7 +92,9 @@ export class JobTable {
   }
 
   list(): MarketplaceJobStatus[] {
+    this.pruneFinished()
     return [...this.jobs.values()]
+      .filter(job => job.finishedAt === null)
       .sort((left, right) => left.startedAt - right.startedAt)
       .map(job => this.snapshot(job))
   }
@@ -150,6 +161,18 @@ export class JobTable {
       failure: job.failure === null ? null : { ...job.failure },
     }
   }
+
+  /** 限制完成记录的数量与寿命，同时始终保留所有活跃任务。 */
+  private pruneFinished(now = Date.now()): void {
+    const finished = [...this.jobs.entries()]
+      .filter(([, job]) => job.finishedAt !== null)
+      .sort((left, right) => (left[1].finishedAt ?? 0) - (right[1].finishedAt ?? 0))
+    for (const [jobId, job] of finished) {
+      if (now - (job.finishedAt ?? now) > FINISHED_JOB_TTL_MS) this.jobs.delete(jobId)
+    }
+    const retained = finished.filter(([jobId]) => this.jobs.has(jobId))
+    for (const [jobId] of retained.slice(0, Math.max(0, retained.length - MAX_FINISHED_JOBS))) this.jobs.delete(jobId)
+  }
 }
 
 /** Profile 写操作的先进先出串行队列；单项拒绝不会阻断后续任务。 */
@@ -165,6 +188,67 @@ export class MutationQueue {
   async drain(): Promise<void> {
     await this.tail
   }
+}
+
+/** 跨 MarketplaceService/DSH 进程串行修改同一 Profile。 */
+export async function withProfileMutationLock<T>(dir: string, work: () => Promise<T>): Promise<T> {
+  const lockPath = join(dir, PROFILE_LOCK_FILE)
+  const deadline = Date.now() + PROFILE_LOCK_TIMEOUT_MS
+  let descriptor: number | null = null
+  while (descriptor === null) {
+    try {
+      const candidate = openSync(lockPath, 'wx')
+      try {
+        writeFileSync(candidate, JSON.stringify({ pid: process.pid, createdAt: Date.now() }) + '\n', 'utf8')
+        descriptor = candidate
+      } catch (error) {
+        closeSync(candidate)
+        try { unlinkSync(lockPath) } catch { /* The failed create may not have left a file. */ }
+        throw error
+      }
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code
+      if (code !== 'EEXIST') throw error
+      if (removeStaleProfileLock(lockPath)) continue
+      if (Date.now() >= deadline) throw new Error('Another DSH process is modifying this Profile. Wait for it to finish and retry.')
+      await delay(200)
+    }
+  }
+  try {
+    return await work()
+  } finally {
+    closeSync(descriptor)
+    try { unlinkSync(lockPath) } catch { /* Another cleanup path may already have removed it. */ }
+  }
+}
+
+function removeStaleProfileLock(lockPath: string): boolean {
+  try {
+    const value = JSON.parse(readFileSync(lockPath, 'utf8')) as { pid?: unknown; createdAt?: unknown }
+    const pid = typeof value.pid === 'number' ? value.pid : 0
+    const createdAt = typeof value.createdAt === 'number' ? value.createdAt : 0
+    if (createdAt > 0 && Date.now() - createdAt < PROFILE_LOCK_STALE_MS && processAlive(pid)) return false
+    unlinkSync(lockPath)
+    return true
+  } catch {
+    try {
+      // 另一进程可能刚以 wx 创建文件、尚未写完 JSON；新文件不能按损坏锁删除。
+      if (Date.now() - statSync(lockPath).mtimeMs < PROFILE_LOCK_STALE_MS) return false
+      unlinkSync(lockPath)
+      return true
+    } catch {
+      return false
+    }
+  }
+}
+
+function processAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) return false
+  try { process.kill(pid, 0); return true } catch (error) { return (error as NodeJS.ErrnoException).code === 'EPERM' }
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -205,8 +289,11 @@ export function pnpmArgsFor(
   dir: string,
   fallbackStoreDir: string | null,
 ): { args: string[]; storeDir: string | null } {
-  const storeDir = linkedPnpmStore(dir) ?? fallbackStoreDir
-  return { args: storeDir === null ? args : [...args, '--config.store-dir=' + storeDir], storeDir }
+  const storeDir = linkedPnpmStore(dir) ?? (fallbackStoreDir === null ? null : resolveStoreDir(dir, fallbackStoreDir))
+  return {
+    args: storeDir === null ? args : [...args, '--config.store-dir=' + configuredStoreDir(storeDir)],
+    storeDir,
+  }
 }
 
 /**
@@ -245,4 +332,27 @@ export function runPnpmJob(
       resolve(code)
     })
   })
+}
+
+/** Profile 写入失败时做有界重试，覆盖 Windows 短暂文件占用与 lockfile 竞争。 */
+export async function runProfilePnpmJob(
+  job: JobRecord,
+  args: string[],
+  dir: string,
+  table: JobTable,
+  fallbackStoreDir: string | null = null,
+): Promise<number | null> {
+  let code: number | null = null
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const logOffset = job.log.length
+    code = await runPnpmJob(job, args, dir, table, fallbackStoreDir)
+    if (code === 0 || code === null) return code
+    const latestLog = job.log.slice(logOffset)
+    if (!/(?:EBUSY|EPERM|EACCES|writeLockfile|file[- ]?lock|resource busy)/i.test(latestLog)) return code
+    if (attempt < 3) {
+      table.append(job, 'Profile write failed; retrying after a short Windows file-lock backoff (' + String(attempt) + '/2).\n')
+      await delay(400 * attempt)
+    }
+  }
+  return code
 }

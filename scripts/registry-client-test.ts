@@ -72,14 +72,19 @@ try {
     registry.find(plugin.fullName),
     registry.findByPackage(plugin.packageName),
     registry.findByPackage(plugin.packageName),
+    registry.findByPackages([plugin.packageName, 'missing-plugin']),
   ])
 
   assert.equal(results[0].items.length, 1)
   assert.equal(results[1]?.packageName, plugin.packageName)
   assert.equal(results[2]?.fullName, plugin.fullName)
+  assert.deepEqual([...results[4].keys()], [plugin.packageName])
   assert.equal(registryReads, 1, '并发调用必须共享同一次 Registry 请求')
   assert.equal(discoveryReads, 1, '并发调用必须共享同一次 discovery 请求')
-  console.log('registry client tests passed: 1')
+  await registry.refresh()
+  assert.equal(registryReads, 2, '显式检查更新必须绕过 TTL 重新读取 Registry')
+  assert.equal(discoveryReads, 2, '显式检查更新必须同步刷新 discovery 数据')
+  console.log('registry client tests passed: 3')
 } finally {
   server.close()
   await once(server, 'close')

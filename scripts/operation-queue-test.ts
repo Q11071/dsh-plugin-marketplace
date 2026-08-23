@@ -94,7 +94,7 @@ type ManualTestService = {
   config: { registryCacheMinutes: number; registryRequestTimeoutMs: number }
   github: { details: () => Promise<typeof manualDetails> }
   driveInstall: (job: ReturnType<JobTable['create']>) => Promise<void>
-  manualInstall: (request: { command: string }) => Promise<{ ok: boolean; value?: { jobId: string }; error?: { code: string } }>
+  manualInstall: (request: { command: string }) => Promise<{ ok: boolean; value?: { jobId: string; operation: 'install' | 'update' }; error?: { code: string } }>
 }
 
 try {
@@ -133,15 +133,40 @@ try {
   assert.equal(driveCalls, 0, 'manual install must not race an operation accepted while GitHub details resolve')
   manualService.jobs.fail(competing, { code: 'fixture', message: 'finished fixture operation' })
 
+  const activeOnly = new JobTable()
+  const finishedJob = activeOnly.create('update', 'finished-plugin')
+  activeOnly.settle(finishedJob, { packageName: 'finished-plugin', version: '1.0.0', requiresRestart: false })
+  const activeJob = activeOnly.create('update', 'active-plugin')
+  assert.deepEqual(activeOnly.list().map(job => job.jobId), [activeJob.jobId], 'restored queue must exclude finished history')
+
   manualService.github = { details: async () => manualDetails }
   const acceptedManual = await manualService.manualInstall({ command })
   assert.equal(acceptedManual.ok, true)
+  assert.equal(acceptedManual.value?.operation, 'install')
   await manualService.mutationQueue.drain()
   assert.equal(driveCalls, 1, 'manual install must execute through the shared mutation queue')
+
+  mkdirSync(join(manualProfile, 'node_modules', 'manual-plugin'), { recursive: true })
+  writeFileSync(join(manualProfile, 'node_modules', 'manual-plugin', 'package.json'), JSON.stringify({
+    name: 'manual-plugin',
+    version: '0.9.0',
+    dsh: { bundle: { patch: './cordis.patch.yml' } },
+  }, null, 2) + '\n')
+  writeFileSync(join(manualProfile, 'package.json'), JSON.stringify({
+    name: 'visual-test-profile',
+    private: true,
+    dependencies: { 'manual-plugin': 'github:owner/manual-plugin#' + 'a'.repeat(40) },
+    dsh: { profile: { bundles: ['manual-plugin'] } },
+  }, null, 2) + '\n')
+  const acceptedUpdate = await manualService.manualInstall({ command })
+  assert.equal(acceptedUpdate.ok, true)
+  assert.equal(acceptedUpdate.value?.operation, 'update', 'manual source must also update an installed package')
+  assert.equal(manualService.jobs.get(acceptedUpdate.value!.jobId)?.kind, 'update')
+  await manualService.mutationQueue.drain()
 } finally {
   if (previousDshHome === undefined) delete process.env.DSH_HOME
   else process.env.DSH_HOME = previousDshHome
   rmSync(manualRoot, { recursive: true, force: true })
 }
 
-console.log('operation queue tests passed: 5')
+console.log('operation queue tests passed: 7')

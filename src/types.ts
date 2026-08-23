@@ -210,8 +210,17 @@ export interface MarketplaceInstalled {
   entries: MarketplaceInstalledEntry[]
 }
 
+/** 已安装插件列表请求；refresh 会绕过 Registry 和自更新缓存。 */
+export interface MarketplaceInstalledRequest {
+  refresh: boolean
+}
+
 /** Current plugin install location. */
 export interface MarketplaceInstallLocation {
+  /** 当前正在运行插件市场的 Profile。 */
+  profile: string
+  /** Profile 直接声明的依赖名，用于市场首屏快速标记已安装状态。 */
+  packageNames: string[]
   installDir: string
   installDirCustom: boolean
 }
@@ -289,6 +298,7 @@ export interface MarketplaceManualInstallRequest {
 
 /** Resolved identity returned when a manual GitHub install job starts. */
 export interface MarketplaceManualInstallResult extends MarketplaceJobHandle {
+  operation: 'install' | 'update'
   packageName: string
   repository: string
   verifiedCommit: string

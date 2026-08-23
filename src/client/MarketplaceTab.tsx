@@ -59,7 +59,7 @@ export interface MarketplaceTabInjected {
   diagnoseConflicts: () => Promise<MarketplaceDiagnoseConflictsResult>
   jobStatus: (jobId: string) => Promise<MarketplaceJobStatus>
   jobs: () => Promise<MarketplaceJobStatus[]>
-  installed: () => Promise<MarketplaceInstalled>
+  installed: (refresh?: boolean) => Promise<MarketplaceInstalled>
   restart: () => Promise<MarketplaceRestartResult>
 }
 
@@ -84,7 +84,7 @@ type ConfirmRequest = {
 }
 
 type Subpage = 'catalog' | 'installed' | 'management'
-type InstalledFilter = 'all' | 'enabled' | 'disabled'
+type InstalledFilter = 'all' | 'updates' | 'enabled' | 'disabled'
 type RestartState = 'idle' | 'requesting' | 'restarting'
 
 type Notice = { id: number; message: string; tone: 'error' | 'info' }
@@ -278,6 +278,14 @@ function latestJobForPackage(jobs: Map<string, MarketplaceJobStatus>, packageNam
     .sort((left, right) => right.startedAt - left.startedAt)[0]
 }
 
+/** 活跃任务全部保留；完成历史只保留最近 12 项，防止长会话无限增长。 */
+function boundedJobHistory(jobs: Map<string, MarketplaceJobStatus>): Map<string, MarketplaceJobStatus> {
+  const active = [...jobs.values()].filter(job => job.finishedAt === null)
+  const finished = [...jobs.values()].filter(job => job.finishedAt !== null)
+    .sort((left, right) => right.startedAt - left.startedAt).slice(0, 12)
+  return new Map([...active, ...finished].map(job => [job.jobId, job]))
+}
+
 function activeJobLabel(job: { kind: string }, t: MarketplaceTabProps['t']): string {
   if (job.kind === 'uninstall') return t('uninstallingAction')
   if (job.kind === 'update') return t('updatingAction')
@@ -287,6 +295,17 @@ function activeJobLabel(job: { kind: string }, t: MarketplaceTabProps['t']): str
 function friendlyPackageName(packageName: string): string {
   const slash = packageName.lastIndexOf('/')
   return slash >= 0 ? packageName.slice(slash + 1) : packageName
+}
+
+/** 中文界面将双语简介中的中文片段提前，同时保留完整原文用于悬浮提示。 */
+function preferredDescription(value: string | null | undefined, t: MarketplaceTabProps['t']): string | null {
+  const description = value?.trim()
+  if (description === undefined || description === '') return null
+  if (!/[\u3400-\u9fff]/.test(t('tab')) || !/[\u3400-\u9fff]/.test(description)) return description
+  const parts = description.split(/\s*(?:[|｜·]|\s[-—–]\s)\s*|(?<=[.!?])\s+(?=[\u3400-\u9fff])|(?<=[。！？])\s+(?=[A-Za-z])/).filter(Boolean)
+  const chinese = parts.filter(part => /[\u3400-\u9fff]/.test(part))
+  const other = parts.filter(part => !/[\u3400-\u9fff]/.test(part))
+  return [...chinese, ...other].join(' · ')
 }
 
 /** Render the marketplace: search, cards, install jobs, pagination. */
@@ -307,7 +326,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const [page, setPage] = useState(1)
   const [seq, setSeq] = useState(0)
   const [installedMap, setInstalledMap] = useState<Map<string, MarketplaceInstalledEntry>>(new Map())
+  const [installedPackages, setInstalledPackages] = useState<Set<string>>(new Set())
   const [installedProfile, setInstalledProfile] = useState('')
+  const [profileLoading, setProfileLoading] = useState(true)
   const [installedLoading, setInstalledLoading] = useState(true)
   const [installedError, setInstalledError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Map<string, MarketplaceJobStatus>>(new Map())
@@ -334,6 +355,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const [agentBusy, setAgentBusy] = useState<string | null>(null)
   const notifiedJobs = useRef<Set<string>>(new Set())
   const installedLoaded = useRef(false)
+  const installedRequest = useRef<Promise<MarketplaceInstalled> | null>(null)
   const updateScrollY = useRef<number | null>(null)
 
   const notify = useCallback((message: string, tone: 'error' | 'info' = 'error') => {
@@ -370,11 +392,15 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     return () => { current = false }
   }, [debouncedQuery, sort, category, page, seq, search, subpage])
 
-  const refreshInstalled = useCallback(() => {
-    if (!installedLoaded.current) setInstalledLoading(true)
-    void installed().then(
+  const refreshInstalled = useCallback((force = false) => {
+    if (installedRequest.current !== null) return
+    setInstalledLoading(true)
+    const request = installed(force)
+    installedRequest.current = request
+    void request.then(
       (result) => {
         setInstalledMap(new Map(result.entries.map((entry) => [entry.packageName, entry])))
+        setInstalledPackages(new Set(result.entries.filter(entry => entry.linked).map(entry => entry.packageName)))
         setInstalledProfile(result.profile)
         if (typeof result.installDir === 'string' && result.installDir !== '') {
           setInstallDirState(result.installDir)
@@ -392,10 +418,15 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
         setInstalledError(error instanceof Error ? error.message : String(error))
         setInstalledLoading(false)
       },
-    )
+    ).finally(() => {
+      if (installedRequest.current === request) installedRequest.current = null
+    })
   }, [installed])
 
-  useEffect(() => { refreshInstalled() }, [refreshInstalled])
+  useEffect(() => {
+    if (subpage === 'catalog') return
+    refreshInstalled()
+  }, [refreshInstalled, subpage])
 
   // Keep the install directory in sync even before the first installed() call.
   useEffect(() => {
@@ -404,8 +435,14 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       if (!current) return
       setInstallDirState(result.installDir)
       setInstallDirCustom(Boolean(result.installDirCustom))
+      setInstalledProfile(result.profile)
+      setInstalledPackages(new Set(result.packageNames))
+      setProfileLoading(false)
     }, (error: unknown) => {
-      if (current) notify(error instanceof Error ? error.message : String(error))
+      if (current) {
+        setProfileLoading(false)
+        notify(error instanceof Error ? error.message : String(error))
+      }
     })
     return () => { current = false }
   }, [installLocation, notify])
@@ -455,7 +492,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
         outcome: null,
         failure: null,
       })
-      return next
+      return boundedJobHistory(next)
     })
   }, [])
 
@@ -479,7 +516,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     })
   }, [])
 
-  // 从 Host 恢复任务队列；离开设置页不会丢失正在执行的更新。
+  // 从 Host 只恢复仍在执行的任务；完成历史不会在重新打开页面后累积。
   useEffect(() => {
     let current = true
     void loadJobs().then((statuses) => {
@@ -502,9 +539,15 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       for (const job of pending) {
         void jobStatus(job.jobId).then(
           (status) => {
-            setJobs((current) => new Map(current).set(status.jobId, status))
+            setJobs((current) => boundedJobHistory(new Map(current).set(status.jobId, status)))
             if (status.finishedAt !== null) {
-              refreshInstalled()
+              setInstalledPackages((current) => {
+                const next = new Set(current)
+                if (status.kind === 'uninstall') next.delete(status.packageName)
+                else if (status.outcome !== null) next.add(status.outcome.packageName)
+                return next
+              })
+              if (installedLoaded.current || subpage !== 'catalog') refreshInstalled()
               if (status.failure !== null && !notifiedJobs.current.has(status.jobId)) {
                 notifiedJobs.current.add(status.jobId)
                 notify(jobFailureNotice(status, t))
@@ -519,7 +562,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       }
     }, POLL_MS)
     return () => { window.clearInterval(handle) }
-  }, [jobs, jobStatus, notify, refreshInstalled, t])
+  }, [jobs, jobStatus, notify, refreshInstalled, subpage, t])
 
   // Once the host accepts a restart, wait for it to go offline and come back.
   // The elapsed-time fallback covers a restart that is faster than one probe.
@@ -600,7 +643,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       void manualInstall(request.command).then((result) => {
         setManualJobId(result.jobId)
         setManualCommand('')
-        trackJob(result.jobId, 'install', result.packageName)
+        trackJob(result.jobId, result.operation, result.packageName)
       }).catch((error: unknown) => {
         notify(error instanceof Error ? error.message : String(error))
       }).finally(() => { setManualBusy(false) })
@@ -661,7 +704,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
         if (result.failures.length > 0) {
           notify(result.failures.map(failure => failure.packageName + '：' + t('batchActionRejected')).join('\n'))
         }
-        if (result.requiresRestart) setBanner(t('restartBanner'))
+        if (result.requiresRestart) setBanner(t('toggleRestartBanner'))
         refreshInstalled()
         restoreUpdateScroll()
       }).catch((error: unknown) => {
@@ -722,7 +765,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
         if (value !== undefined) next.set(result.packageName, { ...value, enabled: result.enabled })
         return next
       })
-      if (result.requiresRestart) setBanner(t('restartBanner'))
+      if (result.requiresRestart) setBanner(t('toggleRestartBanner'))
       refreshInstalled()
     }).catch((error: unknown) => {
       notify(error instanceof Error ? error.message : String(error))
@@ -737,6 +780,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
     setInstallDir(value).then((result) => {
       setInstallDirState(result.installDir)
       setInstallDirCustom(Boolean(result.installDirCustom))
+      setInstalledProfile(result.profile)
+      setInstalledPackages(new Set(result.packageNames))
       notify(t(noticeKey), 'info')
       refreshInstalled()
     }).catch((error: unknown) => {
@@ -834,7 +879,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const installedNeedle = installedQuery.trim().toLocaleLowerCase()
   const enabledInstalledCount = installedEntries.filter((entry) => entry.linked && entry.enabled).length
   const disabledInstalledCount = installedEntries.filter((entry) => entry.linked && !entry.enabled).length
+  const updateAvailableCount = installedEntries.filter((entry) => entry.linked && entry.updateAvailable).length
   const visibleInstalledEntries = installedEntries.filter((entry) => {
+    if (installedFilter === 'updates' && (!entry.linked || !entry.updateAvailable)) return false
     if (installedFilter === 'enabled' && (!entry.linked || !entry.enabled)) return false
     if (installedFilter === 'disabled' && (!entry.linked || entry.enabled)) return false
     return installedNeedle === '' || [
@@ -856,7 +903,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       ? t('emptyEnabledInstalled')
       : installedFilter === 'disabled'
         ? t('emptyDisabledInstalled')
-        : t('emptyInstalled')
+        : installedFilter === 'updates'
+          ? t('emptyUpdateInstalled')
+          : t('emptyInstalled')
   const confirmCount = confirm?.updates?.length ?? 0
   const confirmationTitle = confirm?.mode === 'restart' ? t('confirmRestartTitle')
     : confirm?.mode === 'uninstall' ? t('confirmUninstallTitle')
@@ -899,8 +948,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
       <div style={s.subnav}>
         <div style={s.subnavGroup}>
           <Pill active={subpage === 'catalog'} onClick={() => { setSubpage('catalog') }}>{t('catalog')}</Pill>
-          <Pill active={subpage === 'installed'} onClick={() => { setSubpage('installed'); refreshInstalled() }}>{t('installedPage')}</Pill>
-          <Pill active={subpage === 'management'} onClick={() => { setSubpage('management'); refreshInstalled() }}>{t('managementPage')}</Pill>
+          <Pill active={subpage === 'installed'} onClick={() => { setSubpage('installed') }}>{t('installedPage')}</Pill>
+          <Pill active={subpage === 'management'} onClick={() => { setSubpage('management') }}>{t('managementPage')}</Pill>
         </div>
         <div style={s.subnavMeta}>
           {installedProfile !== '' ? <span style={s.muted}>{fmt(t, 'currentProfile', { profile: installedProfile })}</span> : null}
@@ -911,7 +960,13 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
           ) : null}
         </div>
       </div>
-      {operationQueue.length > 0 ? <OperationQueuePanel jobs={operationQueue} t={t} /> : null}
+      {subpage === 'installed' && operationQueue.length > 0 ? (
+        <OperationQueuePanel
+          jobs={operationQueue}
+          t={t}
+          onClearFinished={() => { setJobs(current => new Map([...current].filter(([, job]) => job.finishedAt === null))) }}
+        />
+      ) : null}
       {subpage === 'catalog' ? (
         <>
           <div style={s.toolbar}>
@@ -966,9 +1021,9 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
                   item={item}
                   t={t}
                   currentProfile={installedProfile}
-                  profileLoading={installedLoading}
+                  profileLoading={profileLoading}
                   profileAvailable={installedError === null && installedProfile !== ''}
-                  isInstalled={installedMap.has(item.packageName)}
+                  isInstalled={installedPackages.has(item.packageName)}
                   job={latestJobForPackage(jobs, item.packageName)}
                   startingKind={startingActions.get(item.packageName) ?? null}
                   expanded={expanded === item.fullName}
@@ -1010,12 +1065,18 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
             <Pill active={installedFilter === 'all'} onClick={() => { setInstalledFilter('all') }}>
               {fmt(t, 'allInstalled', { count: installedEntries.length })}
             </Pill>
+            <Pill active={installedFilter === 'updates'} onClick={() => { setInstalledFilter('updates') }}>
+              {fmt(t, 'updatesInstalled', { count: updateAvailableCount })}
+            </Pill>
             <Pill active={installedFilter === 'enabled'} onClick={() => { setInstalledFilter('enabled') }}>
               {fmt(t, 'enabledInstalled', { count: enabledInstalledCount })}
             </Pill>
             <Pill active={installedFilter === 'disabled'} onClick={() => { setInstalledFilter('disabled') }}>
               {fmt(t, 'disabledInstalled', { count: disabledInstalledCount })}
             </Pill>
+            <Button variant='outline' size='sm' disabled={installedLoading} onClick={() => { refreshInstalled(true) }}>
+              {installedLoading ? t('checkingUpdates') : t('checkUpdates')}
+            </Button>
           </div>
           <InstalledList
             entries={visibleInstalledEntries}
@@ -1160,6 +1221,7 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
     && (item.install.profiles.length === 0 || item.install.profiles.includes(currentProfile))
   const jobActive = job !== undefined && job.finishedAt === null
   const operationActive = startingKind !== null || jobActive
+  const description = preferredDescription(item.description, t)
   return (
     <li style={s.card}>
       <div style={s.cardBody}>
@@ -1170,7 +1232,7 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
           <span style={s.verifiedBadge}><span style={s.verifiedDot} aria-hidden='true' />{t('verified')}</span>
         </div>
         <p style={s.authorLine} title={item.owner}>{fmt(t, 'repositoryAuthor', { author: item.owner })}</p>
-        <p style={s.description} title={item.description ?? undefined}>{item.description === null || item.description === '' ? '\u00A0' : item.description}</p>
+        <p style={s.description} title={item.description ?? undefined}>{description ?? '\u00A0'}</p>
         <div style={s.statsRow}>
           <div style={s.statGroup}>
             <span style={s.stat} title={t('stars')}>★ {item.stars}</span>
@@ -1277,14 +1339,20 @@ interface InstalledListProps {
   batchBusy: boolean
 }
 
-function OperationQueuePanel({ jobs, t }: { jobs: MarketplaceJobStatus[]; t: MarketplaceTabProps['t'] }): ReactNode {
+function OperationQueuePanel({ jobs, t, onClearFinished }: {
+  jobs: MarketplaceJobStatus[]
+  t: MarketplaceTabProps['t']
+  onClearFinished: () => void
+}): ReactNode {
   const active = jobs.filter(job => job.finishedAt === null).length
   const failed = jobs.filter(job => job.failure !== null).length
+  const finished = jobs.length - active
   return (
     <section style={s.queuePanel} aria-label={t('operationQueueTitle')}>
       <div style={s.queueHead}>
         <strong style={s.title}>{t('operationQueueTitle')}</strong>
         <span style={s.muted}>{fmt(t, 'operationQueueSummary', { active, total: jobs.length, failed })}</span>
+        {finished > 0 ? <Button variant='outline' size='sm' onClick={onClearFinished}>{t('clearFinishedJobs')}</Button> : null}
       </div>
       <ol style={s.queueList}>
         {jobs.map(job => <li key={job.jobId}><JobPanel job={job} t={t} /></li>)}
@@ -1334,6 +1402,7 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
         const jobActive = job !== undefined && job.finishedAt === null
         const startingKind = startingActions.get(entry.packageName) ?? null
         const operationActive = startingKind !== null || jobActive
+        const description = preferredDescription(entry.description, t)
         return (
           <li key={entry.packageName} style={s.installedCard}>
             <div style={s.installedTop}>
@@ -1351,7 +1420,7 @@ function InstalledList({ entries, currentProfile, loading, error, emptyMessage, 
                   <strong style={s.title} title={entry.packageName}>{friendlyPackageName(entry.packageName)}</strong>
                 </div>
                 <span style={s.meta}>{entry.packageName}</span>
-                <p style={s.installedDescription}>{entry.description ?? '—'}</p>
+                <p style={s.installedDescription} title={entry.description ?? undefined}>{description ?? '—'}</p>
                 <div style={s.installedMetaRow}>
                   <span style={s.muted} title={entry.currentSpec}>
                     {fmt(t, 'installedVersion', { version: entry.version })}

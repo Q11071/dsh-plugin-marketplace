@@ -26,8 +26,8 @@
 | 🤖 Agent-assisted install | Creates a constrained installation Agent when builds, lifecycle scripts, or human judgment are required |
 | 🧭 Installation Skill | Makes the Agent load a bundled safe workflow that chooses an exact source, isolated build, or hard stop |
 | 🧱 Agent workspace | Uses a marketplace-only workspace by default, with an existing-directory override to protect project workspaces |
-| ⌨️ Manual command install | Safely parses an official DSH GitHub install command and attaches the verified plugin to the active Profile |
-| 🧰 Installed plugin management | Filter installed plugins; update one or many; uninstall, enable, disable, and safely restart DSH for the active Profile |
+| ⌨️ Manual command install/update | Safely parses an official DSH GitHub command, then installs or updates it in the active Profile |
+| 🧰 Installed plugin management | Filter by updates or state; update one or many; uninstall, enable, disable, and safely restart DSH |
 | 📈 Discovery | Search by category, sort by Stars, and view seven-day Star growth |
 | 🔄 Marketplace self-update | Checks this repository directly and pins updates to a resolved commit |
 
@@ -66,7 +66,7 @@ The marketplace has three pages:
 | Mode | When it is used | Marketplace behavior |
 | --- | --- | --- |
 | **One-click install** | An exact GitHub commit or npm version passes every check | Installs through the official DSH plugin command |
-| **Manual command install** | The user supplies an official DSH GitHub install command | Parses it, pins a commit, validates the bundle and conflicts, then installs safely |
+| **Manual command install/update** | The user supplies an official DSH GitHub install command | Parses it, pins a commit, validates the bundle and conflicts, then installs or updates safely |
 | **Agent install** | A build approval, lifecycle script, extra configuration, or further verification is required | Creates a DSH Agent session bound to Registry evidence |
 | **Installation guide** | The active Profile is incompatible, identity is uncertain, or no safe executable path exists | Runs nothing and opens the author's instructions |
 
@@ -84,7 +84,8 @@ You may also enter only `github:owner/repo#ref`. The input is never passed to a 
 marketplace accepts one GitHub command for the active Profile and rejects extra arguments, pipes,
 multiple commands, and unsafe refs. A tag, branch, or omitted ref is first resolved to an exact
 commit, after which the manifest, bundle patch, and conflicts are validated. Lifecycle scripts stay
-disabled. A successful install joins the Profile bundle stack and appears under **Installed Plugins**.
+disabled. A new package joins the Profile bundle stack; an installed package with the same name is updated
+from the pinned source.
 
 ### Guided-install Agent
 
@@ -130,17 +131,19 @@ After a successful install, the Agent's final response must include **How to sta
 | Restart DSH | Waits for active plugin jobs, then restarts with the same arguments and Profile |
 | Marketplace self-update | Reads the version from this repository, then pins the install source to an exact commit |
 
-Install, update, and uninstall share one FIFO plugin-operation queue. Confirmation immediately creates a placeholder job and blocks duplicate submissions for the same plugin; GitHub verification may prefetch in the background, while Profile and lockfile writes remain strictly serialized and one failure does not stop later jobs.
+Install, update, and uninstall share one FIFO plugin-operation queue. It appears only on **Installed plugins**, restores active jobs only, retains at most 12 finished jobs for 10 minutes, and can clear finished history. Profile writes use both the in-process queue and a cross-process lock; transient Windows lockfile failures receive bounded retries.
 
 Installed plugins can be selected from the current filtered view and updated, enabled, disabled, or uninstalled in bulk. A batch accepts at most 50 plugins; bulk enable checks the combined state for newly introduced conflicts, and bulk enable/disable writes the Profile manifest once.
 
 Update detection is not limited to version numbers. For a plugin installed from an exact GitHub source, a different Registry-verified commit is offered as an update even when the Registry version is unchanged. npm sources continue to use verified exact release versions.
 
+The catalog first renders the bundled Registry snapshot and a lightweight Profile dependency list while refreshing the remote Registry in the background. Full installed metadata is scanned only when needed. **Check updates** bypasses the cache, and the default `node_modules` is no longer walked for unlinked directories.
+
 The package includes the built `lib/` files and a Registry snapshot from the release. If the remote Registry is temporarily unavailable, the marketplace can continue using the bundled snapshot.
 
 ## Install location, Agent workspace, and conflict diagnostics
 
-By default, plugin entities are installed by pnpm directly into the current Profile's `node_modules`, and every pnpm job reuses the store the Profile is bound to, avoiding `ERR_PNPM_UNEXPECTED_STORE`.
+By default, plugin entities are installed by pnpm directly into the current Profile's `node_modules`, and every pnpm job reuses the store the Profile is bound to, avoiding `ERR_PNPM_UNEXPECTED_STORE`. Repeated Windows separators in legacy Profile metadata are collapsed, and the actual `vN` directory recorded by `.modules.yaml` is converted back to the pnpm Store root so nested Stores are not created.
 
 The install-location panel can switch subsequent installs to a custom directory through DSH's directory picker:
 

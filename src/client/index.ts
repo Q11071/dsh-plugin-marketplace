@@ -108,7 +108,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
       diagnoseConflicts: async () => unwrapMarketplace(await scope.remote.marketplace.diagnoseConflicts(), t),
       jobStatus: async (jobId) => unwrapMarketplace(await scope.remote.marketplace.jobStatus({ jobId }), t),
       jobs: async () => unwrapMarketplace(await scope.remote.marketplace.jobs(), t),
-      installed: async () => unwrapMarketplace(await scope.remote.marketplace.installed(), t),
+      installed: async (refresh = false) => unwrapMarketplace(await scope.remote.marketplace.installed({ refresh }), t),
       restart: async () => unwrapMarketplace(await scope.remote.marketplace.restart(), t),
     })
 
