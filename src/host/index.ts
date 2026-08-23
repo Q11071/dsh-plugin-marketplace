@@ -130,12 +130,26 @@ function fail(code: string, message: string, details: object = {}): Err {
   return { ok: false, error: { code, message, details } }
 }
 
+class MarketplaceOperationError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+    readonly details: object = {},
+  ) {
+    super(message)
+    this.name = 'MarketplaceOperationError'
+  }
+}
+
 /** Normalize any thrown value into the Remote error branch. */
 function toFailure(error: unknown): Err {
   if (error instanceof GitHubError) {
     return fail(error.code, error.message, error.details)
   }
   if (error instanceof RegistryError) {
+    return fail(error.code, error.message, error.details)
+  }
+  if (error instanceof MarketplaceOperationError) {
     return fail(error.code, error.message, error.details)
   }
   const message = error instanceof Error ? error.message : String(error)
@@ -277,24 +291,71 @@ export class MarketplaceService extends TypertRemoteService {
       if (this.jobs.hasActive()) {
         return fail('job-running', 'Another Profile plugin operation is already in progress.')
       }
-      const before = readProfileManifest(NAME, profile.dir)
-      const operation = before.dependencies?.[packageName] === undefined ? 'install' : 'update'
-      const existingCustomTarget = operation === 'update' ? managedInstalledPluginTarget(profile, packageName, before) : null
-      const target = operation === 'install' && profile.custom
-        ? pluginTarget(profile, packageName)
-        : existingCustomTarget ?? profilePackagePath(profile.dir, packageName)
-      if (operation === 'install' && existsSync(target)) {
-        return fail('plugin-dir-exists', 'Install blocked: target directory already exists: ' + target, { target })
-      }
-      if (operation === 'install') {
-        const conflict = this.installConflict(details, before, profile.dir)
-        if (conflict !== null) return conflict
-      }
-
-      const job = this.jobs.create(operation, packageName)
+      const initial = readProfileManifest(NAME, profile.dir)
+      const initialOperation = initial.dependencies?.[packageName] === undefined ? 'install' : 'update'
+      const job = this.jobs.create(initialOperation, packageName)
       const spec = 'github:' + details.repo + '#' + details.resolvedRef
-      const beforeDeclaresBundle = operation === 'update' ? exportsPatch(packageName, profile.dir) : false
-      this.enqueueMutation(() => withProfileMutationLock(profile.dir, () => this.driveInstall(job, profile, spec, before, beforeDeclaresBundle, true, operation === 'install' ? (profile.custom ? target : null) : existingCustomTarget)))
+      let resolvePrepared!: (operation: 'install' | 'update') => void
+      let rejectPrepared!: (error: unknown) => void
+      let preparedSettled = false
+      const prepared = new Promise<'install' | 'update'>((resolve, reject) => {
+        resolvePrepared = resolve
+        rejectPrepared = reject
+      })
+      this.enqueueMutation(async () => {
+        this.jobs.phase(job, 'spawning')
+        try {
+          await withProfileMutationLock(profile.dir, async () => {
+            // The Profile may have changed in another DSH process while this
+            // request was resolving GitHub or waiting for the file lock.
+            const before = readProfileManifest(NAME, profile.dir)
+            const operation = before.dependencies?.[packageName] === undefined ? 'install' : 'update'
+            job.kind = operation
+            const existingCustomTarget = operation === 'update'
+              ? managedInstalledPluginTarget(profile, packageName, before)
+              : null
+            const target = operation === 'install' && profile.custom
+              ? pluginTarget(profile, packageName)
+              : existingCustomTarget ?? profilePackagePath(profile.dir, packageName)
+            if (operation === 'install' && existsSync(target)) {
+              throw new MarketplaceOperationError(
+                'plugin-dir-exists',
+                'Install blocked: target directory already exists: ' + target,
+                { target },
+              )
+            }
+            if (operation === 'install') {
+              const conflict = this.installConflict(details, before, profile.dir)
+              if (conflict !== null) {
+                throw new MarketplaceOperationError(
+                  conflict.error.code,
+                  conflict.error.message,
+                  conflict.error.details,
+                )
+              }
+            }
+            const beforeDeclaresBundle = operation === 'update' ? exportsPatch(packageName, profile.dir) : false
+            preparedSettled = true
+            resolvePrepared(operation)
+            await this.driveInstall(
+              job,
+              profile,
+              spec,
+              before,
+              beforeDeclaresBundle,
+              true,
+              operation === 'install' ? (profile.custom ? target : null) : existingCustomTarget,
+            )
+          })
+        } catch (error) {
+          if (!preparedSettled) {
+            preparedSettled = true
+            rejectPrepared(error)
+          }
+          this.failPreparedJob(job, error)
+        }
+      })
+      const operation = await prepared
       return ok({
         jobId: job.jobId,
         operation,

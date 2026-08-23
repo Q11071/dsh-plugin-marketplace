@@ -4,6 +4,7 @@
  */
 
 import { spawn } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, resolve, win32 } from 'node:path'
 import type {
@@ -194,12 +195,13 @@ export class MutationQueue {
 export async function withProfileMutationLock<T>(dir: string, work: () => Promise<T>): Promise<T> {
   const lockPath = join(dir, PROFILE_LOCK_FILE)
   const deadline = Date.now() + PROFILE_LOCK_TIMEOUT_MS
+  const token = randomUUID()
   let descriptor: number | null = null
   while (descriptor === null) {
     try {
       const candidate = openSync(lockPath, 'wx')
       try {
-        writeFileSync(candidate, JSON.stringify({ pid: process.pid, createdAt: Date.now() }) + '\n', 'utf8')
+        writeFileSync(candidate, JSON.stringify({ pid: process.pid, createdAt: Date.now(), token }) + '\n', 'utf8')
         descriptor = candidate
       } catch (error) {
         closeSync(candidate)
@@ -218,16 +220,22 @@ export async function withProfileMutationLock<T>(dir: string, work: () => Promis
     return await work()
   } finally {
     closeSync(descriptor)
-    try { unlinkSync(lockPath) } catch { /* Another cleanup path may already have removed it. */ }
+    try {
+      const current = JSON.parse(readFileSync(lockPath, 'utf8')) as { token?: unknown }
+      if (current.token === token) unlinkSync(lockPath)
+    } catch { /* Another cleanup path may already have removed or replaced it. */ }
   }
 }
 
-function removeStaleProfileLock(lockPath: string): boolean {
+export function removeStaleProfileLock(lockPath: string): boolean {
   try {
     const value = JSON.parse(readFileSync(lockPath, 'utf8')) as { pid?: unknown; createdAt?: unknown }
     const pid = typeof value.pid === 'number' ? value.pid : 0
     const createdAt = typeof value.createdAt === 'number' ? value.createdAt : 0
-    if (createdAt > 0 && Date.now() - createdAt < PROFILE_LOCK_STALE_MS && processAlive(pid)) return false
+    // A live owner always wins, regardless of age. Long downloads must never
+    // lose mutual exclusion merely because they crossed the stale-file TTL.
+    if (processAlive(pid)) return false
+    if (pid <= 0 && createdAt > 0 && Date.now() - createdAt < PROFILE_LOCK_STALE_MS) return false
     unlinkSync(lockPath)
     return true
   } catch {

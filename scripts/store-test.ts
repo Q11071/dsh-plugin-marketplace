@@ -4,10 +4,10 @@
  */
 
 import { strict as assert } from 'node:assert'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { JobTable, MutationQueue, linkedPnpmStore, pnpmArgsFor, withProfileMutationLock } from '../src/host/installer.ts'
+import { JobTable, MutationQueue, linkedPnpmStore, pnpmArgsFor, removeStaleProfileLock, withProfileMutationLock } from '../src/host/installer.ts'
 
 let passed = 0
 function ok(name: string, fn: () => void): void {
@@ -158,6 +158,31 @@ try {
   ok('Profile file lock serializes independent callers', () => {
     assert.deepEqual(lockOrder, ['first-start', 'first-end', 'second'])
   })
+
+  const oldLiveLock = join(lockDir, '.dsh-marketplace-mutation.lock')
+  writeFileSync(oldLiveLock, JSON.stringify({
+    pid: process.pid,
+    createdAt: Date.now() - 60 * 60_000,
+    token: 'still-live',
+  }))
+  ok('an old lock is not reclaimed while its owner process is alive', () => {
+    assert.equal(removeStaleProfileLock(oldLiveLock), false)
+    assert.equal(existsSync(oldLiveLock), true)
+  })
+  unlinkSync(oldLiveLock)
+
+  const replacementLock = join(lockDir, '.dsh-marketplace-mutation.lock')
+  await withProfileMutationLock(lockDir, async () => {
+    writeFileSync(replacementLock, JSON.stringify({
+      pid: process.pid,
+      createdAt: Date.now(),
+      token: 'replacement-owner',
+    }))
+  })
+  ok('lock cleanup does not delete a replacement owner lock', () => {
+    assert.equal(existsSync(replacementLock), true)
+  })
+  unlinkSync(replacementLock)
 } finally {
   rmSync(tmp, { recursive: true, force: true })
 }
