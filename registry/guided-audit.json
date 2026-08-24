@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-24T19:11:57.724Z",
+  "generatedAt": "2026-08-24T20:59:04.645Z",
   "total": 913,
   "groups": {
-    "local-or-unparsed-command-only": 461,
+    "local-or-unparsed-command-only": 463,
     "no-install-command-found": 148,
-    "remote-command-found": 304
+    "remote-command-found": 302
   },
   "rows": [
     {
@@ -2573,6 +2573,51 @@
         "reviewReasons": [
           "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
         ]
+      }
+    },
+    {
+      "repository": "AndrasSama/dsh-omp-advisor",
+      "packageName": "dsh-omp-advisor",
+      "version": "0.1.0",
+      "verifiedCommit": "bb0cd610ca8310c4b06945d4a62b81e452cd49ca",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add github:AndrasSama/dsh-omp-advisor",
+          "profile": "web",
+          "spec": "github:AndrasSama/dsh-omp-advisor",
+          "source": "unknown"
+        },
+        {
+          "raw": "dsh plugin --profile web add \"file:/path/to/dsh-omp-advisor\"",
+          "profile": "web",
+          "spec": "file:/path/to/dsh-omp-advisor",
+          "source": "local"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-omp-advisor@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": true,
+        "reviewReasons": []
       }
     },
     {
@@ -6434,7 +6479,7 @@
       "repository": "chnjames/dsh-plugin-market",
       "packageName": "dsh-plugin-market",
       "version": "0.3.0",
-      "verifiedCommit": "f205f856af52cabb054717d02d6507dc520c25fd",
+      "verifiedCommit": "3fcb25298b677f2c97a5d459b9a71fc92b5cbe9b",
       "readmePath": "README.md",
       "commands": [
         {
@@ -7034,7 +7079,7 @@
       "repository": "CNSeniorious000/dsh-generative-ui",
       "packageName": "dsh-generative-ui",
       "version": "0.0.0",
-      "verifiedCommit": "b1b6137ba516acea777db592f914ec252a286cc3",
+      "verifiedCommit": "6610f375205990b67b3d4537cb8f5a298e61487e",
       "readmePath": "README.md",
       "commands": [
         {
@@ -10456,82 +10501,6 @@
       }
     },
     {
-      "repository": "fandc520/dsh-comfyui",
-      "packageName": "dsh-comfyui",
-      "version": "0.3.0-beta.3",
-      "verifiedCommit": "5e7444913e7f3dc176104309a561d8e278887ae2",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-comfyui",
-          "profile": "web",
-          "spec": "dsh-comfyui",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile desktop add dsh-comfyui",
-          "profile": "desktop",
-          "spec": "dsh-comfyui",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add <本仓库路径>`（pnpm 链接目录），重启 Web 服务，改动后 `npm run build` 重新构建。",
-          "profile": "web",
-          "spec": "<本仓库路径>",
-          "source": "unknown"
-        }
-      ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-comfyui",
-          "profile": "web",
-          "spec": "dsh-comfyui",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile desktop add dsh-comfyui",
-          "profile": "desktop",
-          "spec": "dsh-comfyui",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile web add dsh-comfyui",
-          "profile": "web",
-          "spec": "dsh-comfyui",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile desktop add dsh-comfyui",
-          "profile": "desktop",
-          "spec": "dsh-comfyui",
-          "source": "npm"
-        }
-      ],
-      "npmVerification": {
-        "verified": false,
-        "spec": "dsh-comfyui@0.3.0-beta.3",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-npm-unverified",
-        "reason": "npm-version-not-published"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "desktop",
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
       "repository": "fastengiel-kurai/dsh-peekfile-everything",
       "packageName": "@fastengiel/dsh-peekfile-everything",
       "version": "0.1.0",
@@ -13270,6 +13239,43 @@
         "reviewReasons": [
           "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
         ]
+      }
+    },
+    {
+      "repository": "HaoyueQin/dsh-diff-stat",
+      "packageName": "dsh-diff-stat",
+      "version": "0.0.1",
+      "verifiedCommit": "e6ecaf2822e523a12840551e14c8aa333f5c9865",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-diff-stat-<version>.tgz",
+          "profile": "web",
+          "spec": "dsh-diff-stat-<version>.tgz",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-diff-stat@0.0.1",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
       }
     },
     {
@@ -24425,7 +24431,7 @@
       "repository": "moonbowterfly/dsh-bio-genie",
       "packageName": "@dsh-bio/dsh-bio-genie",
       "version": "0.6.0",
-      "verifiedCommit": "39ad82e4f563715bd484d8aea5b4103e61f75a75",
+      "verifiedCommit": "a8536e8cf5eff6b55cd34dea3c98ee78e1959b4d",
       "readmePath": "README.md",
       "commands": [
         {
@@ -37893,73 +37899,6 @@
         "lifecycleScripts": [],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
-      }
-    },
-    {
-      "repository": "vladlearns/dsh-fs-deny-policy",
-      "packageName": "dsh-fs-deny-policy",
-      "version": "0.1.0",
-      "verifiedCommit": "cde778ef55121ea90c463b1a1feb9f58257a7921",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile main add dsh-fs-deny-policy",
-          "profile": "main",
-          "spec": "dsh-fs-deny-policy",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile main add github:vladlearns/dsh-fs-deny-policy",
-          "profile": "main",
-          "spec": "github:vladlearns/dsh-fs-deny-policy",
-          "source": "unknown"
-        },
-        {
-          "raw": "dsh plugin add` first, then edit the patch file.",
-          "profile": null,
-          "spec": "first",
-          "source": "npm"
-        }
-      ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile main add dsh-fs-deny-policy",
-          "profile": "main",
-          "spec": "dsh-fs-deny-policy",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile main add dsh-fs-deny-policy",
-          "profile": "main",
-          "spec": "dsh-fs-deny-policy",
-          "source": "npm"
-        }
-      ],
-      "npmVerification": {
-        "verified": false,
-        "spec": "dsh-fs-deny-policy@0.1.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-npm-unverified",
-        "reason": "npm-version-not-published"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "main"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [
-          "prepare"
-        ],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": [
-          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
-        ]
       }
     },
     {
