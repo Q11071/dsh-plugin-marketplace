@@ -8,6 +8,7 @@ import {
   applySelfUpdate,
   compareSemver,
   selfUpdateTarget,
+  shouldRefreshSelfUpdate,
 } from '../src/host/self-update.ts'
 
 const commit = 'a'.repeat(40)
@@ -67,12 +68,21 @@ const currentVersion = applySelfUpdate({
 assert.equal(currentVersion.updateAvailable, false)
 assert.equal(currentVersion.availableVersion, null)
 assert.equal(currentVersion.availableVersionSource, null)
+const currentArchive = applySelfUpdate({
+  ...installed,
+  version: '0.5.0',
+  currentSpec: 'https://codeload.github.com/YELEBAI/dsh-plugin-marketplace/tar.gz/' + commit,
+}, target, 'web')
+assert.equal(currentArchive.updateAvailable, false)
 const newerInstalledVersion = applySelfUpdate({ ...installed, version: '0.6.0' }, target, 'web')
 assert.equal(newerInstalledVersion.updateAvailable, false)
 assert.equal(newerInstalledVersion.availableVersion, null)
 assert.equal(newerInstalledVersion.availableVersionSource, null)
 assert.equal(applySelfUpdate(installed, target, 'headless').canUpdate, false)
 assert.equal(compareSemver('1.0.0', '1.0.0-rc.1'), 1)
+assert.equal(shouldRefreshSelfUpdate(false, true), false)
+assert.equal(shouldRefreshSelfUpdate(true, false), false)
+assert.equal(shouldRefreshSelfUpdate(true, true), true)
 assert.throws(() => selfUpdateTarget({ ...details, resolvedRef: 'main' }))
 assert.throws(() => selfUpdateTarget({ ...details, manifest: { ...details.manifest!, name: 'impostor' } }))
 

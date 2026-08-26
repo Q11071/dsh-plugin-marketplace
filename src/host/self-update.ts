@@ -20,6 +20,11 @@ export interface SelfUpdateTarget {
   install: MarketplaceInstallMetadata
 }
 
+/** Only an explicit refresh may put live GitHub I/O on the installed-list path. */
+export function shouldRefreshSelfUpdate(explicitRefresh: boolean, installed: boolean): boolean {
+  return explicitRefresh && installed
+}
+
 /** Turn one live default-branch read into an exact, immutable update target. */
 export function selfUpdateTarget(details: MarketplacePluginDetails): SelfUpdateTarget {
   const manifest = details.manifest
@@ -76,7 +81,7 @@ export function applySelfUpdate(
 }
 
 function isGitHubSpec(value: string): boolean {
-  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
+  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/(?:github\.com|codeload\.github\.com)\/)/i.test(value)
 }
 
 /** Compare semver values without introducing a runtime dependency. */

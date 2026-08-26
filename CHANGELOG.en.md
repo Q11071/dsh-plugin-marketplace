@@ -14,6 +14,9 @@ Registry refresh commits are grouped instead of listed individually.
 - Installed plugins now include an Updates filter and an explicit refresh that bypasses the Registry TTL.
 - The default catalog renders the bundled Registry snapshot first and refreshes the remote source in the
   background. Full installed-plugin scanning is deferred until its page is opened.
+- The first installed-plugin scan no longer waits for live GitHub metadata for the marketplace itself. Only
+  an explicit Check for updates requests live self-update metadata, and completed scans are reused between
+  Installed plugins and Plugin management instead of being repeated on every page switch.
 - Default `node_modules` no longer receives an unlinked-directory walk. Registry lookups now use repository
   and package indexes with one batch lookup for installed packages.
 - The operation queue appears only on Installed plugins, restores active jobs only, retains at most 12
@@ -23,6 +26,9 @@ Registry refresh commits are grouped instead of listed individually.
 
 ### Fixed
 
+- GitHub automatic installs now validate the exact Registry repository and commit, then pass pnpm a
+  commit-pinned HTTPS codeload archive. This prevents the `github:` shorthand from becoming
+  `git@github.com` and requiring users to configure an SSH key for public plugins.
 - Profile writes now use a cross-process lock and bounded retries for transient Windows `writeLockfile`,
   `EBUSY`, and `EPERM` failures.
 - Profile-linked pnpm Store paths now collapse repeatedly expanded Windows separators and convert the
@@ -33,7 +39,8 @@ Registry refresh commits are grouped instead of listed individually.
 ### Tests
 
 - Added regressions for forced Registry refresh, skipped default-directory orphan scans, manual command
-  updates, and exclusion of finished jobs from restored queue state.
+  updates, GitHub HTTPS execution sources, exclusion of finished jobs from restored queue state, and
+  explicit-only live self-update checks.
 
 ## [0.9.2] - 2026-08-17
 
