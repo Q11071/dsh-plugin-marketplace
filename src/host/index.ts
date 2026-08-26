@@ -54,6 +54,7 @@ import type {
 } from '../types.ts'
 import { readProfileManifest, writeProfileManifest } from '@deepseek-ai/dsh-app-boot'
 import { GitHubClient, GitHubError } from './github.ts'
+import { githubArchiveSpec } from './install-spec.ts'
 import { buildGuidedAgentTask } from './guided-agent.ts'
 import { loadInstallSkill, type MarketplaceSkillRegistration } from './install-skill.ts'
 import { JobTable, MutationQueue, runPnpmJob, runProfilePnpmJob, withProfileMutationLock, type JobRecord } from './installer.ts'
@@ -534,7 +535,7 @@ export class MarketplaceService extends TypertRemoteService {
         entry.updateAvailable = versionOrder > 0
           || (versionOrder === 0
             && registered.install.source === 'github'
-            && /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(entry.currentSpec)
+            && /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/(?:github\.com|codeload\.github\.com)\/)/i.test(entry.currentSpec)
             && !entry.currentSpec.toLocaleLowerCase().includes(registered.verifiedCommit.toLocaleLowerCase()))
         entry.availableVersion = versionOrder > 0 ? registered.version : null
         entry.availableVersionSource = versionOrder > 0 ? 'registry' : null
@@ -1074,7 +1075,7 @@ function executableSpec(plugin: MarketplaceRegistryPlugin | SelfUpdateTarget): s
         repository: plugin.fullName,
       })
     }
-    return expected
+    return githubArchiveSpec(plugin.fullName, plugin.verifiedCommit)
   }
   if (plugin.install.source === 'npm') {
     const expected = plugin.packageName + '@' + plugin.version

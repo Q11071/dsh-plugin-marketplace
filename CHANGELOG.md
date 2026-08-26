@@ -23,6 +23,8 @@
 
 ### 修复
 
+- GitHub 自动安装在通过 Registry 的精确仓库与 commit 校验后，改用 codeload 的 HTTPS 固定
+  commit 归档交给 pnpm，避免 `github:` shorthand 被解析为 `git@github.com` 并要求 SSH 私钥。
 - Profile 修改增加跨 DSH 进程文件锁，并对 Windows 上 `writeLockfile`、`EBUSY`、`EPERM`
   等短暂占用做有界重试，避免并发更新损坏或无法写入 `pnpm-lock.yaml`。
 - 读取 Profile 的 pnpm Store 时会归一化被重复放大的 Windows 路径分隔符，并将
@@ -31,8 +33,8 @@
 
 ### 测试
 
-- 增加强制 Registry 刷新、跳过默认目录孤立扫描、手动命令更新、完成任务不恢复，以及自更新
-  实时请求仅由显式刷新触发等回归测试。
+- 增加强制 Registry 刷新、跳过默认目录孤立扫描、手动命令更新、GitHub HTTPS 执行来源、
+  完成任务不恢复，以及自更新实时请求仅由显式刷新触发等回归测试。
 
 ## [0.9.2] - 2026-08-17
 

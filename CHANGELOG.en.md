@@ -26,6 +26,9 @@ Registry refresh commits are grouped instead of listed individually.
 
 ### Fixed
 
+- GitHub automatic installs now validate the exact Registry repository and commit, then pass pnpm a
+  commit-pinned HTTPS codeload archive. This prevents the `github:` shorthand from becoming
+  `git@github.com` and requiring users to configure an SSH key for public plugins.
 - Profile writes now use a cross-process lock and bounded retries for transient Windows `writeLockfile`,
   `EBUSY`, and `EPERM` failures.
 - Profile-linked pnpm Store paths now collapse repeatedly expanded Windows separators and convert the
@@ -36,7 +39,8 @@ Registry refresh commits are grouped instead of listed individually.
 ### Tests
 
 - Added regressions for forced Registry refresh, skipped default-directory orphan scans, manual command
-  updates, exclusion of finished jobs from restored queue state, and explicit-only live self-update checks.
+  updates, GitHub HTTPS execution sources, exclusion of finished jobs from restored queue state, and
+  explicit-only live self-update checks.
 
 ## [0.9.2] - 2026-08-17
 

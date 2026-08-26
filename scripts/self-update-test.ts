@@ -68,6 +68,12 @@ const currentVersion = applySelfUpdate({
 assert.equal(currentVersion.updateAvailable, false)
 assert.equal(currentVersion.availableVersion, null)
 assert.equal(currentVersion.availableVersionSource, null)
+const currentArchive = applySelfUpdate({
+  ...installed,
+  version: '0.5.0',
+  currentSpec: 'https://codeload.github.com/YELEBAI/dsh-plugin-marketplace/tar.gz/' + commit,
+}, target, 'web')
+assert.equal(currentArchive.updateAvailable, false)
 const newerInstalledVersion = applySelfUpdate({ ...installed, version: '0.6.0' }, target, 'web')
 assert.equal(newerInstalledVersion.updateAvailable, false)
 assert.equal(newerInstalledVersion.availableVersion, null)

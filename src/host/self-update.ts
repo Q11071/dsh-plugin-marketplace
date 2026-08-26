@@ -81,7 +81,7 @@ export function applySelfUpdate(
 }
 
 function isGitHubSpec(value: string): boolean {
-  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/github\.com\/)/i.test(value)
+  return /^(?:github:|git\+https:\/\/github\.com\/|https:\/\/(?:github\.com|codeload\.github\.com)\/)/i.test(value)
 }
 
 /** Compare semver values without introducing a runtime dependency. */
