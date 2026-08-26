@@ -356,6 +356,8 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   const notifiedJobs = useRef<Set<string>>(new Set())
   const installedLoaded = useRef(false)
   const installedRequest = useRef<Promise<MarketplaceInstalled> | null>(null)
+  const installedRefreshQueued = useRef(false)
+  const installedRefreshForce = useRef(false)
   const updateScrollY = useRef<number | null>(null)
 
   const notify = useCallback((message: string, tone: 'error' | 'info' = 'error') => {
@@ -393,34 +395,47 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   }, [debouncedQuery, sort, category, page, seq, search, subpage])
 
   const refreshInstalled = useCallback((force = false) => {
-    if (installedRequest.current !== null) return
-    setInstalledLoading(true)
-    const request = installed(force)
-    installedRequest.current = request
-    void request.then(
-      (result) => {
-        setInstalledMap(new Map(result.entries.map((entry) => [entry.packageName, entry])))
-        setInstalledPackages(new Set(result.entries.filter(entry => entry.linked).map(entry => entry.packageName)))
-        setInstalledProfile(result.profile)
-        if (typeof result.installDir === 'string' && result.installDir !== '') {
-          setInstallDirState(result.installDir)
-          setInstallDirCustom(Boolean(result.installDirCustom))
-        }
-        setConflicts(result.conflicts ?? [])
-        setSelectedUpdates((current) => new Set(
-          [...current].filter((packageName) => result.entries.some((entry) => entry.packageName === packageName && entry.isBundle && entry.linked)),
-        ))
-        installedLoaded.current = true
-        setInstalledError(null)
-        setInstalledLoading(false)
-      },
-      (error: unknown) => {
-        setInstalledError(error instanceof Error ? error.message : String(error))
-        setInstalledLoading(false)
-      },
-    ).finally(() => {
-      if (installedRequest.current === request) installedRequest.current = null
-    })
+    if (installedRequest.current !== null) {
+      installedRefreshQueued.current = true
+      installedRefreshForce.current = installedRefreshForce.current || force
+      return
+    }
+    const start = (requestedForce: boolean): void => {
+      setInstalledLoading(true)
+      const request = installed(requestedForce)
+      installedRequest.current = request
+      void request.then(
+        (result) => {
+          setInstalledMap(new Map(result.entries.map((entry) => [entry.packageName, entry])))
+          setInstalledPackages(new Set(result.entries.filter(entry => entry.linked).map(entry => entry.packageName)))
+          setInstalledProfile(result.profile)
+          if (typeof result.installDir === 'string' && result.installDir !== '') {
+            setInstallDirState(result.installDir)
+            setInstallDirCustom(Boolean(result.installDirCustom))
+          }
+          setConflicts(result.conflicts ?? [])
+          setSelectedUpdates((current) => new Set(
+            [...current].filter((packageName) => result.entries.some((entry) => entry.packageName === packageName && entry.isBundle && entry.linked)),
+          ))
+          installedLoaded.current = true
+          setInstalledError(null)
+          setInstalledLoading(false)
+        },
+        (error: unknown) => {
+          setInstalledError(error instanceof Error ? error.message : String(error))
+          setInstalledLoading(false)
+        },
+      ).finally(() => {
+        if (installedRequest.current !== request) return
+        installedRequest.current = null
+        if (!installedRefreshQueued.current) return
+        const nextForce = installedRefreshForce.current
+        installedRefreshQueued.current = false
+        installedRefreshForce.current = false
+        start(nextForce)
+      })
+    }
+    start(force)
   }, [installed])
 
   useEffect(() => {
