@@ -66,6 +66,7 @@ import {
   applySelfUpdate,
   compareSemver,
   selfUpdateTarget,
+  shouldRefreshSelfUpdate,
   type SelfUpdateTarget,
 } from './self-update.ts'
 import {
@@ -504,9 +505,10 @@ export class MarketplaceService extends TypertRemoteService {
       const profile = installLocation(this.ctx, this.config)
       const manifest = readProfileManifest(NAME, profile.dir)
       const entries = installedEntries(manifest, profile.dir, profile.pluginDir, profile.custom)
-      const liveSelfPromise: Promise<SelfUpdateTarget | undefined> = entries.some(entry => entry.packageName === SELF_PACKAGE)
-        ? this.liveSelfUpdate(request.refresh).then(({ target }) => target, () => undefined)
-        : Promise.resolve(undefined)
+      const hasSelf = entries.some(entry => entry.packageName === SELF_PACKAGE)
+      const liveSelfPromise: Promise<SelfUpdateTarget | undefined> = shouldRefreshSelfUpdate(request.refresh, hasSelf)
+        ? this.liveSelfUpdate(true).then(({ target }) => target, () => undefined)
+        : Promise.resolve(hasSelf ? this.selfUpdateCache?.target : undefined)
       const [registeredPackages, liveSelf] = await Promise.all([
         this.registry.findByPackages(entries.map(entry => entry.packageName)),
         liveSelfPromise,

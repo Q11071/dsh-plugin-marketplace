@@ -8,6 +8,7 @@ import {
   applySelfUpdate,
   compareSemver,
   selfUpdateTarget,
+  shouldRefreshSelfUpdate,
 } from '../src/host/self-update.ts'
 
 const commit = 'a'.repeat(40)
@@ -73,6 +74,9 @@ assert.equal(newerInstalledVersion.availableVersion, null)
 assert.equal(newerInstalledVersion.availableVersionSource, null)
 assert.equal(applySelfUpdate(installed, target, 'headless').canUpdate, false)
 assert.equal(compareSemver('1.0.0', '1.0.0-rc.1'), 1)
+assert.equal(shouldRefreshSelfUpdate(false, true), false)
+assert.equal(shouldRefreshSelfUpdate(true, false), false)
+assert.equal(shouldRefreshSelfUpdate(true, true), true)
 assert.throws(() => selfUpdateTarget({ ...details, resolvedRef: 'main' }))
 assert.throws(() => selfUpdateTarget({ ...details, manifest: { ...details.manifest!, name: 'impostor' } }))
 

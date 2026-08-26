@@ -20,6 +20,11 @@ export interface SelfUpdateTarget {
   install: MarketplaceInstallMetadata
 }
 
+/** Only an explicit refresh may put live GitHub I/O on the installed-list path. */
+export function shouldRefreshSelfUpdate(explicitRefresh: boolean, installed: boolean): boolean {
+  return explicitRefresh && installed
+}
+
 /** Turn one live default-branch read into an exact, immutable update target. */
 export function selfUpdateTarget(details: MarketplacePluginDetails): SelfUpdateTarget {
   const manifest = details.manifest

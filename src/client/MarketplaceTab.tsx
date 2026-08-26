@@ -424,7 +424,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
   }, [installed])
 
   useEffect(() => {
-    if (subpage === 'catalog') return
+    if (subpage === 'catalog' || installedLoaded.current) return
     refreshInstalled()
   }, [refreshInstalled, subpage])
 
