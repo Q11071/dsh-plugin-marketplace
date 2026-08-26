@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-25T22:57:53.592Z",
-  "total": 946,
+  "generatedAt": "2026-08-26T02:09:51.762Z",
+  "total": 955,
   "groups": {
-    "no-install-command-found": 156,
-    "local-or-unparsed-command-only": 485,
-    "remote-command-found": 305
+    "no-install-command-found": 159,
+    "local-or-unparsed-command-only": 486,
+    "remote-command-found": 310
   },
   "rows": [
     {
@@ -2022,19 +2022,13 @@
       "repository": "aiworkskills/dsh-wechat-article",
       "packageName": "@aiworkskills/aws-wechat-article",
       "version": "0.1.0",
-      "verifiedCommit": "9d51cf0eb8a85dc04c09e17831ed7eb004c9d106",
+      "verifiedCommit": "56e48fc6d1caa3e6fa78ee21655b167691c863a2",
       "readmePath": "README.md",
       "commands": [
         {
           "raw": "dsh plugin --profile web add \"$HOME/code/aiworkskills/dsh-plugin\"",
           "profile": "web",
           "spec": "$HOME/code/aiworkskills/dsh-plugin",
-          "source": "unknown"
-        },
-        {
-          "raw": "dsh plugin add` 会把插件写进 profile 的 `bundles`，也就是 Host 组合——这是它",
-          "profile": null,
-          "spec": "会把插件写进",
           "source": "unknown"
         }
       ],
@@ -2739,8 +2733,8 @@
     {
       "repository": "AndrasSama/dsh-omp-advisor",
       "packageName": "dsh-omp-advisor",
-      "version": "0.7.0",
-      "verifiedCommit": "82275671e51ea5aab1ae8f88ff9d83f372ec96c8",
+      "version": "0.7.2",
+      "verifiedCommit": "5659d5ab009db66ab896c3c2392a64f04ff4393c",
       "readmePath": "README.md",
       "commands": [
         {
@@ -2766,7 +2760,7 @@
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "dsh-omp-advisor@0.7.0",
+        "spec": "dsh-omp-advisor@0.7.2",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -3693,7 +3687,7 @@
       "repository": "baihui-ai/a2ui-render-in-dsh",
       "packageName": "a2ui-render-in-dsh",
       "version": "0.1.2",
-      "verifiedCommit": "51995b6a8003128822066f1d3497ed9add92202a",
+      "verifiedCommit": "ff6109bc3e213b271b0f096a094ff354dfab3492",
       "readmePath": "README.md",
       "commands": [
         {
@@ -4910,6 +4904,57 @@
         "lifecycleScripts": [
           "prepare"
         ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "bowenliang123/dsh-context",
+      "packageName": "dsh-context",
+      "version": "0.33.0",
+      "verifiedCommit": "6c56230f08168881e5bf547f917f32664be41e14",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-context",
+          "profile": "web",
+          "spec": "dsh-context",
+          "source": "npm"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-context",
+          "profile": "web",
+          "spec": "dsh-context",
+          "source": "npm"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-context",
+          "profile": "web",
+          "spec": "dsh-context",
+          "source": "npm"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-context@0.33.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-version-not-published"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
       }
@@ -6298,14 +6343,14 @@
     {
       "repository": "chenjie1129/deepseek-harness-reliability-governor",
       "packageName": "@chenjie1129/dsh-reliability-governor-plugin",
-      "version": "0.5.0",
-      "verifiedCommit": "856753cd94844a8a3ff91ade899107e160489b35",
+      "version": "0.6.0",
+      "verifiedCommit": "293e75842dc08b5be352e227ae17f3d75be2cdab",
       "readmePath": "README.md",
       "commands": [
         {
-          "raw": "dsh plugin --profile web add ./chenjie1129-dsh-reliability-governor-plugin-0.5.0.tgz",
+          "raw": "dsh plugin --profile web add ./chenjie1129-dsh-reliability-governor-plugin-0.6.0.tgz",
           "profile": "web",
-          "spec": "./chenjie1129-dsh-reliability-governor-plugin-0.5.0.tgz",
+          "spec": "./chenjie1129-dsh-reliability-governor-plugin-0.6.0.tgz",
           "source": "local"
         }
       ],
@@ -6313,7 +6358,7 @@
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "@chenjie1129/dsh-reliability-governor-plugin@0.5.0",
+        "spec": "@chenjie1129/dsh-reliability-governor-plugin@0.6.0",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -6323,7 +6368,6 @@
       "auditErrors": [],
       "current": {
         "profiles": [
-          "headless",
           "web"
         ],
         "requiresBuildApproval": true,
@@ -6919,7 +6963,7 @@
       "repository": "chnjames/dsh-plugin-market",
       "packageName": "dsh-plugin-market",
       "version": "0.3.0",
-      "verifiedCommit": "4dcd227338a50951b4a2d78de3f1a7d9276a1b00",
+      "verifiedCommit": "0f843a8604624cb5467f272d2ee89fffeba21892",
       "readmePath": "README.md",
       "commands": [
         {
@@ -7277,7 +7321,7 @@
       "repository": "Circleyan/whiteboat-dsh",
       "packageName": "whiteboat-dsh",
       "version": "0.1.0",
-      "verifiedCommit": "cf627c1e102dc82cf652d12277e00ef2d9337d9b",
+      "verifiedCommit": "297215d2e33064d028f206bb7c840dcac284b3a0",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
@@ -9856,7 +9900,7 @@
       "repository": "dingzhenyao/dsh-plugin-directory",
       "packageName": "dsh-plugin-directory",
       "version": "0.1.0-rc.1",
-      "verifiedCommit": "20290c845762254315332ad1aa6d96c6ce530831",
+      "verifiedCommit": "81436cdebc066dcca82806d082429417b6e1c238",
       "readmePath": "README.md",
       "commands": [
         {
@@ -12621,6 +12665,67 @@
       }
     },
     {
+      "repository": "Godners-Code/dao-zang-skill",
+      "packageName": "dao-zang-skill",
+      "version": "2.0.0",
+      "verifiedCommit": "bc4387ba06be27e817ebb37ca5d63f4b3c9173fb",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add dao-zang-skill",
+          "profile": "web",
+          "spec": "dao-zang-skill",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Godners-Code/dao-zang-skill",
+          "profile": "web",
+          "spec": "https://github.com/Godners-Code/dao-zang-skill",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile web add dao-zang-skill",
+          "profile": "web",
+          "spec": "dao-zang-skill",
+          "source": "npm"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile web add dao-zang-skill",
+          "profile": "web",
+          "spec": "dao-zang-skill",
+          "source": "npm"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dao-zang-skill@2.0.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-version-not-published"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": [
+          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
+        ]
+      }
+    },
+    {
       "repository": "GongYuanCaiJi/dsh-baoyu-skills",
       "packageName": "dsh-baoyu-skills",
       "version": "0.1.0",
@@ -13787,7 +13892,7 @@
       "repository": "hancao97/hanai-investment-dsh",
       "packageName": "hanai-investment-dsh",
       "version": "0.1.0",
-      "verifiedCommit": "df2cc5e9e14da9ae5c25df4bfca3590442e98147",
+      "verifiedCommit": "79fdfc12acf19902213f082ccb7b7ad522ff6ccb",
       "readmePath": "README.md",
       "commands": [
         {
@@ -15372,7 +15477,7 @@
       "repository": "hyperion2144/dsh-hashline-edittool",
       "packageName": "dsh-hashline-edittool",
       "version": "0.4.0",
-      "verifiedCommit": "5a18057886bbfafc2c7f9c0341bd7b835aa2d5bb",
+      "verifiedCommit": "5aca8e8df1407d55b3e0d19f49a396c0011b9487",
       "readmePath": "README.md",
       "commands": [
         {
@@ -17693,15 +17798,15 @@
     {
       "repository": "Jstn-1g/dsh-guarded-live-voice",
       "packageName": "dsh-guarded-live-voice",
-      "version": "0.1.0",
-      "verifiedCommit": "20396e3551a9aa44663bb84eda92e2f1a6b9d104",
+      "version": "0.2.0",
+      "verifiedCommit": "f1f444c7a21094ccee896af3bc4dbfc5a5a9799b",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "dsh-guarded-live-voice@0.1.0",
+        "spec": "dsh-guarded-live-voice@0.2.0",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -17711,7 +17816,6 @@
       "auditErrors": [],
       "current": {
         "profiles": [
-          "headless",
           "web"
         ],
         "requiresBuildApproval": true,
@@ -20012,6 +20116,91 @@
       }
     },
     {
+      "repository": "Lenonss/DSH_VsCodeMode",
+      "packageName": "dsh-vscode-mode",
+      "version": "0.1.24",
+      "verifiedCommit": "91a6e7ba83ee8efab0e9bcb28df54162038c9a9d",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-better-sidebar`）。",
+          "profile": "web",
+          "spec": "dsh-better-sidebar",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile web add github:Lenonss/DSH_VsCodeMode#v0.1.23",
+          "profile": "web",
+          "spec": "github:Lenonss/DSH_VsCodeMode#v0.1.23",
+          "source": "unknown"
+        },
+        {
+          "raw": "dsh plugin --profile web add dsh-vscode-mode",
+          "profile": "web",
+          "spec": "dsh-vscode-mode",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Lenonss/DSH_VsCodeMode/releases/download/v0.1.23/dsh-vscode-mode-0.1.23.tgz",
+          "profile": "web",
+          "spec": "https://github.com/Lenonss/DSH_VsCodeMode/releases/download/v0.1.23/dsh-vscode-mode-0.1.23.tgz",
+          "source": "tarball"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-vscode-mode",
+          "profile": "web",
+          "spec": "dsh-vscode-mode",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Lenonss/DSH_VsCodeMode/releases/download/v0.1.23/dsh-vscode-mode-0.1.23.tgz",
+          "profile": "web",
+          "spec": "https://github.com/Lenonss/DSH_VsCodeMode/releases/download/v0.1.23/dsh-vscode-mode-0.1.23.tgz",
+          "source": "tarball"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-vscode-mode",
+          "profile": "web",
+          "spec": "dsh-vscode-mode",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile web add https://github.com/Lenonss/DSH_VsCodeMode/releases/download/v0.1.23/dsh-vscode-mode-0.1.23.tgz",
+          "profile": "web",
+          "spec": "https://github.com/Lenonss/DSH_VsCodeMode/releases/download/v0.1.23/dsh-vscode-mode-0.1.23.tgz",
+          "source": "tarball"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-vscode-mode@0.1.24",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-version-not-published"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": [
+          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
+        ]
+      }
+    },
+    {
       "repository": "leonardoxr/dsh-claude-usage",
       "packageName": "dsh-claude-usage",
       "version": "0.1.5",
@@ -21277,6 +21466,36 @@
       }
     },
     {
+      "repository": "liujia-io/dsh-image-picker",
+      "packageName": "dsh-image-picker",
+      "version": "1.0.0",
+      "verifiedCommit": "69bbf7bb47b3cffab8882e9e0cf82f070c49be90",
+      "readmePath": "README.md",
+      "commands": [],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-image-picker@1.0.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
       "repository": "LiZheng1992123/dsh-llm-kiro",
       "packageName": "@lizheng1992123/dsh-llm-kiro",
       "version": "0.1.1",
@@ -22126,7 +22345,7 @@
       "repository": "luis1232023/dsh-workspace-enhance",
       "packageName": "dsh-workspace-enhance",
       "version": "0.1.0",
-      "verifiedCommit": "e8ee40a2278ed156a4078a83187e8988ca95f608",
+      "verifiedCommit": "b1845cd94eedc5634318968804cf943a04125881",
       "readmePath": "README.md",
       "commands": [
         {
@@ -23659,6 +23878,36 @@
       }
     },
     {
+      "repository": "Melosic/dsh-invoke",
+      "packageName": "@dsh-external/dsh-invoke",
+      "version": "0.2.0",
+      "verifiedCommit": "3a922c9c1094c4b86d7900e4eee05522ec6eb7f5",
+      "readmePath": "README.md",
+      "commands": [],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "@dsh-external/dsh-invoke@0.2.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
       "repository": "memorax-ai/dsh-harmony",
       "packageName": "dsh-harmony",
       "version": "0.7.3",
@@ -23686,6 +23935,59 @@
         "manualSteps": true,
         "lifecycleScripts": [
           "postinstall",
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "memorax-ai/dsh-patchouli",
+      "packageName": "dsh-patchouli",
+      "version": "0.1.5",
+      "verifiedCommit": "f23c5989d2dabe3ccbc49ec97286bbc21060a95d",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-patchouli",
+          "profile": "web",
+          "spec": "dsh-patchouli",
+          "source": "npm"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-patchouli",
+          "profile": "web",
+          "spec": "dsh-patchouli",
+          "source": "npm"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile web add dsh-patchouli",
+          "profile": "web",
+          "spec": "dsh-patchouli",
+          "source": "npm"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-patchouli@0.1.5",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-version-not-published"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
           "prepare"
         ],
         "runtimeArtifactsCommitted": false,
@@ -23862,6 +24164,78 @@
           "prepare"
         ],
         "runtimeArtifactsCommitted": true,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "mhdfy1988/dsh-codex-auth",
+      "packageName": "dsh-codex-auth-cli-proof",
+      "version": "0.1.0",
+      "verifiedCommit": "0fc45c3800dec0f34abceeb5de9ce60a97031567",
+      "readmePath": "README.md",
+      "commands": [],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-codex-auth-cli-proof@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "headless",
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "mhdfy1988/dsh-skill-manager",
+      "packageName": "dsh-skill-manager",
+      "version": "0.1.4",
+      "verifiedCommit": "c310d1bf896216afc2b2af0f8453e163d511d2fa",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile web add D:\\deepseek\\dsh-skill-manager\\artifacts\\dsh-skill-manager-0.1.4.tgz",
+          "profile": "web",
+          "spec": "D:\\deepseek\\dsh-skill-manager\\artifacts\\dsh-skill-manager-0.1.4.tgz",
+          "source": "local"
+        }
+      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-skill-manager@0.1.4",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
         "reviewReasons": []
       }
     },
@@ -25988,6 +26362,73 @@
         "lifecycleScripts": [],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
+      }
+    },
+    {
+      "repository": "navid-kianfar/dsh-usage-info",
+      "packageName": "@achasoft/dsh-usage-info",
+      "version": "0.1.0",
+      "verifiedCommit": "b885e441be3426de26e97d72cfc3acee64db2cdf",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin --profile default add @achasoft/dsh-usage-info",
+          "profile": "default",
+          "spec": "@achasoft/dsh-usage-info",
+          "source": "npm"
+        },
+        {
+          "raw": "dsh plugin --profile default add ./achasoft-dsh-usage-info-0.1.0.tgz   # from `pnpm pack dsh plugin --profile default add ./dsh-usage-info                       # a local checkout",
+          "profile": "default",
+          "spec": "./achasoft-dsh-usage-info-0.1.0.tgz",
+          "source": "local"
+        },
+        {
+          "raw": "dsh plugin --profile default add github:achasoft/dsh-usage-info#<sha>   # from git",
+          "profile": "default",
+          "spec": "github:achasoft/dsh-usage-info#<sha>",
+          "source": "unknown"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin --profile default add @achasoft/dsh-usage-info",
+          "profile": "default",
+          "spec": "@achasoft/dsh-usage-info",
+          "source": "npm"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin --profile default add @achasoft/dsh-usage-info",
+          "profile": "default",
+          "spec": "@achasoft/dsh-usage-info",
+          "source": "npm"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "@achasoft/dsh-usage-info@0.1.0",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-npm-unverified",
+        "reason": "npm-version-not-published"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "default"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [
+          "prepare"
+        ],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": [
+          "readme-github-repository-owner-does-not-resolve-to-this-candidate"
+        ]
       }
     },
     {
@@ -33373,7 +33814,7 @@
       "repository": "sky-unicorn/dsh-enhanced-plugins",
       "packageName": "dsh-enhanced-plugins",
       "version": "0.1.0",
-      "verifiedCommit": "2838ee2a52371ad1cff093e3784b5c167c558259",
+      "verifiedCommit": "d0fc5d489df21f8df40f0b666c1c6abbc5154f75",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
@@ -40778,7 +41219,7 @@
       "repository": "wxxb789/dsh-legion",
       "packageName": "dsh-legion",
       "version": "1.2.0",
-      "verifiedCommit": "414d533b98c42ee5438b494369f5444429b61055",
+      "verifiedCommit": "9ae55487a5d420f44902ee244b2858d730db6e6a",
       "readmePath": "README.md",
       "commands": [
         {
@@ -45424,7 +45865,7 @@
       "repository": "zsxh1990/pr-genius",
       "packageName": "pr-genius",
       "version": "1.1.0",
-      "verifiedCommit": "a0d171d19fc9cf9ff841d8952e4b8db6e2a73412",
+      "verifiedCommit": "ae3bdad1f86a7003f9f51b54a7ea1db55a000b66",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
@@ -45740,7 +46181,7 @@
       "repository": "zzhzz/dsh-ask-peer",
       "packageName": "dsh-ask-peer",
       "version": "0.1.0",
-      "verifiedCommit": "814d07cf35886393561a214946ff424b9485573e",
+      "verifiedCommit": "b803fcd94bd231d8f9055a2116beabdd5de25c1c",
       "readmePath": "README.md",
       "commands": [
         {
