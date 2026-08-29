@@ -54,6 +54,7 @@ const dshStd = inspectDshStdManifest(JSON.stringify({
   facets: { host: { entry: 'lib/index.js', apiVersion: 'v1alpha1' } },
   requires: { contracts: [{ apiVersion: 'commands.dsh/v1alpha1', kind: 'Command' }] },
   permissions: [{ name: 'commands.invoke', scope: 'com.example.marketplace-fixture.run' }],
+  contributes: { commands: [{ id: 'com.example.marketplace-fixture.run', title: 'Run' }] },
   subscriptions: [{ apiVersion: 'messages.dsh/v1alpha1', kind: 'MessageObserver', scope: 'session:fixture' }],
 }))
 assert.equal(dshStd.status, 'valid')
@@ -69,6 +70,103 @@ assert.equal(inspectDshStdManifest(JSON.stringify({
   facets: { host: { entry: 'lib/index.js', apiVersion: 'v1alpha1' } },
   requires: { contracts: [{ apiVersion: 'messages.dsh/v1alpha1', kind: 'MessageObserver', optional: true }] },
 })).status, 'invalid', '可选协议缺少 fallback 必须拒绝')
+
+const dshStdBase = {
+  $schema: 'https://dsh.community/schemas/dsh-plugin-0.15.json',
+  id: 'com.example.semantic-fixture',
+  name: 'Semantic fixture',
+  version: '1.0.0',
+  manifestVersion: '0.15',
+  facets: { host: { entry: 'lib/index.js', apiVersion: 'v1alpha1' } },
+  requires: { contracts: [{ apiVersion: 'commands.dsh/v1alpha1', kind: 'Command' }] },
+  subscriptions: [],
+}
+const command = id => ({ id, title: id })
+
+assert.equal(inspectDshStdManifest(JSON.stringify({
+  ...dshStdBase,
+  permissions: [{ name: 'commands.invoke', scope: 'com.example.semantic-fixture.run' }],
+  contributes: { commands: [command('com.example.semantic-fixture.run'), command('com.example.semantic-fixture.run')] },
+})).status, 'invalid', '重复 command id 必须拒绝')
+
+assert.equal(inspectDshStdManifest(JSON.stringify({
+  ...dshStdBase,
+  permissions: [{ name: 'storage.local.read', scope: 'not-the-plugin-id' }],
+  contributes: { commands: [] },
+})).status, 'invalid', '不可执行的 permission scope 必须拒绝')
+
+assert.equal(inspectDshStdManifest(JSON.stringify({
+  ...dshStdBase,
+  permissions: [{ name: 'storage.local.read', scope: dshStdBase.id }],
+  contributes: { commands: [] },
+})).status, 'invalid', 'permission 缺少对应 capability 必须拒绝')
+
+const multipleCommandPermissions = inspectDshStdManifest(JSON.stringify({
+  ...dshStdBase,
+  permissions: [
+    { name: 'commands.invoke', scope: 'com.example.semantic-fixture.first' },
+    { name: 'commands.invoke', scope: 'com.example.semantic-fixture.second' },
+  ],
+  contributes: { commands: [
+    command('com.example.semantic-fixture.first'),
+    command('com.example.semantic-fixture.second'),
+  ] },
+  overrides: [{ target: 'host', kind: 'patch' }],
+}))
+assert.equal(multipleCommandPermissions.status, 'valid', '同名 permission 的不同 scope 和可选 override.description 应合法')
+assert.deepEqual(multipleCommandPermissions.permissions, ['commands.invoke'])
+
+assert.equal(inspectDshStdManifest(JSON.stringify({
+  ...dshStdBase,
+  permissions: [],
+  contributes: {
+    commands: [],
+    'x-dsh-tui': [{
+      apiVersion: 'tui.dsh/v1alpha1',
+      kind: 'SettingsSection',
+      id: 'com.example.semantic-fixture.settings',
+      name: 'settings',
+      spec: { namespace: 'example', title: 'Example', fields: 'not-an-array' },
+    }],
+  },
+})).status, 'invalid', '无效的 x-dsh-tui payload 必须拒绝')
+
+assert.equal(inspectDshStdManifest(JSON.stringify({
+  ...dshStdBase,
+  permissions: [],
+  contributes: {
+    commands: [],
+    'x-dsh-tui': [
+      {
+        apiVersion: 'workspace.dsh/v1alpha1',
+        kind: 'WorkspaceProvider',
+        id: 'com.example.semantic-fixture.workspace',
+        name: 'example-workspace',
+        spec: {
+          title: 'Example',
+          workspaceDomain: 'example.workspaces',
+          operations: ['list', 'get', 'resolve'],
+          locatorKinds: ['example'],
+          mutationConcurrency: 'serialized',
+        },
+      },
+      {
+        apiVersion: 'tui.dsh/v1alpha1',
+        kind: 'SettingsSection',
+        id: 'com.example.semantic-fixture.settings',
+        name: 'example_settings',
+        spec: { namespace: 'example', title: 'Example', fields: [{ path: ['enabled'], label: 'Enabled', kind: 'boolean' }] },
+      },
+      {
+        apiVersion: 'tui.dsh/v1alpha1',
+        kind: 'Scene',
+        id: 'com.example.semantic-fixture.scene',
+        name: 'example_scene',
+        spec: { title: 'Example' },
+      },
+    ],
+  },
+})).status, 'valid', '官方 TUI 扩展贡献结构必须通过')
 
 const marketplaceClassification = classifyInstall(
   identity,

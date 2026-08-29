@@ -30,6 +30,24 @@ const DSH_STD_PERMISSION_DEFAULTS = new Map([
   ['session.compact.intercept', 'deny'],
 ])
 
+const DSH_STD_PERMISSION_CAPABILITIES = new Map([
+  ['commands.invoke', 'commands.dsh/v1alpha1#Command'],
+  ['storage.local.read', 'storage.dsh/v1alpha1#LocalStorage'],
+  ['storage.local.write', 'storage.dsh/v1alpha1#LocalStorage'],
+  ['messages.observe.read', 'messages.dsh/v1alpha1#MessageObserver'],
+  ['session.input.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+  ['session.rewind.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+  ['session.switch.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+  ['session.compact.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+])
+
+const DSH_STD_INTERCEPT_SCOPES = new Map([
+  ['session.input.intercept', 'tui/input'],
+  ['session.rewind.intercept', 'tui/rewind-prompt'],
+  ['session.switch.intercept', 'tui/session-switch'],
+  ['session.compact.intercept', 'tui/compact'],
+])
+
 const DSH_STD_SUBSCRIPTIONS = new Set([
   'messages.observe',
   'messages.dsh/v1alpha1#MessageObserver',
@@ -203,7 +221,8 @@ export function inspectDshStdManifest(text) {
   }
   if (new Set(requirements).size !== requirements.length) return dshStdInvalid('dsh-plugin.json repeats a contract requirement')
 
-  const permissions = []
+  const permissionRequests = []
+  const permissionKeys = new Set()
   if (value.permissions !== undefined && !Array.isArray(value.permissions)) return dshStdInvalid('dsh-plugin.json permissions must be an array')
   for (const permission of value.permissions ?? []) {
     if (!plainObject(permission) || !onlyKeys(permission, ['name', 'scope', 'reason'])
@@ -214,22 +233,50 @@ export function inspectDshStdManifest(text) {
     if (!DSH_STD_PERMISSION_DEFAULTS.has(permission.name)) {
       return dshStdInvalid('dsh-plugin.json requests a permission unknown to ' + DSH_STD_PROFILE_VERSION + ': ' + permission.name)
     }
-    permissions.push(permission.name)
+    if (!validDshStdPermissionScope(permission.name, permission.scope, value.id)) {
+      return dshStdInvalid('dsh-plugin.json permission scope cannot be enforced: ' + permission.name + '@' + permission.scope)
+    }
+    const key = permission.name + '\0' + permission.scope
+    if (permissionKeys.has(key)) return dshStdInvalid('dsh-plugin.json repeats a permission request')
+    permissionKeys.add(key)
+    permissionRequests.push(permission)
   }
-  if (new Set(permissions).size !== permissions.length) return dshStdInvalid('dsh-plugin.json repeats a permission request')
 
   const subscriptions = []
+  const subscriptionKeys = new Set()
   if (value.subscriptions !== undefined && !Array.isArray(value.subscriptions)) return dshStdInvalid('dsh-plugin.json subscriptions must be an array')
   for (const subscription of value.subscriptions ?? []) {
     const parsed = dshStdSubscription(subscription)
-    if (parsed === null || !DSH_STD_SUBSCRIPTIONS.has(parsed)) {
+    if (parsed === null || !DSH_STD_SUBSCRIPTIONS.has(parsed.coordinate)) {
       return dshStdInvalid('dsh-plugin.json has a subscription outside ' + DSH_STD_PROFILE_VERSION)
     }
-    subscriptions.push(parsed)
+    const key = parsed.coordinate + '\0' + parsed.scope
+    if (subscriptionKeys.has(key)) return dshStdInvalid('dsh-plugin.json repeats a subscription')
+    subscriptionKeys.add(key)
+    subscriptions.push(parsed.coordinate)
   }
-  if (new Set(subscriptions).size !== subscriptions.length) return dshStdInvalid('dsh-plugin.json repeats a subscription')
 
-  if (!validDshStdExtensions(value)) return dshStdInvalid('dsh-plugin.json has invalid static contribution or metadata fields')
+  const extensionIssue = dshStdExtensionIssue(value)
+  if (extensionIssue !== null) return dshStdInvalid(extensionIssue)
+
+  const requirementSet = new Set(requirements)
+  const commandIds = new Set((value.contributes?.commands ?? []).map(command => command.id))
+  for (const permission of permissionRequests) {
+    const capability = DSH_STD_PERMISSION_CAPABILITIES.get(permission.name)
+    if (capability !== undefined && !requirementSet.has(capability)) {
+      return dshStdInvalid('dsh-plugin.json permission ' + permission.name + ' requires ' + capability)
+    }
+    if (permission.name === 'commands.invoke' && !commandIds.has(permission.scope)) {
+      return dshStdInvalid('dsh-plugin.json commands.invoke scope is not a declared command: ' + permission.scope)
+    }
+  }
+  for (const commandId of commandIds) {
+    if (!permissionRequests.some(permission => permission.name === 'commands.invoke' && permission.scope === commandId)) {
+      return dshStdInvalid('dsh-plugin.json command is missing commands.invoke permission scope: ' + commandId)
+    }
+  }
+
+  const permissions = [...new Set(permissionRequests.map(permission => permission.name))]
 
   return {
     status: 'valid',
@@ -262,30 +309,41 @@ function dshStdContract(value) {
 }
 
 function dshStdSubscription(value) {
-  if (typeof value === 'string') return value
+  if (typeof value === 'string') return { coordinate: value, scope: '' }
   if (!plainObject(value) || !onlyKeys(value, ['apiVersion', 'kind', 'scope'])
     || typeof value.apiVersion !== 'string' || typeof value.kind !== 'string'
     || (value.scope !== undefined && (typeof value.scope !== 'string' || value.scope === ''))) return null
-  return value.apiVersion + '#' + value.kind
+  return { coordinate: value.apiVersion + '#' + value.kind, scope: value.scope ?? '' }
 }
 
-function validDshStdExtensions(value) {
+function dshStdExtensionIssue(value) {
   if (value.contributes !== undefined) {
     if (!plainObject(value.contributes)
       || Object.keys(value.contributes).some(key => key !== 'commands' && key !== 'panels' && !key.startsWith('x-'))
       || (value.contributes.panels !== undefined && (!Array.isArray(value.contributes.panels) || value.contributes.panels.length > 0))
-      || (value.contributes.commands !== undefined && (!Array.isArray(value.contributes.commands) || !value.contributes.commands.every(dshStdCommand)))) return false
+      || (value.contributes.commands !== undefined && (!Array.isArray(value.contributes.commands) || !value.contributes.commands.every(dshStdCommand)))) {
+      return 'dsh-plugin.json has invalid static contribution fields'
+    }
+    const commandIds = (value.contributes.commands ?? []).map(command => command.id)
+    if (new Set(commandIds).size !== commandIds.length) return 'dsh-plugin.json repeats a command contribution'
+    for (const [point, contributions] of Object.entries(value.contributes)) {
+      if (!point.startsWith('x-')) continue
+      if (!Array.isArray(contributions)) return 'dsh-plugin.json extension contribution point must be an array: ' + point
+      const issue = dshStdContributionIssue(point, contributions)
+      if (issue !== null) return issue
+    }
   }
-  if (value.license !== undefined && (typeof value.license !== 'string' || value.license === '')) return false
+  if (value.license !== undefined && (typeof value.license !== 'string' || value.license === '')) return 'dsh-plugin.json has invalid license metadata'
   if (value.source !== undefined && (!plainObject(value.source) || !onlyKeys(value.source, ['repository', 'revision'])
-    || !absoluteUrl(value.source.repository) || (value.source.revision !== undefined && (typeof value.source.revision !== 'string' || value.source.revision === '')))) return false
+    || !absoluteUrl(value.source.repository) || (value.source.revision !== undefined && (typeof value.source.revision !== 'string' || value.source.revision === '')))) return 'dsh-plugin.json has invalid source metadata'
   if (value.artifact !== undefined && (!plainObject(value.artifact) || !onlyKeys(value.artifact, ['digest', 'algorithm', 'path'])
     || !/^sha256:[a-f0-9]{64}$/.test(value.artifact.digest ?? '') || value.artifact.algorithm !== 'sha256'
-    || typeof value.artifact.path !== 'string' || value.artifact.path === '')) return false
+    || typeof value.artifact.path !== 'string' || value.artifact.path === '')) return 'dsh-plugin.json has invalid artifact metadata'
   if (value.compat !== undefined && (!plainObject(value.compat) || !onlyKeys(value.compat, ['hosts'])
-    || (value.compat.hosts !== undefined && (!Array.isArray(value.compat.hosts) || value.compat.hosts.some(host => typeof host !== 'string' || host === ''))))) return false
-  if (value.overrides !== undefined && (!Array.isArray(value.overrides) || !value.overrides.every(dshStdOverride))) return false
-  return true
+    || (value.compat.hosts !== undefined && (!Array.isArray(value.compat.hosts) || value.compat.hosts.some(host => typeof host !== 'string' || host === '')
+      || new Set(value.compat.hosts).size !== value.compat.hosts.length)))) return 'dsh-plugin.json has invalid compatibility metadata'
+  if (value.overrides !== undefined && (!Array.isArray(value.overrides) || !value.overrides.every(dshStdOverride))) return 'dsh-plugin.json has invalid override metadata'
+  return null
 }
 
 function dshStdCommand(value) {
@@ -299,7 +357,121 @@ function dshStdOverride(value) {
   return plainObject(value) && onlyKeys(value, ['target', 'kind', 'description'])
     && typeof value.target === 'string' && value.target !== ''
     && ['patch', 'native', 'build'].includes(value.kind)
-    && typeof value.description === 'string' && value.description !== ''
+    && (value.description === undefined || (typeof value.description === 'string' && value.description !== ''))
+}
+
+function validDshStdPermissionScope(permission, scope, componentId) {
+  if (permission === 'storage.local.read' || permission === 'storage.local.write') return scope === componentId
+  if (permission === 'commands.invoke') return /^[a-z][a-z0-9]*(?:[.-][a-z0-9][a-z0-9-]*)+$/.test(scope)
+  const eventScope = DSH_STD_INTERCEPT_SCOPES.get(permission)
+  if (eventScope === scope) return true
+  if (permission === 'messages.observe.read' || eventScope !== undefined) return validDshStdSessionScope(scope)
+  return false
+}
+
+function validDshStdSessionScope(scope) {
+  return scope === 'session:*'
+    || (scope.startsWith('session:')
+      && scope.length > 'session:'.length
+      && scope.length <= 256
+      && !scope.includes('*')
+      && !/[\x00-\x1f\x7f-\x9f]/.test(scope))
+}
+
+function dshStdContributionIssue(point, contributions) {
+  if (point !== 'x-dsh-tui') return null
+  const seen = new Set()
+  for (const contribution of contributions) {
+    if (!plainObject(contribution)
+      || !onlyKeysWithExtensions(contribution, ['apiVersion', 'kind', 'id', 'name', 'spec'])
+      || typeof contribution.apiVersion !== 'string'
+      || typeof contribution.kind !== 'string'
+      || typeof contribution.id !== 'string' || contribution.id === ''
+      || typeof contribution.name !== 'string'
+      || !Object.hasOwn(contribution, 'spec')) return 'dsh-plugin.json has a malformed x-dsh-tui contribution'
+    const coordinate = contribution.apiVersion + '#' + contribution.kind
+    const key = coordinate + '\0' + contribution.name
+    if (seen.has(key)) return 'dsh-plugin.json repeats an x-dsh-tui contribution: ' + coordinate + '@' + contribution.name
+    seen.add(key)
+    if (coordinate === 'workspace.dsh/v1alpha1#WorkspaceProvider') {
+      if (!/^[a-z][a-z0-9-]*$/.test(contribution.name) || !validWorkspaceProviderSpec(contribution.spec)) {
+        return 'dsh-plugin.json has an invalid WorkspaceProvider contribution'
+      }
+    } else if (coordinate === 'tui.dsh/v1alpha1#SettingsSection') {
+      if (!/^[a-z][a-z0-9_-]*$/.test(contribution.name) || !validSettingsSectionSpec(contribution.spec)) {
+        return 'dsh-plugin.json has an invalid SettingsSection contribution'
+      }
+    } else if (coordinate === 'tui.dsh/v1alpha1#Scene') {
+      if (!/^[a-z][a-z0-9_-]*$/.test(contribution.name) || !validSceneSpec(contribution.spec)) {
+        return 'dsh-plugin.json has an invalid Scene contribution'
+      }
+    }
+  }
+  return null
+}
+
+function validWorkspaceProviderSpec(value) {
+  if (!plainObject(value) || !onlyKeysWithExtensions(value, ['title', 'workspaceDomain', 'operations', 'locatorKinds', 'mutationConcurrency', 'limits'])
+    || !nonEmptyString(value.title) || !nonEmptyString(value.workspaceDomain)
+    || !uniqueNonEmptyStrings(value.operations) || !value.operations.every(operation => DSH_STD_WORKSPACE_OPERATIONS.has(operation))
+    || !uniqueNonEmptyStrings(value.locatorKinds)
+    || !['serialized', 'revision-checked'].includes(value.mutationConcurrency)) return false
+  if (value.limits !== undefined) {
+    if (!plainObject(value.limits) || !onlyKeysWithExtensions(value.limits, ['maxWorkspaces', 'maxLocatorLength', 'maxWatchBuffer'])) return false
+    if (Object.values(value.limits).some(limit => !Number.isSafeInteger(limit) || limit < 1)) return false
+  }
+  return true
+}
+
+const DSH_STD_WORKSPACE_OPERATIONS = new Set(['list', 'get', 'resolve', 'register', 'rename', 'unregister', 'reorder', 'status', 'watch'])
+
+function validSettingsSectionSpec(value) {
+  if (!plainObject(value) || !onlyKeysWithExtensions(value, ['namespace', 'title', 'titles', 'fields'])
+    || !/^[a-z][a-z0-9_-]*$/.test(value.namespace ?? '') || !nonEmptyString(value.title)
+    || !validLocalizedStrings(value.titles) || !Array.isArray(value.fields)) return false
+  return value.fields.every(validSettingsField)
+}
+
+function validSettingsField(value) {
+  if (!plainObject(value) || !onlyKeysWithExtensions(value, ['path', 'label', 'titles', 'hint', 'hintTitles', 'kind', 'options', 'placeholder', 'secretRef'])
+    || !Array.isArray(value.path) || value.path.length === 0 || value.path.some(segment => typeof segment !== 'string' || segment === '')
+    || !nonEmptyString(value.label) || !validLocalizedStrings(value.titles) || !validLocalizedStrings(value.hintTitles)
+    || (value.hint !== undefined && !nonEmptyString(value.hint))
+    || !['text', 'number', 'boolean', 'select'].includes(value.kind)
+    || (value.placeholder !== undefined && typeof value.placeholder !== 'string')
+    || (value.secretRef !== undefined && !nonEmptyString(value.secretRef))) return false
+  if (value.options !== undefined) {
+    if (!Array.isArray(value.options)) return false
+    if (!value.options.every(option => plainObject(option)
+      && onlyKeysWithExtensions(option, ['value', 'label', 'titles'])
+      && nonEmptyString(option.value) && nonEmptyString(option.label) && validLocalizedStrings(option.titles))) return false
+  }
+  return true
+}
+
+function validSceneSpec(value) {
+  return plainObject(value)
+    && onlyKeysWithExtensions(value, ['title', 'titles'])
+    && (value.title === undefined || nonEmptyString(value.title))
+    && validLocalizedStrings(value.titles)
+}
+
+function validLocalizedStrings(value) {
+  return value === undefined || (plainObject(value)
+    && Object.entries(value).every(([locale, text]) => locale.trim() !== '' && nonEmptyString(text)))
+}
+
+function uniqueNonEmptyStrings(value) {
+  return Array.isArray(value) && value.length > 0
+    && value.every(nonEmptyString) && new Set(value).size === value.length
+}
+
+function nonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== ''
+}
+
+function onlyKeysWithExtensions(value, allowed) {
+  return Object.keys(value).every(key => allowed.includes(key) || key.startsWith('x-'))
 }
 
 function onlyKeys(value, allowed) {

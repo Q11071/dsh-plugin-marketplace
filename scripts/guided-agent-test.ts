@@ -9,6 +9,12 @@ import { createGuidedAgentWorkspace } from '../src/client/agent-workspace.ts'
 
 const registryUrl = pathToFileURL(path.resolve('registry/plugins.json')).href
 const registry = new RegistryClient(registryUrl, registryUrl, 60_000, 10_000)
+const clientSource = readFileSync('src/client/index.ts', 'utf8')
+const clientScopeInject = clientSource.match(/ctx\.inject\(\[([\s\S]*?)\],\s*\(scope:/)?.[1]
+assert(clientScopeInject, 'marketplace client scope inject list must be discoverable')
+for (const service of ['remote.agentPresets', 'remote.session', 'uiWorkspace']) {
+  assert(clientScopeInject.includes(`'${service}'`), `marketplace client scope must inject ${service}`)
+}
 // 热门第一页可能全部是一键安装条目；从完整快照选定引导型 fixture，再通过客户端读取。
 const snapshot = JSON.parse(readFileSync('registry/plugins.json', 'utf8')) as {
   plugins: Array<{ fullName: string; install: { mode: string } }>

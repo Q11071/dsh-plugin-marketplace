@@ -50,7 +50,10 @@ export async function apply(ctx: ClientContext): Promise<void> {
   const disposeRemote = await ctx.remote.$mount(TYPERT_REMOTE)
   ctx.effect(() => disposeRemote, 'plugin-marketplace: remote lifetime')
 
-  ctx.inject(['slots', 'locale', 'remote', 'remote.marketplace', 'connection', 'sessions', 'workspaces'], (scope: ClientContext) => {
+  ctx.inject([
+    'slots', 'locale', 'remote', 'remote.marketplace', 'remote.agentPresets', 'remote.session',
+    'connection', 'sessions', 'workspaces', 'uiWorkspace',
+  ], (scope: ClientContext) => {
     scope.effect(() => scope.locale.register(NS, { zh, en }), 'plugin-marketplace: dictionaries')
 
     const t = scope.locale.bind(NS)
