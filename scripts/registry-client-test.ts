@@ -24,6 +24,18 @@ const plugin = {
   version: '1.0.0',
   bundlePatch: './cordis.patch.yml',
   hasClient: true,
+  dshStd: {
+    status: 'valid',
+    profile: 'tui-admission/0.15',
+    manifestVersion: '0.15',
+    pluginId: 'com.example.fixture',
+    requirements: ['commands.dsh/v1alpha1#Command'],
+    permissions: ['commands.invoke'],
+    authorizationRequired: false,
+    subscriptions: [],
+    checks: ['TUI-PKG-001', 'TUI-PKG-002'],
+    issues: [],
+  },
   verifiedAt: '2026-08-21T00:00:00.000Z',
   install: {
     mode: 'automatic',
@@ -78,6 +90,7 @@ try {
   assert.equal(results[0].items.length, 1)
   assert.equal(results[1]?.packageName, plugin.packageName)
   assert.equal(results[2]?.fullName, plugin.fullName)
+  assert.equal(results[2]?.dshStd?.status, 'valid')
   assert.deepEqual([...results[4].keys()], [plugin.packageName])
   assert.equal(registryReads, 1, '并发调用必须共享同一次 Registry 请求')
   assert.equal(discoveryReads, 1, '并发调用必须共享同一次 discovery 请求')

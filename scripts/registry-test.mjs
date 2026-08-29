@@ -8,6 +8,7 @@ import {
   InvalidCandidateError,
   classifyInstall,
   encodeRawPath,
+  inspectDshStdManifest,
   safePatchPath,
   validateBundlePatch,
   validateManifest,
@@ -43,6 +44,31 @@ assertInvalid(
   () => validateManifest('{"name":"bad","version":"1.0.0","dsh":{"bundle":{"patch":"./p.yml"},"marketplace":{"profiles":["Bad Profile"]}}}'),
   'manifest with malformed marketplace profiles',
 )
+
+const dshStd = inspectDshStdManifest(JSON.stringify({
+  $schema: 'https://dsh.community/schemas/dsh-plugin-0.15.json',
+  id: 'com.example.marketplace-fixture',
+  name: 'Marketplace fixture',
+  version: '1.0.0',
+  manifestVersion: '0.15',
+  facets: { host: { entry: 'lib/index.js', apiVersion: 'v1alpha1' } },
+  requires: { contracts: [{ apiVersion: 'commands.dsh/v1alpha1', kind: 'Command' }] },
+  permissions: [{ name: 'commands.invoke', scope: 'com.example.marketplace-fixture.run' }],
+  subscriptions: [{ apiVersion: 'messages.dsh/v1alpha1', kind: 'MessageObserver', scope: 'session:fixture' }],
+}))
+assert.equal(dshStd.status, 'valid')
+assert.deepEqual(dshStd.requirements, ['commands.dsh/v1alpha1#Command'])
+assert.equal(dshStd.authorizationRequired, false)
+assert.deepEqual(dshStd.subscriptions, ['messages.dsh/v1alpha1#MessageObserver'])
+assert.equal(inspectDshStdManifest(JSON.stringify({
+  $schema: 'https://dsh.community/schemas/dsh-plugin-0.15.json',
+  id: 'com.example.invalid-optional',
+  name: 'Invalid optional',
+  version: '1.0.0',
+  manifestVersion: '0.15',
+  facets: { host: { entry: 'lib/index.js', apiVersion: 'v1alpha1' } },
+  requires: { contracts: [{ apiVersion: 'messages.dsh/v1alpha1', kind: 'MessageObserver', optional: true }] },
+})).status, 'invalid', '可选协议缺少 fallback 必须拒绝')
 
 const marketplaceClassification = classifyInstall(
   identity,

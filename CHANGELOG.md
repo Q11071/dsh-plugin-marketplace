@@ -9,6 +9,9 @@
 
 ### 新增与改进
 
+- Registry 现可读取可选的 `dsh-plugin.json`，并按 `dsh-std` Community v0.15 与
+  `dsh-TUI` 的 `tui-admission/0.15` 完成静态预检；插件详情会明确区分静态通过、
+  清单错误和仍需运行期协商/授权的边界。
 - 手动 GitHub 命令现在既可安装新插件，也可更新当前 Profile 中已安装的同名插件。
 - 已安装插件新增“可更新”过滤和显式“检查更新”；显式检查会绕过 Registry TTL。
 - 默认市场首屏先读取包内 Registry 快照并在后台刷新远端，同时只读取轻量 Profile 快照；

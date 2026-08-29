@@ -22,6 +22,7 @@
 | --- | --- |
 | 🔍 Automatic discovery | Scans `topic:dsh-plugin archived:false` every two hours |
 | ✅ Registry validation | Checks manifests, bundle patches, loader entries, runtime artifacts, and exact install sources |
+| 🧩 dsh-std preflight | Reads an optional `dsh-plugin.json` and validates the Community v0.15 static admission closure for dsh-TUI v0.15 |
 | ⚡ One-click install | Available only when every automatic-install requirement passes |
 | 🤖 Agent-assisted install | Creates a constrained installation Agent when builds, lifecycle scripts, or human judgment are required |
 | 🧭 Installation Skill | Makes the Agent load a bundled safe workflow that chooses an exact source, isolated build, or hard stop |
@@ -174,6 +175,12 @@ flowchart LR
 ```
 
 The scanner never installs dependencies, executes third-party code, or evaluates `!!js` values in YAML. Temporary network failures preserve the last valid result instead of removing large numbers of entries from the marketplace.
+
+When a repository provides `dsh-plugin.json`, the scanner additionally performs a `dsh-std` Community
+v0.15 static preflight. It validates the Manifest structure, host facet, protocol coordinates, fallback for
+optional contracts, permissions, and subscriptions against the declared `tui-admission/0.15` surface. The
+result appears in plugin details. It is not runtime admission: actual Host capabilities, Profile installation,
+and user authorization for default-deny permissions can only be confirmed at activation time.
 
 Heuristic malware scans and Agent Loop runtime probes are currently experimental and isolated from the stable Registry. Their results cannot downgrade a plugin that passed the static install checks above from one-click to guided installation.
 

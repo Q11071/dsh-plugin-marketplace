@@ -38,6 +38,23 @@
           "version": { "type": "string", "minLength": 1 },
           "bundlePatch": { "type": "string", "minLength": 1 },
           "hasClient": { "type": "boolean" },
+          "dshStd": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "profile", "issues"],
+            "properties": {
+              "status": { "enum": ["valid", "invalid"] },
+              "profile": { "const": "tui-admission/0.15" },
+              "manifestVersion": { "const": "0.15" },
+              "pluginId": { "type": "string", "minLength": 1 },
+              "requirements": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "permissions": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "authorizationRequired": { "type": "boolean" },
+              "subscriptions": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "checks": { "type": "array", "items": { "type": "string" } },
+              "issues": { "type": "array", "items": { "type": "string" } }
+            }
+          },
           "verifiedAt": { "type": "string", "format": "date-time" },
           "install": {
             "type": "object",
