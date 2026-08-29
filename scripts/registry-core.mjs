@@ -6,6 +6,52 @@ export const MAX_MANIFEST_BYTES = 256 * 1024
 export const MAX_PATCH_BYTES = 64 * 1024
 export const MAX_README_BYTES = 256 * 1024
 export const INSTALL_CLASSIFIER_VERSION = 11
+export const DSH_STD_PROFILE_VERSION = 'tui-admission/0.15'
+
+const DSH_STD_COORDINATES = new Set([
+  'commands.dsh/v1alpha1#Command',
+  'storage.dsh/v1alpha1#LocalStorage',
+  'messages.dsh/v1alpha1#MessageObserver',
+  'presentation.dsh/v1alpha1#OpenExternal',
+  'presentation.dsh/v1alpha1#UserInteraction',
+  'presentation.dsh/v1alpha1#ExternalRedirect',
+  'tui.dsh/v1alpha1#DecisionEvents',
+  'tui.dsh/v1alpha1#Channel',
+])
+
+const DSH_STD_PERMISSION_DEFAULTS = new Map([
+  ['commands.invoke', 'allow'],
+  ['storage.local.read', 'deny'],
+  ['storage.local.write', 'deny'],
+  ['messages.observe.read', 'deny'],
+  ['session.input.intercept', 'deny'],
+  ['session.rewind.intercept', 'deny'],
+  ['session.switch.intercept', 'deny'],
+  ['session.compact.intercept', 'deny'],
+])
+
+const DSH_STD_PERMISSION_CAPABILITIES = new Map([
+  ['commands.invoke', 'commands.dsh/v1alpha1#Command'],
+  ['storage.local.read', 'storage.dsh/v1alpha1#LocalStorage'],
+  ['storage.local.write', 'storage.dsh/v1alpha1#LocalStorage'],
+  ['messages.observe.read', 'messages.dsh/v1alpha1#MessageObserver'],
+  ['session.input.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+  ['session.rewind.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+  ['session.switch.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+  ['session.compact.intercept', 'tui.dsh/v1alpha1#DecisionEvents'],
+])
+
+const DSH_STD_INTERCEPT_SCOPES = new Map([
+  ['session.input.intercept', 'tui/input'],
+  ['session.rewind.intercept', 'tui/rewind-prompt'],
+  ['session.switch.intercept', 'tui/session-switch'],
+  ['session.compact.intercept', 'tui/compact'],
+])
+
+const DSH_STD_SUBSCRIPTIONS = new Set([
+  'messages.observe',
+  'messages.dsh/v1alpha1#MessageObserver',
+])
 
 /** Candidate is structurally not a DSH bundle. */
 export class InvalidCandidateError extends Error {
@@ -111,6 +157,340 @@ export function validateManifest(text) {
       runtimeEntryGroups,
     },
   }
+}
+
+/**
+ * 校验 dsh-std Community v0.15 清单中市场需要的静态准入信息。
+ * 这里只验证 TUI Profile 的清单与定义闭包；运行期 Host 能力和授权仍由宿主决定。
+ */
+export function inspectDshStdManifest(text) {
+  let value
+  try {
+    value = JSON.parse(text)
+  } catch {
+    return dshStdInvalid('dsh-plugin.json is not valid JSON')
+  }
+  if (!plainObject(value)) return dshStdInvalid('dsh-plugin.json must contain an object')
+
+  const allowed = new Set([
+    '$schema', 'manifestVersion', 'id', 'name', 'version', 'facets', 'requires',
+    'permissions', 'contributes', 'subscriptions', 'license', 'source', 'artifact',
+    'compat', 'overrides',
+  ])
+  for (const key of Object.keys(value)) {
+    if (!allowed.has(key) && !key.startsWith('x-')) return dshStdInvalid('dsh-plugin.json has unsupported property ' + key)
+  }
+  if (!absoluteUrl(value.$schema)) return dshStdInvalid('dsh-plugin.json $schema must be an absolute URI')
+  if (value.manifestVersion !== '0.15') return dshStdInvalid('dsh-plugin.json manifestVersion must be 0.15')
+  if (typeof value.id !== 'string' || !/^[a-z][a-z0-9]*(?:[.-][a-z0-9][a-z0-9-]*)+$/.test(value.id)) {
+    return dshStdInvalid('dsh-plugin.json id must be a stable namespaced identifier')
+  }
+  if (typeof value.name !== 'string' || value.name.trim() === '') return dshStdInvalid('dsh-plugin.json name must be non-empty')
+  if (typeof value.version !== 'string' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(value.version)) {
+    return dshStdInvalid('dsh-plugin.json version must be semantic version')
+  }
+  if (!plainObject(value.facets) || !plainObject(value.facets.host)
+    || Object.keys(value.facets).some(key => key !== 'host')
+    || !onlyKeys(value.facets.host, ['entry', 'apiVersion'])
+    || !safeDshStdEntry(value.facets.host.entry)
+    || !/^v[1-9][0-9]*(?:(?:alpha|beta)[1-9][0-9]*)?$/.test(value.facets.host.apiVersion ?? '')) {
+    return dshStdInvalid('dsh-plugin.json must declare only a valid host facet')
+  }
+  if (value.facets.host.apiVersion !== 'v1alpha1') {
+    return dshStdInvalid('dsh-plugin.json host facet apiVersion is not admitted by ' + DSH_STD_PROFILE_VERSION)
+  }
+
+  const requirements = []
+  const contracts = value.requires?.contracts
+  if (value.requires !== undefined && (!plainObject(value.requires)
+    || !onlyKeys(value.requires, ['contracts', 'services'])
+    || (contracts !== undefined && !Array.isArray(contracts))
+    || (value.requires.services !== undefined && (!Array.isArray(value.requires.services) || value.requires.services.length > 0)))) {
+    return dshStdInvalid('dsh-plugin.json requires must contain a contracts array when declared')
+  }
+  for (const contract of contracts ?? []) {
+    const parsed = dshStdContract(contract)
+    if (parsed === null) return dshStdInvalid('dsh-plugin.json has an invalid contract requirement')
+    if (!DSH_STD_COORDINATES.has(parsed.coordinate)) {
+      return dshStdInvalid('dsh-plugin.json requires a contract outside ' + DSH_STD_PROFILE_VERSION + ': ' + parsed.coordinate)
+    }
+    if (parsed.optional && !parsed.fallback) {
+      return dshStdInvalid('optional dsh-std contract requires a TUI fallback: ' + parsed.coordinate)
+    }
+    requirements.push(parsed.coordinate)
+  }
+  if (new Set(requirements).size !== requirements.length) return dshStdInvalid('dsh-plugin.json repeats a contract requirement')
+
+  const permissionRequests = []
+  const permissionKeys = new Set()
+  if (value.permissions !== undefined && !Array.isArray(value.permissions)) return dshStdInvalid('dsh-plugin.json permissions must be an array')
+  for (const permission of value.permissions ?? []) {
+    if (!plainObject(permission) || !onlyKeys(permission, ['name', 'scope', 'reason'])
+      || typeof permission.name !== 'string' || typeof permission.scope !== 'string' || permission.scope === ''
+      || (permission.reason !== undefined && (typeof permission.reason !== 'string' || permission.reason === ''))) {
+      return dshStdInvalid('dsh-plugin.json has an invalid permission request')
+    }
+    if (!DSH_STD_PERMISSION_DEFAULTS.has(permission.name)) {
+      return dshStdInvalid('dsh-plugin.json requests a permission unknown to ' + DSH_STD_PROFILE_VERSION + ': ' + permission.name)
+    }
+    if (!validDshStdPermissionScope(permission.name, permission.scope, value.id)) {
+      return dshStdInvalid('dsh-plugin.json permission scope cannot be enforced: ' + permission.name + '@' + permission.scope)
+    }
+    const key = permission.name + '\0' + permission.scope
+    if (permissionKeys.has(key)) return dshStdInvalid('dsh-plugin.json repeats a permission request')
+    permissionKeys.add(key)
+    permissionRequests.push(permission)
+  }
+
+  const subscriptions = []
+  const subscriptionKeys = new Set()
+  if (value.subscriptions !== undefined && !Array.isArray(value.subscriptions)) return dshStdInvalid('dsh-plugin.json subscriptions must be an array')
+  for (const subscription of value.subscriptions ?? []) {
+    const parsed = dshStdSubscription(subscription)
+    if (parsed === null || !DSH_STD_SUBSCRIPTIONS.has(parsed.coordinate)) {
+      return dshStdInvalid('dsh-plugin.json has a subscription outside ' + DSH_STD_PROFILE_VERSION)
+    }
+    const key = parsed.coordinate + '\0' + parsed.scope
+    if (subscriptionKeys.has(key)) return dshStdInvalid('dsh-plugin.json repeats a subscription')
+    subscriptionKeys.add(key)
+    subscriptions.push(parsed.coordinate)
+  }
+
+  const extensionIssue = dshStdExtensionIssue(value)
+  if (extensionIssue !== null) return dshStdInvalid(extensionIssue)
+
+  const requirementSet = new Set(requirements)
+  const commandIds = new Set((value.contributes?.commands ?? []).map(command => command.id))
+  for (const permission of permissionRequests) {
+    const capability = DSH_STD_PERMISSION_CAPABILITIES.get(permission.name)
+    if (capability !== undefined && !requirementSet.has(capability)) {
+      return dshStdInvalid('dsh-plugin.json permission ' + permission.name + ' requires ' + capability)
+    }
+    if (permission.name === 'commands.invoke' && !commandIds.has(permission.scope)) {
+      return dshStdInvalid('dsh-plugin.json commands.invoke scope is not a declared command: ' + permission.scope)
+    }
+  }
+  for (const commandId of commandIds) {
+    if (!permissionRequests.some(permission => permission.name === 'commands.invoke' && permission.scope === commandId)) {
+      return dshStdInvalid('dsh-plugin.json command is missing commands.invoke permission scope: ' + commandId)
+    }
+  }
+
+  const permissions = [...new Set(permissionRequests.map(permission => permission.name))]
+
+  return {
+    status: 'valid',
+    profile: DSH_STD_PROFILE_VERSION,
+    manifestVersion: value.manifestVersion,
+    pluginId: value.id,
+    requirements,
+    permissions,
+    authorizationRequired: permissions.some(permission => DSH_STD_PERMISSION_DEFAULTS.get(permission) === 'deny'),
+    subscriptions,
+    checks: ['TUI-PKG-001', 'TUI-PKG-002'],
+    issues: [],
+  }
+}
+
+function dshStdInvalid(issue) {
+  return { status: 'invalid', profile: DSH_STD_PROFILE_VERSION, issues: [issue] }
+}
+
+function dshStdContract(value) {
+  if (!plainObject(value)
+    || !onlyKeys(value, ['apiVersion', 'kind', 'optional', 'fallback'])
+    || typeof value.apiVersion !== 'string'
+    || typeof value.kind !== 'string'
+    || !/^[a-z][a-z0-9.-]*\/v[1-9][0-9]*(?:(?:alpha|beta)[1-9][0-9]*)?$/.test(value.apiVersion)
+    || !/^[A-Z][A-Za-z0-9]*$/.test(value.kind)
+    || (value.optional !== undefined && typeof value.optional !== 'boolean')
+    || (value.fallback !== undefined && (typeof value.fallback !== 'string' || value.fallback === ''))) return null
+  return { coordinate: value.apiVersion + '#' + value.kind, optional: value.optional === true, fallback: value.fallback }
+}
+
+function dshStdSubscription(value) {
+  if (typeof value === 'string') return { coordinate: value, scope: '' }
+  if (!plainObject(value) || !onlyKeys(value, ['apiVersion', 'kind', 'scope'])
+    || typeof value.apiVersion !== 'string' || typeof value.kind !== 'string'
+    || (value.scope !== undefined && (typeof value.scope !== 'string' || value.scope === ''))) return null
+  return { coordinate: value.apiVersion + '#' + value.kind, scope: value.scope ?? '' }
+}
+
+function dshStdExtensionIssue(value) {
+  if (value.contributes !== undefined) {
+    if (!plainObject(value.contributes)
+      || Object.keys(value.contributes).some(key => key !== 'commands' && key !== 'panels' && !key.startsWith('x-'))
+      || (value.contributes.panels !== undefined && (!Array.isArray(value.contributes.panels) || value.contributes.panels.length > 0))
+      || (value.contributes.commands !== undefined && (!Array.isArray(value.contributes.commands) || !value.contributes.commands.every(dshStdCommand)))) {
+      return 'dsh-plugin.json has invalid static contribution fields'
+    }
+    const commandIds = (value.contributes.commands ?? []).map(command => command.id)
+    if (new Set(commandIds).size !== commandIds.length) return 'dsh-plugin.json repeats a command contribution'
+    for (const [point, contributions] of Object.entries(value.contributes)) {
+      if (!point.startsWith('x-')) continue
+      if (!Array.isArray(contributions)) return 'dsh-plugin.json extension contribution point must be an array: ' + point
+      const issue = dshStdContributionIssue(point, contributions)
+      if (issue !== null) return issue
+    }
+  }
+  if (value.license !== undefined && (typeof value.license !== 'string' || value.license === '')) return 'dsh-plugin.json has invalid license metadata'
+  if (value.source !== undefined && (!plainObject(value.source) || !onlyKeys(value.source, ['repository', 'revision'])
+    || !absoluteUrl(value.source.repository) || (value.source.revision !== undefined && (typeof value.source.revision !== 'string' || value.source.revision === '')))) return 'dsh-plugin.json has invalid source metadata'
+  if (value.artifact !== undefined && (!plainObject(value.artifact) || !onlyKeys(value.artifact, ['digest', 'algorithm', 'path'])
+    || !/^sha256:[a-f0-9]{64}$/.test(value.artifact.digest ?? '') || value.artifact.algorithm !== 'sha256'
+    || typeof value.artifact.path !== 'string' || value.artifact.path === '')) return 'dsh-plugin.json has invalid artifact metadata'
+  if (value.compat !== undefined && (!plainObject(value.compat) || !onlyKeys(value.compat, ['hosts'])
+    || (value.compat.hosts !== undefined && (!Array.isArray(value.compat.hosts) || value.compat.hosts.some(host => typeof host !== 'string' || host === '')
+      || new Set(value.compat.hosts).size !== value.compat.hosts.length)))) return 'dsh-plugin.json has invalid compatibility metadata'
+  if (value.overrides !== undefined && (!Array.isArray(value.overrides) || !value.overrides.every(dshStdOverride))) return 'dsh-plugin.json has invalid override metadata'
+  return null
+}
+
+function dshStdCommand(value) {
+  return plainObject(value) && onlyKeys(value, ['id', 'title', 'description'])
+    && typeof value.id === 'string' && /^[a-z][a-z0-9]*(?:[.-][a-z0-9][a-z0-9-]*)+$/.test(value.id)
+    && typeof value.title === 'string' && value.title !== ''
+    && (value.description === undefined || (typeof value.description === 'string' && value.description !== ''))
+}
+
+function dshStdOverride(value) {
+  return plainObject(value) && onlyKeys(value, ['target', 'kind', 'description'])
+    && typeof value.target === 'string' && value.target !== ''
+    && ['patch', 'native', 'build'].includes(value.kind)
+    && (value.description === undefined || (typeof value.description === 'string' && value.description !== ''))
+}
+
+function validDshStdPermissionScope(permission, scope, componentId) {
+  if (permission === 'storage.local.read' || permission === 'storage.local.write') return scope === componentId
+  if (permission === 'commands.invoke') return /^[a-z][a-z0-9]*(?:[.-][a-z0-9][a-z0-9-]*)+$/.test(scope)
+  const eventScope = DSH_STD_INTERCEPT_SCOPES.get(permission)
+  if (eventScope === scope) return true
+  if (permission === 'messages.observe.read' || eventScope !== undefined) return validDshStdSessionScope(scope)
+  return false
+}
+
+function validDshStdSessionScope(scope) {
+  return scope === 'session:*'
+    || (scope.startsWith('session:')
+      && scope.length > 'session:'.length
+      && scope.length <= 256
+      && !scope.includes('*')
+      && !/[\x00-\x1f\x7f-\x9f]/.test(scope))
+}
+
+function dshStdContributionIssue(point, contributions) {
+  if (point !== 'x-dsh-tui') return null
+  const seen = new Set()
+  for (const contribution of contributions) {
+    if (!plainObject(contribution)
+      || !onlyKeysWithExtensions(contribution, ['apiVersion', 'kind', 'id', 'name', 'spec'])
+      || typeof contribution.apiVersion !== 'string'
+      || typeof contribution.kind !== 'string'
+      || typeof contribution.id !== 'string' || contribution.id === ''
+      || typeof contribution.name !== 'string'
+      || !Object.hasOwn(contribution, 'spec')) return 'dsh-plugin.json has a malformed x-dsh-tui contribution'
+    const coordinate = contribution.apiVersion + '#' + contribution.kind
+    const key = coordinate + '\0' + contribution.name
+    if (seen.has(key)) return 'dsh-plugin.json repeats an x-dsh-tui contribution: ' + coordinate + '@' + contribution.name
+    seen.add(key)
+    if (coordinate === 'workspace.dsh/v1alpha1#WorkspaceProvider') {
+      if (!/^[a-z][a-z0-9-]*$/.test(contribution.name) || !validWorkspaceProviderSpec(contribution.spec)) {
+        return 'dsh-plugin.json has an invalid WorkspaceProvider contribution'
+      }
+    } else if (coordinate === 'tui.dsh/v1alpha1#SettingsSection') {
+      if (!/^[a-z][a-z0-9_-]*$/.test(contribution.name) || !validSettingsSectionSpec(contribution.spec)) {
+        return 'dsh-plugin.json has an invalid SettingsSection contribution'
+      }
+    } else if (coordinate === 'tui.dsh/v1alpha1#Scene') {
+      if (!/^[a-z][a-z0-9_-]*$/.test(contribution.name) || !validSceneSpec(contribution.spec)) {
+        return 'dsh-plugin.json has an invalid Scene contribution'
+      }
+    }
+  }
+  return null
+}
+
+function validWorkspaceProviderSpec(value) {
+  if (!plainObject(value) || !onlyKeysWithExtensions(value, ['title', 'workspaceDomain', 'operations', 'locatorKinds', 'mutationConcurrency', 'limits'])
+    || !nonEmptyString(value.title) || !nonEmptyString(value.workspaceDomain)
+    || !uniqueNonEmptyStrings(value.operations) || !value.operations.every(operation => DSH_STD_WORKSPACE_OPERATIONS.has(operation))
+    || !uniqueNonEmptyStrings(value.locatorKinds)
+    || !['serialized', 'revision-checked'].includes(value.mutationConcurrency)) return false
+  if (value.limits !== undefined) {
+    if (!plainObject(value.limits) || !onlyKeysWithExtensions(value.limits, ['maxWorkspaces', 'maxLocatorLength', 'maxWatchBuffer'])) return false
+    if (Object.values(value.limits).some(limit => !Number.isSafeInteger(limit) || limit < 1)) return false
+  }
+  return true
+}
+
+const DSH_STD_WORKSPACE_OPERATIONS = new Set(['list', 'get', 'resolve', 'register', 'rename', 'unregister', 'reorder', 'status', 'watch'])
+
+function validSettingsSectionSpec(value) {
+  if (!plainObject(value) || !onlyKeysWithExtensions(value, ['namespace', 'title', 'titles', 'fields'])
+    || !/^[a-z][a-z0-9_-]*$/.test(value.namespace ?? '') || !nonEmptyString(value.title)
+    || !validLocalizedStrings(value.titles) || !Array.isArray(value.fields)) return false
+  return value.fields.every(validSettingsField)
+}
+
+function validSettingsField(value) {
+  if (!plainObject(value) || !onlyKeysWithExtensions(value, ['path', 'label', 'titles', 'hint', 'hintTitles', 'kind', 'options', 'placeholder', 'secretRef'])
+    || !Array.isArray(value.path) || value.path.length === 0 || value.path.some(segment => typeof segment !== 'string' || segment === '')
+    || !nonEmptyString(value.label) || !validLocalizedStrings(value.titles) || !validLocalizedStrings(value.hintTitles)
+    || (value.hint !== undefined && !nonEmptyString(value.hint))
+    || !['text', 'number', 'boolean', 'select'].includes(value.kind)
+    || (value.placeholder !== undefined && typeof value.placeholder !== 'string')
+    || (value.secretRef !== undefined && !nonEmptyString(value.secretRef))) return false
+  if (value.options !== undefined) {
+    if (!Array.isArray(value.options)) return false
+    if (!value.options.every(option => plainObject(option)
+      && onlyKeysWithExtensions(option, ['value', 'label', 'titles'])
+      && nonEmptyString(option.value) && nonEmptyString(option.label) && validLocalizedStrings(option.titles))) return false
+  }
+  return true
+}
+
+function validSceneSpec(value) {
+  return plainObject(value)
+    && onlyKeysWithExtensions(value, ['title', 'titles'])
+    && (value.title === undefined || nonEmptyString(value.title))
+    && validLocalizedStrings(value.titles)
+}
+
+function validLocalizedStrings(value) {
+  return value === undefined || (plainObject(value)
+    && Object.entries(value).every(([locale, text]) => locale.trim() !== '' && nonEmptyString(text)))
+}
+
+function uniqueNonEmptyStrings(value) {
+  return Array.isArray(value) && value.length > 0
+    && value.every(nonEmptyString) && new Set(value).size === value.length
+}
+
+function nonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== ''
+}
+
+function onlyKeysWithExtensions(value, allowed) {
+  return Object.keys(value).every(key => allowed.includes(key) || key.startsWith('x-'))
+}
+
+function onlyKeys(value, allowed) {
+  return Object.keys(value).every(key => allowed.includes(key))
+}
+
+function safeDshStdEntry(value) {
+  return typeof value === 'string'
+    && value.length > 0
+    && !value.startsWith('/')
+    && !value.includes('\\')
+    && !value.includes('\0')
+    && !value.split('/').includes('..')
+    && !/^[a-z][a-z\d+.-]*:/i.test(value)
+}
+
+function absoluteUrl(value) {
+  if (typeof value !== 'string') return false
+  try { return new URL(value).protocol !== '' } catch { return false }
 }
 
 /** Classify installability from independent static evidence. */
@@ -346,6 +726,7 @@ export function candidateFingerprint(candidate, installOverride = undefined) {
     candidate.pushed_at,
     JSON.stringify(installOverride ?? null),
     'install-classifier-v' + String(INSTALL_CLASSIFIER_VERSION),
+    'dsh-std-preflight-v1',
   ].join('\n')
 }
 

@@ -1189,6 +1189,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
         description={confirmationDescription}
         acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' || isBatchUninstall ? t('acknowledgeUninstall') : isManualInstall ? t('acknowledgeManualInstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
+        closeLabel={t('dismiss')}
         confirmLabel={confirmationLabel}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
@@ -1314,6 +1315,22 @@ function CardRow({ item, t, currentProfile, profileLoading, profileAvailable, is
               <dd style={s.kvDd}>{item.install.source} · {item.install.mode === 'automatic' ? t('automaticInstall') : t('guidedInstall')}</dd>
               <dt style={s.kvDt}>{t('profiles')}</dt>
               <dd style={s.kvDd}>{item.install.profiles.length > 0 ? item.install.profiles.join(', ') : t('profileUnknown')}</dd>
+              {item.dshStd !== undefined ? (
+                <>
+                  <dt style={s.kvDt}>{t('dshStd')}</dt>
+                  <dd style={s.kvDd}>{item.dshStd.status === 'valid'
+                    ? t('dshStdValid')
+                    : t('dshStdInvalid', { issue: item.dshStd.issues[0] ?? t('none') })}</dd>
+                  {item.dshStd.status === 'valid' ? (
+                    <>
+                      <dt style={s.kvDt}>{t('dshStdContracts')}</dt>
+                      <dd style={s.kvDd}>{item.dshStd.requirements?.length ? item.dshStd.requirements.join(', ') : t('none')}</dd>
+                      <dt style={s.kvDt}>{t('dshStdAuthorization')}</dt>
+                      <dd style={s.kvDd}>{item.dshStd.authorizationRequired ? t('dshStdAuthorizationRequired') : t('dshStdAuthorizationNotRequired')}</dd>
+                    </>
+                  ) : null}
+                </>
+              ) : null}
             </dl>
           ) : null}
           {detail?.patch !== null && detail?.patch !== undefined ? (

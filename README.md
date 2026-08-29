@@ -22,6 +22,7 @@
 | --- | --- |
 | 🔍 自动发现 | 每两小时扫描一次 `topic:dsh-plugin archived:false` |
 | ✅ Registry 验证 | 检查 manifest、bundle patch、loader entry、运行产物和精确安装来源 |
+| 🧩 dsh-std 预检 | 读取可选 `dsh-plugin.json`，验证 Community v0.15 与 dsh-TUI v0.15 的静态准入闭包 |
 | ⚡ 一键安装 | 仅对全部自动安装条件均通过的插件开放 |
 | 🤖 Agent 安装 | 为需要构建、生命周期脚本或人工判断的插件创建受约束的安装 Agent |
 | 🧭 安装 Skill | Agent 强制加载内置安全工作流，自动选择精确来源、隔离构建或停止路径 |
@@ -170,6 +171,11 @@ flowchart LR
 ```
 
 扫描器不会安装依赖、执行第三方代码，也不会解析 YAML 中的 `!!js` 内容。临时网络失败会保留上一次有效结果，不会导致市场条目批量下架。
+
+当仓库提供 `dsh-plugin.json` 时，扫描器还会执行 `dsh-std` Community v0.15 的静态预检：
+它验证 Manifest 结构、host facet、协议坐标、可选协议的 fallback、权限和订阅是否落在
+`tui-admission/0.15` 的已声明范围内。该结果显示在插件详情中；它不等同于运行期准入，
+因为真实 Host capability、Profile 安装状态和默认拒绝权限的用户授权只能在激活时确认。
 
 恶意代码启发式扫描和 Agent Loop 运行时探测目前属于实验项目，与稳定 Registry 完全隔离；实验结果不会把已通过上述静态安装检查的插件从一键安装降级为引导安装。
 

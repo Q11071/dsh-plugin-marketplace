@@ -10,6 +10,9 @@ Registry refresh commits are grouped instead of listed individually.
 
 ### Added and improved
 
+- The Registry now reads optional `dsh-plugin.json` files and performs a static preflight against dsh-std
+  Community v0.15 and dsh-TUI `tui-admission/0.15`. Plugin details distinguish static success, Manifest
+  errors, and the remaining runtime negotiation/authorization boundary.
 - Manual GitHub commands can now install a new plugin or update an installed package with the same name.
 - Installed plugins now include an Updates filter and an explicit refresh that bypasses the Registry TTL.
 - The default catalog renders the bundled Registry snapshot first and refreshes the remote source in the

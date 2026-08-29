@@ -15,6 +15,7 @@ import {
   encodeRawPath,
   readmeGitHubRepositories,
   refreshPluginMetadata,
+  inspectDshStdManifest,
   validateBundlePatch,
   validateManifest,
   verifiedPlugin,
@@ -271,6 +272,19 @@ async function validateCandidate(candidate, installOverride) {
   const readmeText = readmePath === null
     ? null
     : await optionalRawText(new URL(rawBase + encodeRawPath(readmePath)), MAX_README_BYTES, readmePath)
+  let dshStd
+  if (treePaths.includes('dsh-plugin.json')) {
+    try {
+      dshStd = inspectDshStdManifest(await rawText(new URL(rawBase + 'dsh-plugin.json'), MAX_MANIFEST_BYTES, 'dsh-plugin.json'))
+    } catch (error) {
+      if (error instanceof RetryCandidateError) throw error
+      dshStd = {
+        status: 'invalid',
+        profile: 'tui-admission/0.15',
+        issues: [messageOf(error)],
+      }
+    }
+  }
   const verifiedGitHubRepositories = await verifiedReadmeRepositories(candidate, readmeText)
   const classification = classifyInstall(
     identity,
@@ -279,6 +293,7 @@ async function validateCandidate(candidate, installOverride) {
     readmeText,
     verifiedGitHubRepositories,
   )
+  if (dshStd !== undefined) classification.identity.dshStd = dshStd
   const patchText = await rawText(
     new URL(rawBase + encodeRawPath(classification.identity.bundlePatch)),
     MAX_PATCH_BYTES,

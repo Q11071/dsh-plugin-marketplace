@@ -84,6 +84,19 @@ const installSchema = z.object({
   instructionsUrl: z.url(),
 }).strict()
 
+const dshStdSchema = z.object({
+  status: z.union([z.literal('valid'), z.literal('invalid')]),
+  profile: z.literal('tui-admission/0.15'),
+  manifestVersion: z.literal('0.15').optional(),
+  pluginId: z.string().min(1).optional(),
+  requirements: z.array(z.string()).optional(),
+  permissions: z.array(z.string()).optional(),
+  authorizationRequired: z.boolean().optional(),
+  subscriptions: z.array(z.string()).optional(),
+  checks: z.array(z.string()).optional(),
+  issues: z.array(z.string()),
+}).strict()
+
 const registryPluginBaseSchema = z.object({
   owner: z.string().min(1),
   repo: z.string().min(1),
@@ -103,6 +116,7 @@ const registryPluginBaseSchema = z.object({
   version: z.string().min(1),
   bundlePatch: z.string().min(1),
   hasClient: z.boolean(),
+  dshStd: dshStdSchema.optional(),
   verifiedAt: z.iso.datetime(),
 })
 

@@ -77,12 +77,28 @@ export interface MarketplaceInstallMetadata {
   instructionsUrl: string
 }
 
+/** dsh-std Community v0.15 的静态 TUI Profile 预检结果。 */
+export interface MarketplaceDshStdPreflight {
+  status: 'valid' | 'invalid'
+  profile: 'tui-admission/0.15'
+  manifestVersion?: '0.15' | undefined
+  pluginId?: string | undefined
+  requirements?: string[] | undefined
+  permissions?: string[] | undefined
+  authorizationRequired?: boolean | undefined
+  subscriptions?: string[] | undefined
+  checks?: string[] | undefined
+  issues: string[]
+}
+
 /** One centrally verified plugin published by the Registry. */
 export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
   packageName: string
   version: string
   bundlePatch: string
   hasClient: boolean
+  /** 可选的 dsh-std 静态预检，不替代运行期协商或用户授权。 */
+  dshStd?: MarketplaceDshStdPreflight | undefined
   verifiedAt: string
   install: MarketplaceInstallMetadata
 }
