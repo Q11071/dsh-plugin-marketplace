@@ -81,13 +81,13 @@ export interface MarketplaceInstallMetadata {
 export interface MarketplaceDshStdPreflight {
   status: 'valid' | 'invalid'
   profile: 'tui-admission/0.15'
-  manifestVersion?: '0.15'
-  pluginId?: string
-  requirements?: string[]
-  permissions?: string[]
-  authorizationRequired?: boolean
-  subscriptions?: string[]
-  checks?: string[]
+  manifestVersion?: '0.15' | undefined
+  pluginId?: string | undefined
+  requirements?: string[] | undefined
+  permissions?: string[] | undefined
+  authorizationRequired?: boolean | undefined
+  subscriptions?: string[] | undefined
+  checks?: string[] | undefined
   issues: string[]
 }
 
@@ -98,7 +98,7 @@ export interface MarketplaceRegistryPlugin extends MarketplaceRepoSummary {
   bundlePatch: string
   hasClient: boolean
   /** 可选的 dsh-std 静态预检，不替代运行期协商或用户授权。 */
-  dshStd?: MarketplaceDshStdPreflight
+  dshStd?: MarketplaceDshStdPreflight | undefined
   verifiedAt: string
   install: MarketplaceInstallMetadata
 }

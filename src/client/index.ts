@@ -5,8 +5,12 @@
  */
 
 import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type {} from '@deepseek-ai/dsh-api-remotes/client'
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
+import type {} from '@deepseek-ai/dsh-api-workspace-controller/client'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type { MarketplaceResult } from '../types.ts'
@@ -50,7 +54,6 @@ export async function apply(ctx: ClientContext): Promise<void> {
     scope.effect(() => scope.locale.register(NS, { zh, en }), 'plugin-marketplace: dictionaries')
 
     const t = scope.locale.bind(NS)
-    const { api } = scope.get('connection') as ConnectionHandle
     const injected = (): MarketplaceTabInjected => ({
       search: async (query, page, sort, category) => unwrapMarketplace(await scope.remote.marketplace.search({ query, page, sort, category }), t),
       details: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.details({ repo, ref }), t),
@@ -63,21 +66,21 @@ export async function apply(ctx: ClientContext): Promise<void> {
           throw new Error(t('agentWorkspaceRequired') + ': ' + (error instanceof Error ? error.message : String(error)))
         }
 
-        const roster = await api.agentPresets.list({})
-        if (!roster.result.ok) throw new Error(roster.result.error.message)
-        const usable = roster.result.value.presets.filter(preset => preset.broken === undefined)
+        const roster = await scope.remote.agentPresets.list()
+        if (!roster.ok) throw new Error(roster.error.message)
+        const usable = roster.value.presets.filter(preset => preset.broken === undefined)
         const preset = usable.find(candidate => candidate.id === 'standard')
           ?? usable.find(candidate => candidate.id === 'code')
           ?? usable.find(candidate => candidate.isDefault)
         if (preset === undefined) throw new Error(t('agentPresetUnavailable'))
 
-        const created = await api.sessions.create({ workspaceId: target.workspaceId, agentPreset: preset.id })
-        if (!created.result.ok) throw new Error(created.result.error.message)
-        const binding = await waitForBinding(scope, created.result.value.sessionId)
+        const created = await scope.remote.session.create({ workspaceId: target.workspaceId, agentPreset: preset.id })
+        if (!created.ok) throw new Error(created.error.message)
+        const binding = await waitForBinding(scope, created.value.sessionId)
         await binding.session.rename(task.title)
         const prompted = await binding.session.prompt([{ type: 'text', text: task.prompt }], 'queue')
         if (!prompted.ok) throw new Error(prompted.error.message)
-        scope.sessions.open(created.result.value.sessionId)
+        scope.sessions.open(created.value.sessionId)
       },
       install: async (repo, ref) => unwrapMarketplace(await scope.remote.marketplace.installPlugin({ repo, ref }), t).jobId,
       manualInstall: async (command) => unwrapMarketplace(await scope.remote.marketplace.manualInstall({ command }), t),
@@ -93,14 +96,14 @@ export async function apply(ctx: ClientContext): Promise<void> {
       setAgentWorkspaceDir: async (workspaceDir) => unwrapMarketplace(await scope.remote.marketplace.setAgentWorkspaceDir({ workspaceDir }), t),
       chooseInstallDir: async () => {
         try {
-          return await scope.workspaces.pickDirectory()
+          return await scope.uiWorkspace.pickDirectory()
         } catch (error) {
           throw new Error(t('installDirPickerFailed') + ': ' + (error instanceof Error ? error.message : String(error)))
         }
       },
       chooseAgentWorkspaceDir: async () => {
         try {
-          return await scope.workspaces.pickDirectory()
+          return await scope.uiWorkspace.pickDirectory()
         } catch (error) {
           throw new Error(t('agentWorkspacePickerFailed') + ': ' + (error instanceof Error ? error.message : String(error)))
         }

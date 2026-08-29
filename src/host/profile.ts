@@ -56,7 +56,9 @@ export function profileLocation(ctx: Context): ProfileLocation {
 /** Initialize the profile directory when it does not exist yet. */
 export function ensureProfile(dir: string, name: string): void {
   if (!existsSync(join(dir, 'package.json'))) {
-    initProfile(dir, PROFILE_TEMPLATES[name] ?? DEFAULT_PROFILE_BUNDLES)
+    const template = PROFILE_TEMPLATES[name]
+    if (template === undefined) initProfile(dir, DEFAULT_PROFILE_BUNDLES)
+    else initProfile(dir, template.bundles, template.patchReload)
   }
 }
 

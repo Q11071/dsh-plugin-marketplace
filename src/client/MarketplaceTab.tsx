@@ -1189,6 +1189,7 @@ export function MarketplaceTab({ search, details, guidedAgent, install, manualIn
         description={confirmationDescription}
         acknowledgeLabel={confirm?.mode === 'restart' ? t('acknowledgeRestart') : confirm?.mode === 'uninstall' || isBatchUninstall ? t('acknowledgeUninstall') : isManualInstall ? t('acknowledgeManualInstall') : t('acknowledge')}
         cancelLabel={t('cancel')}
+        closeLabel={t('dismiss')}
         confirmLabel={confirmationLabel}
         acknowledged={acknowledged}
         onAcknowledgedChange={setAcknowledged}
