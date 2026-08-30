@@ -213,7 +213,7 @@ $env:DSH_PLUGIN_REGISTRY_URL = 'https://raw.githubusercontent.com/OWNER/REPOSITO
 dsh --profile web
 ```
 
-You may also set `registryUrl` in the plugin configuration. Remote content is cached in memory for 15 minutes and supports ETag. A refresh failure first uses the most recent valid response and then falls back to the bundled snapshot. Configure the cache and timeout with `registryCacheMinutes` and `registryRequestTimeoutMs`.
+You may also set `registryUrl` in the plugin configuration. Remote content is cached in memory for 15 minutes and supports ETag. A refresh failure first uses the most recent valid response and then falls back to the bundled snapshot. Configure the cache with `registryCacheMinutes`; `registryRequestTimeoutMs` applies to both Registry and install-time GitHub requests.
 
 A custom Registry may omit `discovery.json` and `guided-audit.json`:
 

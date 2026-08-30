@@ -23,13 +23,18 @@ export type GitHubFailureCode =
 
 /** Typed failure that surfaces through the Remote error branch. */
 export class GitHubError extends Error {
+  readonly code: GitHubFailureCode
+  readonly details: Record<string, unknown>
+
   constructor(
-    readonly code: GitHubFailureCode,
+    code: GitHubFailureCode,
     message: string,
-    readonly details: Record<string, unknown> = {},
+    details: Record<string, unknown> = {},
   ) {
     super(message)
     this.name = 'GitHubError'
+    this.code = code
+    this.details = details
   }
 }
 
@@ -71,6 +76,11 @@ function contentsPath(value: string): string {
 export class GitHubClient {
   private readonly token: string | undefined = process.env.GITHUB_TOKEN ?? undefined
   private readonly cache = new Map<string, CacheEntry>()
+  private readonly timeoutMs: number
+
+  constructor(timeoutMs = 10_000) {
+    this.timeoutMs = timeoutMs
+  }
 
   /** One conditional GET against the API; 304 serves the cached body. */
   private async api(path: string, cacheKey?: string): Promise<ApiResponse> {
@@ -85,7 +95,7 @@ export class GitHubClient {
     if (cached?.etag !== undefined && cached.etag !== null) headers['if-none-match'] = cached.etag
     let response: Response
     try {
-      response = await fetch(url, { headers })
+      response = await fetch(url, { headers, signal: AbortSignal.timeout(this.timeoutMs) })
     } catch (cause) {
       throw new GitHubError('network', 'GitHub request failed: ' + url, { cause: String(cause) })
     }
@@ -135,6 +145,7 @@ export class GitHubClient {
       const response = await fetch(rawUrl, {
         headers: { accept: 'application/vnd.github+json', 'user-agent': USER_AGENT },
         cache: 'no-store',
+        signal: AbortSignal.timeout(this.timeoutMs),
       })
       if (response.ok) return await response.text()
     } catch {

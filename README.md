@@ -208,7 +208,7 @@ $env:DSH_PLUGIN_REGISTRY_URL = 'https://raw.githubusercontent.com/OWNER/REPOSITO
 dsh --profile web
 ```
 
-也可以在插件配置中设置 `registryUrl`。远程内容默认在内存中缓存 15 分钟并支持 ETag；刷新失败时先使用最近一次有效内容，再回退到包内快照。缓存时间和超时可通过 `registryCacheMinutes`、`registryRequestTimeoutMs` 调整。
+也可以在插件配置中设置 `registryUrl`。远程内容默认在内存中缓存 15 分钟并支持 ETag；刷新失败时先使用最近一次有效内容，再回退到包内快照。缓存时间可通过 `registryCacheMinutes` 调整；Registry 与安装时 GitHub 请求的超时统一由 `registryRequestTimeoutMs` 控制。
 
 自建 Registry 可以不提供 `discovery.json` 和 `guided-audit.json`：
 

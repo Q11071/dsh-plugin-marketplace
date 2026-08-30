@@ -162,7 +162,7 @@ export class MarketplaceService extends TypertRemoteService {
   static inject = ['skills']
   static Config = RegistryConfigSchema
 
-  private readonly github = new GitHubClient()
+  private readonly github: GitHubClient
   private readonly registry: RegistryClient
   private readonly jobs = new JobTable()
   private readonly config: RegistryConfig
@@ -176,6 +176,7 @@ export class MarketplaceService extends TypertRemoteService {
     super(ctx, 'marketplace')
     ;(ctx as Context & { skills: { register: (skill: MarketplaceSkillRegistration) => () => void } }).skills.register(loadInstallSkill())
     this.config = config
+    this.github = new GitHubClient(config.registryRequestTimeoutMs)
     const source = config.registryUrl ?? process.env.DSH_PLUGIN_REGISTRY_URL?.trim() ?? DEFAULT_REGISTRY_URL
     // Fail a self-contained URL misconfiguration while the plugin is loading.
     new URL(source)
