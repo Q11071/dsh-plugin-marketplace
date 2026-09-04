@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-03T21:16:35.029Z",
-  "total": 1113,
+  "generatedAt": "2026-09-04T00:26:02.926Z",
+  "total": 1112,
   "groups": {
-    "remote-command-found": 370,
+    "remote-command-found": 369,
     "local-or-unparsed-command-only": 567,
     "no-install-command-found": 176
   },
@@ -2431,15 +2431,15 @@
     {
       "repository": "aleleppy/leppy-loop-deepseek",
       "packageName": "leppy-loop-deepseek",
-      "version": "0.3.8",
-      "verifiedCommit": "ef687e39a5d184a5d458e78a799d3ef249b7a265",
+      "version": "0.3.53",
+      "verifiedCommit": "ebd8bb8930f40bbf44676d758c81d9cdd6da8ddd",
       "readmePath": "README.md",
       "commands": [],
       "targetedCommands": [],
       "remoteCommands": [],
       "npmVerification": {
         "verified": false,
-        "spec": "leppy-loop-deepseek@0.3.8",
+        "spec": "leppy-loop-deepseek@0.3.53",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -4952,19 +4952,13 @@
       "repository": "BiBoyang/dsh-eval-harness",
       "packageName": "dsh-eval-harness",
       "version": "0.4.0",
-      "verifiedCommit": "2f59376e2a2f22c151f75de446d5cde764dd5aff",
+      "verifiedCommit": "bccfc67aa72380950fb2062e00289ab83f78b60a",
       "readmePath": "README.md",
       "commands": [
         {
-          "raw": "dsh plugin --profile headless add dsh-eval-harness",
+          "raw": "dsh plugin --profile headless add github:BiBoyang/dsh-eval-harness",
           "profile": "headless",
-          "spec": "dsh-eval-harness",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile headless add github:boyang/dsh-eval-harness",
-          "profile": "headless",
-          "spec": "github:boyang/dsh-eval-harness",
+          "spec": "github:BiBoyang/dsh-eval-harness",
           "source": "unknown"
         },
         {
@@ -4974,30 +4968,16 @@
           "source": "unknown"
         }
       ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile headless add dsh-eval-harness",
-          "profile": "headless",
-          "spec": "dsh-eval-harness",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile headless add dsh-eval-harness",
-          "profile": "headless",
-          "spec": "dsh-eval-harness",
-          "source": "npm"
-        }
-      ],
+      "targetedCommands": [],
+      "remoteCommands": [],
       "npmVerification": {
         "verified": false,
         "spec": "dsh-eval-harness@0.4.0",
         "reason": "npm-version-not-published"
       },
       "assessment": {
-        "outcome": "guided-npm-unverified",
-        "reason": "npm-version-not-published"
+        "outcome": "guided-no-matching-remote-command",
+        "reason": "readme-does-not-document-a-remote-install-for-this-package"
       },
       "auditErrors": [],
       "current": {
@@ -5009,7 +4989,7 @@
         "lifecycleScripts": [],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": [
-          "readme-github-repository-owner-does-not-resolve-to-this-candidate"
+          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
         ]
       }
     },
@@ -8101,7 +8081,7 @@
       "repository": "chnjames/dsh-plugin-market",
       "packageName": "dsh-plugin-market",
       "version": "0.3.0",
-      "verifiedCommit": "59d0cb0c6b7fce9af0ce810acbb98aa5f4263911",
+      "verifiedCommit": "846a9dc6fa4f7006814b96018b620a77ec0463b9",
       "readmePath": "README.md",
       "commands": [
         {
@@ -23615,83 +23595,6 @@
         "requiresBuildApproval": true,
         "manualSteps": true,
         "lifecycleScripts": [],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": []
-      }
-    },
-    {
-      "repository": "lemoncat7/dsh-knowledge",
-      "packageName": "@lemoncat7/dsh-knowledge",
-      "version": "2.2.12",
-      "verifiedCommit": "f996199b7101c1e4ba0c81a88048fd8dbd9f4236",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile web add @lemoncat7/dsh-knowledge",
-          "profile": "web",
-          "spec": "@lemoncat7/dsh-knowledge",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add @lemoncat7/dsh-knowledge@1.0.2",
-          "profile": "web",
-          "spec": "@lemoncat7/dsh-knowledge@1.0.2",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add ./lemoncat7-dsh-knowledge-1.0.2.tgz",
-          "profile": "web",
-          "spec": "./lemoncat7-dsh-knowledge-1.0.2.tgz",
-          "source": "local"
-        }
-      ],
-      "targetedCommands": [
-        {
-          "raw": "dsh plugin --profile web add @lemoncat7/dsh-knowledge",
-          "profile": "web",
-          "spec": "@lemoncat7/dsh-knowledge",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add @lemoncat7/dsh-knowledge@1.0.2",
-          "profile": "web",
-          "spec": "@lemoncat7/dsh-knowledge@1.0.2",
-          "source": "npm"
-        }
-      ],
-      "remoteCommands": [
-        {
-          "raw": "dsh plugin --profile web add @lemoncat7/dsh-knowledge",
-          "profile": "web",
-          "spec": "@lemoncat7/dsh-knowledge",
-          "source": "npm"
-        },
-        {
-          "raw": "dsh plugin --profile web add @lemoncat7/dsh-knowledge@1.0.2",
-          "profile": "web",
-          "spec": "@lemoncat7/dsh-knowledge@1.0.2",
-          "source": "npm"
-        }
-      ],
-      "npmVerification": {
-        "verified": false,
-        "spec": "@lemoncat7/dsh-knowledge@2.2.12",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-npm-unverified",
-        "reason": "npm-version-not-published"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [
-          "prepare"
-        ],
         "runtimeArtifactsCommitted": false,
         "reviewReasons": []
       }
@@ -39889,7 +39792,7 @@
       "repository": "sperictao/dsh-auth-tailscale",
       "packageName": "@dsh-external/dsh-auth-tailscale",
       "version": "0.1.2-alpha.2-auth.1",
-      "verifiedCommit": "57ca6cab6b3f626315e46f40bbb7b738ca355528",
+      "verifiedCommit": "5958d1ed265186af02fbd40ad2e804072a5ed95a",
       "readmePath": "README.md",
       "commands": [
         {
@@ -39929,7 +39832,7 @@
       "repository": "sperictao/dsh-client-connection-authz",
       "packageName": "@dsh-external/dsh-client-connection-authz",
       "version": "0.1.2-alpha.2-authz.2",
-      "verifiedCommit": "11929472460dd4d2c8bddc64fcb7a652152f32b8",
+      "verifiedCommit": "8a27dc344a79acdb59af19a708acb206fab28ece",
       "readmePath": "README.md",
       "commands": [
         {
@@ -42926,6 +42829,57 @@
       "assessment": {
         "outcome": "guided-tarball-unverified",
         "reason": "release-tarball-not-statically-verified"
+      },
+      "auditErrors": [],
+      "current": {
+        "profiles": [
+          "web"
+        ],
+        "requiresBuildApproval": true,
+        "manualSteps": true,
+        "lifecycleScripts": [],
+        "runtimeArtifactsCommitted": false,
+        "reviewReasons": []
+      }
+    },
+    {
+      "repository": "tntcannon5000/dsh-chat-fold",
+      "packageName": "dsh-chat-fold",
+      "version": "0.1.0-alpha.2",
+      "verifiedCommit": "6ea33bc9b26c9b51a04852b047cae6ceffea1acb",
+      "readmePath": "README.md",
+      "commands": [
+        {
+          "raw": "dsh plugin add tntcannon5000/dsh-chat-fold",
+          "profile": null,
+          "spec": "tntcannon5000/dsh-chat-fold",
+          "source": "github"
+        }
+      ],
+      "targetedCommands": [
+        {
+          "raw": "dsh plugin add tntcannon5000/dsh-chat-fold",
+          "profile": null,
+          "spec": "tntcannon5000/dsh-chat-fold",
+          "source": "github"
+        }
+      ],
+      "remoteCommands": [
+        {
+          "raw": "dsh plugin add tntcannon5000/dsh-chat-fold",
+          "profile": null,
+          "spec": "tntcannon5000/dsh-chat-fold",
+          "source": "github"
+        }
+      ],
+      "npmVerification": {
+        "verified": false,
+        "spec": "dsh-chat-fold@0.1.0-alpha.2",
+        "reason": "npm-version-not-published"
+      },
+      "assessment": {
+        "outcome": "guided-build-required",
+        "reason": "github-source-requires-install-time-build-or-lifecycle-script"
       },
       "auditErrors": [],
       "current": {
@@ -46713,47 +46667,6 @@
       "npmVerification": {
         "verified": false,
         "spec": "paper-plane-x-dsh@0.1.0",
-        "reason": "npm-version-not-published"
-      },
-      "assessment": {
-        "outcome": "guided-no-matching-remote-command",
-        "reason": "readme-does-not-document-a-remote-install-for-this-package"
-      },
-      "auditErrors": [],
-      "current": {
-        "profiles": [
-          "web"
-        ],
-        "requiresBuildApproval": true,
-        "manualSteps": true,
-        "lifecycleScripts": [
-          "prepare"
-        ],
-        "runtimeArtifactsCommitted": false,
-        "reviewReasons": [
-          "readme-documents-github-install-but-runtime-entry-artifacts-are-missing"
-        ]
-      }
-    },
-    {
-      "repository": "Windsland52/dsh-auto-retry",
-      "packageName": "@dsh-external/dsh-auto-retry",
-      "version": "0.1.0",
-      "verifiedCommit": "f914092e41f799b6a9a3c0a70b4ceaf0630974c6",
-      "readmePath": "README.md",
-      "commands": [
-        {
-          "raw": "dsh plugin --profile web add \"github:Windsland52/dsh-auto-retry#main\"",
-          "profile": "web",
-          "spec": "github:Windsland52/dsh-auto-retry#main",
-          "source": "unknown"
-        }
-      ],
-      "targetedCommands": [],
-      "remoteCommands": [],
-      "npmVerification": {
-        "verified": false,
-        "spec": "@dsh-external/dsh-auto-retry@0.1.0",
         "reason": "npm-version-not-published"
       },
       "assessment": {
@@ -53679,7 +53592,7 @@
       "repository": "zw11591-sketch/dsh-pet-panel",
       "packageName": "dsh-pet-panel",
       "version": "0.1.0",
-      "verifiedCommit": "2eebf386d9d32a138509954b49245b17bb3d3a94",
+      "verifiedCommit": "f3999ac95f7570e069d3e45745fd063c16f94b0b",
       "readmePath": "README.md",
       "commands": [
         {
